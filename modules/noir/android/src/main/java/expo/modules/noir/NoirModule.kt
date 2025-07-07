@@ -1,29 +1,13 @@
 package expo.modules.noir
 
-import android.util.Log
 import androidx.core.net.toUri
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.noirandroid.lib.Circuit
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
-import java.io.File
-
-internal data class ProveInputs(
-  val dg1: List<String>,
-  val dg15: List<String>,
-  val ec: List<String>,
-  val icao_root: String,
-  val inclusion_branches: List<String>,
-  val pk: List<String>,
-  val reduction_pk: List<String>,
-  val sa: List<String>,
-  val sig: List<String>,
-  val sk_identity: String
-)
 
 class NoirModule : Module() {
-  private val TAG = "NoirModule"
   private var circuit: Circuit? = null
 
   override fun definition() = ModuleDefinition {
@@ -32,80 +16,33 @@ class NoirModule : Module() {
     /**
      * Generates a PLONK proof using the Noir circuit.
      * @param trustedSetupUri URI pointing to the SRS file (e.g. file://...)
-     * @param inputsJson JSON-serialized ProveInputs
-     * @param byteCodeString Ignored: manifest loaded from hardcoded file path
+     * @param inputsJson JSON string representing a map of witness values
+     * @param manifestJson JSON manifest for the circuit bytecode
      * @return A hex string representing the generated proof
+     * @throws Throwable if proof generation fails
      */
-    AsyncFunction("provePlonk") { trustedSetupUri: String, inputsJson: String, byteCodeString: String ->
-      Log.i(TAG, "▶ provePlonk invoked on thread ${Thread.currentThread().name}")
+    AsyncFunction("provePlonk") { trustedSetupUri: String, inputsJson: String, manifestJson: String ->
 
-      // Holder for the proof result or error
-      var result: String? = null
+      val rawPath = trustedSetupUri.toUri().path
+        ?: throw IllegalArgumentException("Invalid URI: $trustedSetupUri")
 
-      // Start a new thread for the heavy native call
-      val worker = Thread {
-        try {
-          // Resolve SRS file path
-          val rawPath = trustedSetupUri.toUri().path
-            ?: throw IllegalArgumentException("Invalid URI: $trustedSetupUri")
-          Log.d(TAG, "Resolved SRS path: $rawPath")
-
-          // Initialize circuit & SRS if needed
-          if (circuit == null) {
-            Log.i(TAG, "Initializing circuit and SRS")
-
-            // Log SRS file status
-            File(rawPath).also { srsFile ->
-              Log.d(TAG, "SRS exists=${srsFile.exists()}, size=${srsFile.length()}")
-            }
-
-            // Create circuit instance and setup SRS
-            val c = Circuit.fromJsonManifest(byteCodeString)
-            c.setupSrs(rawPath, false)
-            Log.i(TAG, "SRS setup completed")
-            circuit = c
-          }
-
-          // Parse the inputs JSON into structured data
-          Log.i(TAG, "Parsing inputs JSON")
-          val inputs: ProveInputs = Gson().fromJson(
-            inputsJson,
-            object : TypeToken<ProveInputs>() {}.type
-          )
-          Log.d(TAG, "Parsed inputs: $inputs")
-
-          // Generate the proof using the circuit
-          Log.i(TAG, "Generating proof")
-          val proof = circuit!!.prove(
-            mapOf(
-              "dg1" to inputs.dg1,
-              "dg15" to inputs.dg15,
-              "ec" to inputs.ec,
-              "icao_root" to inputs.icao_root,
-              "inclusion_branches" to inputs.inclusion_branches,
-              "pk" to inputs.pk,
-              "reduction_pk" to inputs.reduction_pk,
-              "sa" to inputs.sa,
-              "sig" to inputs.sig,
-              "sk_identity" to inputs.sk_identity
-            ),
-            proofType = "plonk",
-            recursive = false
-          )
-          Log.i(TAG, "Proof generation complete")
-          result = proof.proof
-        } catch (t: Throwable) {
-          Log.e(TAG, "Error generating proof", t)
-          result = "Failed: ${t.javaClass.simpleName}"
+      // Initialize circuit & SRS once
+      if (circuit == null) {
+        circuit = Circuit.fromJsonManifest(manifestJson).apply {
+          setupSrs(rawPath, false)
         }
       }
 
-      // Run and wait
-      worker.start()
-      worker.join()
+      val type = object : TypeToken<Map<String, Any>>() {}.type
+      val inputsMap: Map<String, Any> = Gson().fromJson(inputsJson, type)
 
-      // Return the proof or error
-      return@AsyncFunction result ?: "Failed: unknown"
+      val proof = circuit!!.prove(
+        inputsMap,
+        proofType = "plonk",
+        recursive = false
+      )
+
+      return@AsyncFunction proof.proof
     }
   }
 }

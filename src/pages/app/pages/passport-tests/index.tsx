@@ -368,6 +368,7 @@ export default function PassportTests() {
   )
 
   const testNoir = useCallback(async () => {
+    // TODO: Replace with the correct circuit after its release
     const noirInstance = NoirCircuitParams.fromName('registerIdentity_26_512_3_3_336_248_NA')
     const RAW_TEST_INPUTS = JSON.parse(Config.TEST_INPUTS) as {
       dg1: string[]
