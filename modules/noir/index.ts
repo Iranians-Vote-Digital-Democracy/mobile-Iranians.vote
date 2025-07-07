@@ -30,16 +30,31 @@ export class NoirCircuitParams {
   }
 
   static async downloadTrustedSetup(opts?: {
-    onDownloadingProgress?: (downloadProgress: FileSystem.DownloadProgressData) => void
+    onDownloadingProgress?: (p: FileSystem.DownloadProgressData) => void
   }) {
-    const downloadResumable = FileSystem.createDownloadResumable(
-      'https://storage.googleapis.com/rarimo-store/trusted-setups/ultraPlonkTrustedSetup.dat',
-      NoirCircuitParams.TrustedSetupFileName,
-      {},
-      downloadProgress => {
-        opts?.onDownloadingProgress?.(downloadProgress)
-      },
-    )
+    const dir = `${FileSystem.documentDirectory}noir`
+
+    // Ensure that the folder exists
+    const dirInfo = await FileSystem.getInfoAsync(dir)
+    if (!dirInfo.exists) {
+      await FileSystem.makeDirectoryAsync(dir, { intermediates: true })
+    }
+
+    // Preparing path
+    const fileUri = `${dir}/ultraPlonkTrustedSetup.dat`
+    const url =
+      'https://storage.googleapis.com/rarimo-store/trusted-setups/ultraPlonkTrustedSetup.dat'
+
+    // Continue downloading
+    const downloadResumable = FileSystem.createDownloadResumable(url, fileUri, {}, progress => {
+      // DEBUG DOWNLOADING
+      // console.log(
+      //   `Progress: ${((progress.totalBytesWritten / progress.totalBytesExpectedToWrite) * 100).toFixed(1)}%`,
+      // )
+      opts?.onDownloadingProgress?.(progress)
+    })
+
+    await downloadResumable.downloadAsync()
 
     if (!(await NoirCircuitParams.getTrustedSetupUri())) {
       await downloadResumable.downloadAsync()
@@ -108,6 +123,10 @@ export class NoirCircuitParams {
 }
 
 const supportedNoirCircuits: NoirCircuitParams[] = [
+  new NoirCircuitParams(
+    'registerIdentity_26_512_3_3_336_248_NA',
+    'https://storage.googleapis.com/rarimo-store/passport-zk-circuits-noir/v0.1.15/registerIdentity_26_512_3_3_336_248_NA.json',
+  ),
   new NoirCircuitParams(
     'registerIdentity_2_256_3_6_336_264_21_2448_6_2008',
     'https://storage.googleapis.com/rarimo-store/passport-zk-circuits-noir/v0.1.3/registerIdentity_2_256_3_6_336_264_21_2448_6_2008.json',

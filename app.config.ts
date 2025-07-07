@@ -1,6 +1,6 @@
-import type {ConfigContext, ExpoConfig} from '@expo/config';
+import type { ConfigContext, ExpoConfig } from '@expo/config'
 
-import {ClientEnv, Env} from './env';
+import { ClientEnv, Env } from './env'
 
 // TODO: rollback once ready
 // import {
@@ -115,6 +115,17 @@ export default ({config}: ConfigContext): ExpoConfig => ({
       android: {
         minSdkVersion: 27,
         targetSdkVersion: 34,
+        ndk: {
+          abiFilters: ['arm64-v8a'],
+        },
+        splits: {
+          abi: {
+            enable: true,
+            reset: true,
+            include: ['arm64-v8a'],
+            universalApk: false,
+          },
+        },
       },
       ios: {
         deploymentTarget: '17.5',

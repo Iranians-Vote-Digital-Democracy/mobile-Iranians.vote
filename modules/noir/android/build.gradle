@@ -36,6 +36,13 @@ android {
   defaultConfig {
     versionCode 1
     versionName "0.6.3"
+    externalNativeBuild {
+      ndk {
+          //noinspection ChromeOsAbiSupport
+          abiFilters += "arm64-v8a"
+          debugSymbolLevel = "SYMBOL_TABLE"
+      }
+    }
   }
   lintOptions {
     abortOnError false

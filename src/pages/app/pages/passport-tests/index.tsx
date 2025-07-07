@@ -1,4 +1,6 @@
 import { Hex } from '@iden3/js-crypto'
+import { NoirCircuitParams } from '@modules/noir'
+import { CertificateSet, ContentInfo, SignedData } from '@peculiar/asn1-cms'
 import { ECParameters } from '@peculiar/asn1-ecc'
 import { id_pkcs_1, RSAPublicKey } from '@peculiar/asn1-rsa'
 import { AsnConvert } from '@peculiar/asn1-schema'
@@ -6,6 +8,7 @@ import { Certificate } from '@peculiar/asn1-x509'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { getBytes, keccak256, toBeArray } from 'ethers'
 import * as FileSystem from 'expo-file-system'
+import forge from 'node-forge'
 import { useCallback, useMemo, useState } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -182,6 +185,57 @@ const downloadUrl =
   'https://www.googleapis.com/download/storage/v1/b/rarimo-temp/o/icaopkd-list.ldif?generation=1715355629405816&alt=media'
 const icaopkdFileUri = `${FileSystem.documentDirectory}/icaopkd-list.ldif`
 
+const icaoPkdStringToCerts = (icaoLdif: string): Certificate[] => {
+  const regex = /pkdMasterListContent:: (.*?)\n\n/gs
+  const matches = icaoLdif.matchAll(regex)
+
+  const newLinePattern = /\n /g
+
+  const certs: Certificate[][] = Array.from(matches, match => {
+    // Remove newline + space patterns
+    const dataB64 = match[1].replace(newLinePattern, '')
+
+    // Decode base64
+    const decoded = Uint8Array.from(atob(dataB64), c => c.charCodeAt(0))
+
+    const ci = AsnConvert.parse(decoded, ContentInfo)
+    const signedData = AsnConvert.parse(ci.content, SignedData)
+
+    if (!signedData.encapContentInfo.eContent?.single?.buffer) {
+      throw new Error('eContent is missing in SignedData')
+    }
+
+    const asn1ContentInfo = forge.asn1.fromDer(
+      forge.util.createBuffer(signedData.encapContentInfo.eContent?.single?.buffer),
+    )
+
+    const content = asn1ContentInfo.value[1] as forge.asn1.Asn1
+
+    const CSCACerts = AsnConvert.parse(
+      Buffer.from(forge.asn1.toDer(content).toHex(), 'hex'),
+      CertificateSet,
+    )
+
+    return CSCACerts.reduce((acc, cert) => {
+      if (cert.certificate) {
+        acc.push(cert.certificate)
+      }
+
+      return acc
+    }, [] as Certificate[])
+  })
+
+  return certs.flat()
+}
+
+function decToHex(d: string): string {
+  return '0x' + BigInt(d).toString(16)
+}
+
+function ensureHex(s: string): string {
+  return s.startsWith('0x') ? s : decToHex(s)
+}
+
 export default function PassportTests() {
   const insets = useSafeAreaInsets()
   const appPaddings = useAppPaddings()
@@ -313,6 +367,54 @@ export default function PassportTests() {
     [downloadResumable],
   )
 
+  const testNoir = useCallback(async () => {
+    const noirInstance = NoirCircuitParams.fromName('registerIdentity_26_512_3_3_336_248_NA')
+    const RAW_TEST_INPUTS = JSON.parse(Config.TEST_INPUTS) as {
+      dg1: string[]
+      dg15: string[]
+      ec: string[]
+      icao_root: string
+      inclusion_branches: string[]
+      pk: string[]
+      reduction_pk: string[]
+      sa: string[]
+      sig: string[]
+      sk_identity: string
+    }
+
+    /**
+     * IMPORTANT: All values in HEX_INPUTS must be hexadecimal strings
+     * and include the '0x' prefix.
+     */
+    const HEX_INPUTS = {
+      dg1: RAW_TEST_INPUTS.dg1.map(decToHex),
+      dg15: RAW_TEST_INPUTS.dg15.map(decToHex),
+      ec: RAW_TEST_INPUTS.ec.map(decToHex),
+      icao_root: ensureHex(RAW_TEST_INPUTS.icao_root),
+      inclusion_branches: RAW_TEST_INPUTS.inclusion_branches.map(decToHex),
+      pk: RAW_TEST_INPUTS.pk.map(ensureHex),
+      reduction_pk: RAW_TEST_INPUTS.reduction_pk.map(ensureHex),
+      sa: RAW_TEST_INPUTS.sa.map(decToHex),
+      sig: RAW_TEST_INPUTS.sig.map(ensureHex),
+      sk_identity: ensureHex(RAW_TEST_INPUTS.sk_identity),
+    }
+
+    await NoirCircuitParams.downloadTrustedSetup({
+      // TODO: Add download trusted setup UI progress if needed
+      // onDownloadingProgress: downloadProgress => {
+      //   console.log('progress:', downloadProgress)
+      // },
+    })
+
+    const byteCode = await noirInstance.downloadByteCode()
+
+    const inputsJson = JSON.stringify(HEX_INPUTS)
+
+    const proof = await noirInstance.prove(inputsJson, byteCode)
+
+    console.log('Proof:', proof)
+  }, [])
+
   return (
     <AppContainer>
       <UiScreenScrollable
@@ -325,7 +427,8 @@ export default function PassportTests() {
         className='gap-3'
       >
         <View className='flex gap-4'>
-          <UiButton
+          <UiButton title='Test noir' onPress={testNoir} />
+          {/* <UiButton
             disabled={isSubmitting}
             onPress={() => test(Config.PASSPORT_1)}
             title='Test 1'
@@ -355,6 +458,7 @@ export default function PassportTests() {
             onPress={() => test(Config.PASSPORT_6)}
             title='Test 6'
           />
+          /> */}
           <UiButton disabled={isSubmitting} onPress={() => test('', testEDoc)} title='Test rsa' />
         </View>
       </UiScreenScrollable>

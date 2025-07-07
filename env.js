@@ -109,6 +109,8 @@ const client = z.object({
   PASSPORT_4: z.string(),
   PASSPORT_5: z.string(),
   PASSPORT_6: z.string(),
+
+  TEST_INPUTS: z.string(),
 })
 
 const buildTime = z.object({
@@ -154,6 +156,7 @@ const _clientEnv = {
   PASSPORT_4: getSecretWithSuffix('PASSPORT_4'),
   PASSPORT_5: getSecretWithSuffix('PASSPORT_5'),
   PASSPORT_6: getSecretWithSuffix('PASSPORT_6'),
+  TEST_INPUTS: getSecretWithSuffix('TEST_INPUTS'),
 }
 
 /**
