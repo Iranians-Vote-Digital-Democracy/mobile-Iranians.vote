@@ -2,31 +2,42 @@ import ExpoModulesCore
 import SwoirenbergLib
 
 public class NoirModule: Module {
-  // Each module class must implement the definition function. The definition consists of components
-  // that describes the module's functionality and behavior.
-  // See https://docs.expo.dev/modules/module-api for more details about available components.
+  private var circuit: Circuit?
+
   public func definition() -> ModuleDefinition {
-    // Sets the name of the module that JavaScript code will use to refer to the module. Takes a string as an argument.
-    // Can be inferred from module's class name, but it's recommended to set it explicitly for clarity.
-    // The module will be accessible from `requireNativeModule('Noir')` in JavaScript.
     Name("Noir")
 
-    AsyncFunction("prove") { (trustedSetupUri: String, inputs: String, utf8ByteCodeString: String) in
-      guard let byteCodeData = utf8ByteCodeString.data(using: .utf8) else {
-        throw NSError(domain: "NoirModule", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to convert bytecode string to Data"])
-      }
-      
-      guard let inputsDictionaryMap = try JSONSerialization.jsonObject(with: inputs.data(using: .utf8)!, options: []) as? [String: Any] else {
-        throw NSError(domain: "NoirModule", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to convert inputs string to Dictionary"])
+    /**
+     * Generates a PLONK proof using the Noir circuit.
+     * @param trustedSetupUri URI pointing to the SRS file (e.g. file://...)
+     * @param inputsJson JSON string representing a map of witness values
+     * @param manifestJson JSON manifest for the circuit bytecode
+     * @return a hex string representing the generated proof
+     * @throws Throwable if proof generation fails
+     */
+    AsyncFunction("provePlonk") { (trustedSetupUri: String, inputsJson: String, manifestJson: String) in
+      guard let srsPath = URL(string: trustedSetupUri)?.path else {
+        throw NSError(domain: "NoirModule", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid URI: \(trustedSetupUri)"])
       }
 
-      let circuit = try Swoir(backend: Swoirenberg.self).createCircuit(manifest: byteCodeData)
-      
-      try circuit.setupSrs(srs_path: trustedSetupUri)
+      if self.circuit == nil {
+        guard let manifestData = manifestJson.data(using: .utf8) else {
+          throw NSError(domain: "NoirModule", code: 2, userInfo: [NSLocalizedDescriptionKey: "Invalid manifest JSON string"])
+        }
 
-      let proof = try circuit.prove(inputsDictionaryMap, proof_type: "plonk")
-      
-      return proof.proof
+        self.circuit = try Swoir(backend: Swoirenberg.self).createCircuit(manifest: manifestData)
+        try self.circuit?.setupSrs(srs_path: srsPath)
+      }
+
+      guard let inputsData = inputsJson.data(using: .utf8),
+            let inputsMap = try JSONSerialization.jsonObject(with: inputsData, options: []) as? [String: Any] else {
+        throw NSError(domain: "NoirModule", code: 3, userInfo: [NSLocalizedDescriptionKey: "Failed to parse inputs JSON"])
+      }
+
+      let proof = try self.circuit!.prove(inputsMap, proof_type: "plonk")
+      let hexProof = proof.proof.map { String(format: "%02x", $0) }.joined()
+
+      return hexProof
     }
   }
 }

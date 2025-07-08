@@ -407,12 +407,14 @@ export default function PassportTests() {
       // },
     })
 
-    const byteCode = await noirInstance.downloadByteCode()
+    // TODO: replace test `@assets/noir_dl.json` with noirInstance.downloadByteCode()
+    // after its release
+    // const bytesCodeString = await noirInstance.downloadByteCode()
+    const bytesCodeString = JSON.stringify(require('@assets/noir_dl.json'))
 
     const inputsJson = JSON.stringify(HEX_INPUTS)
 
-    const proof = await noirInstance.prove(inputsJson, byteCode)
-
+    const proof = await noirInstance.prove(inputsJson, bytesCodeString)
     console.log('Proof:', proof)
   }, [])
 
