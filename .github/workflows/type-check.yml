@@ -13,11 +13,10 @@
 name: Type Check (tsc)
 
 on:
-# TODO: to rollback
-# push:
-#   branches: [main, master]
-# pull_request:
-#   branches: [main, master]
+push:
+  branches: [main, master]
+pull_request:
+  branches: [main, master]
 
 jobs:
   type-check:

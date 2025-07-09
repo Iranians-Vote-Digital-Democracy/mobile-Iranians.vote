@@ -13,11 +13,10 @@
 name: Lint TS (eslint, prettier)
 
 on:
-# TODO: to rollback
-# push:
-#   branches: [main, master]
-# pull_request:
-#   branches: [main, master]
+push:
+  branches: [main, master]
+pull_request:
+  branches: [main, master]
 
 jobs:
   lint:
