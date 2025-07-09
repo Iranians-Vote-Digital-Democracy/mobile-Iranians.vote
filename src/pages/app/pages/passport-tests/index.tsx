@@ -15,6 +15,7 @@ import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Config } from '@/config'
+import { tryCatch } from '@/helpers/try-catch'
 import AppContainer from '@/pages/app/components/AppContainer'
 import { useAppPaddings } from '@/theme'
 import { Registration__factory } from '@/types/contracts/factories/Registration__factory'
@@ -255,9 +256,17 @@ export default function PassportTests() {
       encoding: FileSystem.EncodingType.UTF8,
     })
 
+    console.log(icaoLdif.length)
+
     const CSCACertBytes = parseLdifString(icaoLdif)
 
-    const slaveMaster = await sigCert.getSlaveMaster(CSCACertBytes)
+    const [slaveMaster, getSlaveMasterError] = await tryCatch(sigCert.getSlaveMaster(CSCACertBytes))
+    if (getSlaveMasterError) {
+      console.error('Error getting slave master:', getSlaveMasterError)
+      return
+    }
+
+    console.log({ slaveMaster })
 
     const callData = await newBuildRegisterCertCallData(CSCACertBytes, sigCert, slaveMaster)
 
