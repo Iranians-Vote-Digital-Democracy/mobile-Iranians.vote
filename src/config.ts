@@ -22,4 +22,6 @@ export const Config = {
   PASSPORT_4: Env.PASSPORT_4,
   PASSPORT_5: Env.PASSPORT_5,
   PASSPORT_6: Env.PASSPORT_6,
+
+  TEST_INPUTS: Env.TEST_INPUTS,
 }
