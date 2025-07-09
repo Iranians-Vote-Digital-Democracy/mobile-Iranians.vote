@@ -18,11 +18,14 @@ export default function StepLayout({
   ...rest
 }: StepLayoutProps) {
   return (
-    <View {...rest} className={cn('flex flex-col items-center justify-end gap-10', className)}>
-      <View className={cn('my-auto')}>{media}</View>
-      <View className={cn('flex flex-col gap-4')}>
-        <Text className={cn('text-center text-textPrimary typography-h5')}>{title}</Text>
-        <Text className={cn('text-center text-textPrimary typography-body2')}>{subtitle}</Text>
+    <View {...rest} className={cn('flex flex-col items-center justify-center', className)}>
+      <View className={cn('flex-grow items-center justify-center')}>{media}</View>
+
+      <View className={cn('flex flex-col items-center justify-center')}>
+        <Text className={cn('text-center text-textPrimary typography-h4')}>{title}</Text>
+        <Text className={cn('mt-5 text-center text-textSecondary typography-body2')}>
+          {subtitle}
+        </Text>
       </View>
     </View>
   )

@@ -1,22 +1,14 @@
 {
   "auth": {
     "intro": {
-      "next-btn": "Create wallet",
+      "next-btn": "Let's start",
       "step-1": {
-        "subtitle": "Lorem ipsum dolor sit amet concestetur!",
-        "title": "Welcome to the app"
+        "subtitle": "For those who seek freedom and privacy",
+        "title": "Digital identity"
       },
       "step-2": {
-        "subtitle": "Lorem ipsum dolor sit amet concestetur!",
-        "title": "Second intro step"
-      },
-      "step-3": {
-        "subtitle": "Lorem ipsum dolor sit amet concestetur!",
-        "title": "Third intro step"
-      },
-      "step-4": {
-        "subtitle": "Lorem ipsum dolor sit amet concestetur!",
-        "title": "Fourth intro step"
+        "subtitle": "For those who seek justice",
+        "title": "Anonymous votes"
       }
     }
   },
