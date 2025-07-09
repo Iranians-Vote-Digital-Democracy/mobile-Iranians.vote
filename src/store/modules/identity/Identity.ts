@@ -1,11 +1,11 @@
-import { ZKProof } from '@modules/rapidsnark-wrp'
 import { getBigInt, JsonRpcProvider, zeroPadValue } from 'ethers'
 import SuperJSON from 'superjson'
 
 import { RARIMO_CHAINS } from '@/api/modules/rarimo'
 import { Config } from '@/config'
 import { createStateKeeperContract } from '@/helpers/contracts'
-import { EDocument } from '@/utils/e-document/e-document'
+import type { ZKProof } from '@/utils/circuits/types/common'
+import { EDocument, EPassport } from '@/utils/e-document/e-document'
 
 // TODO: add checking if the passport need to be revoked
 export class IdentityItem {
@@ -41,6 +41,10 @@ export class IdentityItem {
   }
 
   get passportInfoKeyBytes(): string {
+    if (!(this.document instanceof EPassport)) {
+      throw new Error('not implemented for this document type')
+    }
+
     const passportInfoKeyBigIntString = this.document.dg15Bytes?.length
       ? this.registrationProof.pub_signals[0]
       : this.registrationProof.pub_signals[1]

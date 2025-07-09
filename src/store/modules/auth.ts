@@ -1,4 +1,3 @@
-import type { ZKProof } from '@modules/rapidsnark-wrp'
 import { groth16Prove } from '@modules/rapidsnark-wrp'
 import { groth16ProveWithZKeyFilePath } from '@modules/rapidsnark-wrp'
 import { Buffer } from 'buffer'
@@ -16,6 +15,7 @@ import { localAuthStore } from '@/store/modules/local-auth'
 import { uiPreferencesStore } from '@/store/modules/ui-preferences'
 import { walletStore } from '@/store/modules/wallet'
 import { authCircuit } from '@/utils/circuits/auth-circuit'
+import type { ZKProof } from '@/utils/circuits/types/common'
 
 const useAuthStore = create(
   persist(

@@ -7,7 +7,7 @@ import { AsnConvert } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
 import { toBeArray, toBigInt } from 'ethers'
 
-import { EDocument } from '@/utils/e-document/e-document'
+import { EPassport } from '@/utils/e-document/e-document'
 
 import {
   brainpoolP256r1,
@@ -16,13 +16,13 @@ import {
   brainpoolP512r1,
   secp192r1,
   secp224r1,
-} from '../curves'
-import { namedCurveFromParameters } from '../e-document/helpers/crypto'
-import { extractPubKey } from '../e-document/helpers/misc'
-import { CircuitDocumentType, HASH_ALGORITHMS } from './constants'
-import { PrivateRegisterIdentityBuilderGroth16 } from './types/RegisterIdentityBuilder'
+} from '../../curves'
+import { namedCurveFromParameters } from '../../e-document/helpers/crypto'
+import { extractPubKey, extractRawPubKey } from '../../e-document/helpers/misc'
+import { CircuitDocumentType, HASH_ALGORITHMS } from '../constants'
+import { PrivateRegisterIdentityBuilderGroth16 } from '../types/RegisterIdentityBuilder'
 
-export class RegistrationCircuit {
+export class CircomRegistrationCircuit {
   public prefixName = 'registerIdentity'
 
   get sigAttrHashType() {
@@ -45,7 +45,10 @@ export class RegistrationCircuit {
   }
 
   get dg1Shift() {
-    const hash = RegistrationCircuit.computeHash(this.dgHashType.algorithm, this.eDoc.dg1Bytes)
+    const hash = CircomRegistrationCircuit.computeHash(
+      this.dgHashType.algorithm,
+      this.eDoc.dg1Bytes,
+    )
 
     return (
       Hex.encodeString(this.eDoc.sod.encapsulatedContent).split(Hex.encodeString(hash))[0].length /
@@ -54,7 +57,7 @@ export class RegistrationCircuit {
   }
 
   get encapContentShift() {
-    const hash = RegistrationCircuit.computeHash(
+    const hash = CircomRegistrationCircuit.computeHash(
       this.sigAttrHashType.algorithm,
       this.eDoc.sod.encapsulatedContent,
     )
@@ -67,7 +70,10 @@ export class RegistrationCircuit {
   get dg15Shift() {
     if (!this.eDoc.dg15Bytes) return 0
 
-    const hash = RegistrationCircuit.computeHash(this.dgHashType.algorithm, this.eDoc.dg15Bytes)
+    const hash = CircomRegistrationCircuit.computeHash(
+      this.dgHashType.algorithm,
+      this.eDoc.dg15Bytes,
+    )
 
     return (
       Hex.encodeString(this.eDoc.sod.encapsulatedContent).split(Hex.encodeString(hash))[0].length /
@@ -76,7 +82,7 @@ export class RegistrationCircuit {
   }
 
   get chunkedParams() {
-    return RegistrationCircuit.getChunkedParams(this.eDoc.sod.slaveCertificate.certificate)
+    return CircomRegistrationCircuit.getChunkedParams(this.eDoc.sod.slaveCertificate.certificate)
   }
 
   get sigType() {
@@ -343,7 +349,7 @@ export class RegistrationCircuit {
     return toBeArray(namedCurve.CURVE.n).length * 8
   }
 
-  constructor(public eDoc: EDocument) {}
+  constructor(public eDoc: EPassport) {}
 
   calcWtns(
     params: Pick<
@@ -353,14 +359,12 @@ export class RegistrationCircuit {
     datBytes: Uint8Array,
   ): Promise<Uint8Array> {
     const inputs: PrivateRegisterIdentityBuilderGroth16 = {
-      dg1: this.eDoc.dg1Bytes,
-      dg15: this.eDoc.dg15Bytes,
-      signedAttributes: this.eDoc.sod.signedAttributes,
-      encapsulatedContent: this.eDoc.sod.encapsulatedContent,
-      pubkey: extractPubKey(
-        this.eDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo,
-      ),
-      signature: this.eDoc.sod.signature,
+      dg1: Array.from(this.eDoc.dg1Bytes),
+      dg15: this.eDoc.dg15Bytes?.length ? Array.from(this.eDoc.dg15Bytes) : [],
+      signedAttributes: Array.from(this.eDoc.sod.signedAttributes),
+      encapsulatedContent: Array.from(this.eDoc.sod.encapsulatedContent),
+      pubkey: Array.from(extractRawPubKey(this.eDoc.sod.slaveCertificate.certificate)),
+      signature: Array.from(this.eDoc.sod.signature),
       skIdentity: params.skIdentity,
       slaveMerkleRoot: params.slaveMerkleRoot,
       slaveMerkleInclusionBranches: params.slaveMerkleInclusionBranches,
@@ -377,13 +381,13 @@ export class RegistrationCircuit {
       const chunkSize = 64
       const chunkNumber = Math.ceil(pubKey.modulus.byteLength / 16)
 
-      const publicKeyChunked = RegistrationCircuit.splitBigIntToChunks(
+      const publicKeyChunked = CircomRegistrationCircuit.splitBigIntToChunks(
         chunkSize,
         chunkNumber,
         toBigInt(new Uint8Array(pubKey.modulus)),
       )
 
-      const sigChunked = RegistrationCircuit.splitBigIntToChunks(
+      const sigChunked = CircomRegistrationCircuit.splitBigIntToChunks(
         chunkSize,
         chunkNumber,
         toBigInt(new Uint8Array(certificate.signatureValue)),
@@ -416,11 +420,11 @@ export class RegistrationCircuit {
       return 8
     })()
 
-    const pk_chunked = RegistrationCircuit.splitBigIntToChunks(
+    const pk_chunked = CircomRegistrationCircuit.splitBigIntToChunks(
       chunk_size,
       chunkNumber,
       pubKey.px,
-    ).concat(RegistrationCircuit.splitBigIntToChunks(chunk_size, chunkNumber, pubKey.py))
+    ).concat(CircomRegistrationCircuit.splitBigIntToChunks(chunk_size, chunkNumber, pubKey.py))
 
     const { r, s } = AsnConvert.parse(certificate.signatureValue, ECDSASigValue)
 
@@ -428,11 +432,11 @@ export class RegistrationCircuit {
     const rBigInt = toBigInt(new Uint8Array(r))
     const sBigInt = toBigInt(new Uint8Array(s))
 
-    const sig_chunked = RegistrationCircuit.splitBigIntToChunks(
+    const sig_chunked = CircomRegistrationCircuit.splitBigIntToChunks(
       chunk_size,
       chunkNumber,
       rBigInt,
-    ).concat(RegistrationCircuit.splitBigIntToChunks(chunk_size, chunkNumber, sBigInt))
+    ).concat(CircomRegistrationCircuit.splitBigIntToChunks(chunk_size, chunkNumber, sBigInt))
 
     return {
       ec_field_size: ecFieldSize,

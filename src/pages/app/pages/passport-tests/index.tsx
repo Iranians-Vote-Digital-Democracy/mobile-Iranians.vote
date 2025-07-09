@@ -1,6 +1,7 @@
+/* eslint-disable no-console */
+/* eslint-disable unused-imports/no-unused-vars */
 import { buildCertTreeAndGenProof, parseLdifString } from '@lukachi/rn-csca'
 import { NoirCircuitParams } from '@modules/noir'
-import { CertificateSet, ContentInfo, SignedData } from '@peculiar/asn1-cms'
 import { ECParameters } from '@peculiar/asn1-ecc'
 import { id_pkcs_1, RSAPublicKey } from '@peculiar/asn1-rsa'
 import { AsnConvert } from '@peculiar/asn1-schema'
@@ -9,27 +10,26 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { getBytes, keccak256, toBeArray } from 'ethers'
 import { Asset } from 'expo-asset'
 import * as FileSystem from 'expo-file-system'
-import forge from 'node-forge'
 import { useCallback, useMemo, useState } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Config } from '@/config'
 import AppContainer from '@/pages/app/components/AppContainer'
-import { identityStore } from '@/store'
 import { useAppPaddings } from '@/theme'
 import { Registration__factory } from '@/types/contracts/factories/Registration__factory'
 import { Registration2 } from '@/types/contracts/Registration'
 import { UiButton, UiScreenScrollable } from '@/ui'
 import { getCircuitHashAlgorithm } from '@/utils/circuits/helpers'
-import { ECDSA_ALGO_PREFIX, EDocument, PersonDetails } from '@/utils/e-document'
+import { ECDSA_ALGO_PREFIX, Sod } from '@/utils/e-document'
+import { ExtendedCertificate } from '@/utils/e-document/extended-cert'
 import { getPublicKeyFromEcParameters } from '@/utils/e-document/helpers/crypto'
 
 const registrationContractInterface = Registration__factory.createInterface()
 
 const newBuildRegisterCertCallData = async (
   CSCABytes: ArrayBuffer[],
-  tempEDoc: EDocument,
+  sigCertificate: ExtendedCertificate,
   masterCert: Certificate,
 ) => {
   const inclusionProofSiblings = buildCertTreeAndGenProof(
@@ -49,13 +49,12 @@ const newBuildRegisterCertCallData = async (
     if (masterSubjPubKeyAlg.includes(id_pkcs_1)) {
       const bits = (() => {
         if (
-          tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm.algorithm.includes(
+          sigCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm.algorithm.includes(
             id_pkcs_1,
           )
         ) {
           const slaveRSAPubKey = AsnConvert.parse(
-            tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo
-              .subjectPublicKey,
+            sigCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.subjectPublicKey,
             RSAPublicKey,
           )
 
@@ -68,26 +67,22 @@ const newBuildRegisterCertCallData = async (
         }
 
         if (
-          tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm.algorithm.includes(
+          sigCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm.algorithm.includes(
             ECDSA_ALGO_PREFIX,
           )
         ) {
-          if (
-            !tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm
-              .parameters
-          )
+          if (!sigCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm.parameters)
             throw new TypeError('ECDSA public key does not have parameters')
 
           const ecParameters = AsnConvert.parse(
-            tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm
-              .parameters,
+            sigCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm.parameters,
             ECParameters,
           )
 
           const [publicKey] = getPublicKeyFromEcParameters(
             ecParameters,
             new Uint8Array(
-              tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.subjectPublicKey,
+              sigCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.subjectPublicKey,
             ),
           )
 
@@ -99,9 +94,7 @@ const newBuildRegisterCertCallData = async (
 
       let dispatcherName = `C_RSA`
 
-      const circuitHashAlgorithm = getCircuitHashAlgorithm(
-        tempEDoc.sod.slaveCertificate.certificate,
-      )
+      const circuitHashAlgorithm = getCircuitHashAlgorithm(sigCertificate.certificate)
       if (circuitHashAlgorithm) {
         dispatcherName += `_${circuitHashAlgorithm}`
       }
@@ -116,10 +109,7 @@ const newBuildRegisterCertCallData = async (
         throw new TypeError('Master ECDSA public key does not have parameters')
       }
 
-      if (
-        !tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm
-          .parameters
-      ) {
+      if (!sigCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm.parameters) {
         throw new TypeError('Slave ECDSA public key does not have parameters')
       }
 
@@ -129,8 +119,7 @@ const newBuildRegisterCertCallData = async (
       )
 
       const slaveEcParameters = AsnConvert.parse(
-        tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm
-          .parameters,
+        sigCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm.parameters,
         ECParameters,
       )
 
@@ -142,7 +131,7 @@ const newBuildRegisterCertCallData = async (
       const [slaveCertPubKey] = getPublicKeyFromEcParameters(
         slaveEcParameters,
         new Uint8Array(
-          tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.subjectPublicKey,
+          sigCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.subjectPublicKey,
         ),
       )
 
@@ -155,9 +144,7 @@ const newBuildRegisterCertCallData = async (
 
       let dispatcherName = `C_ECDSA_${masterCertCurveName}`
 
-      const circuitHashAlgorithm = getCircuitHashAlgorithm(
-        tempEDoc.sod.slaveCertificate.certificate,
-      )
+      const circuitHashAlgorithm = getCircuitHashAlgorithm(sigCertificate.certificate)
       if (circuitHashAlgorithm) {
         dispatcherName += `_${circuitHashAlgorithm}`
       }
@@ -177,15 +164,15 @@ const newBuildRegisterCertCallData = async (
   const certificate: Registration2.CertificateStruct = {
     dataType: dispatcherHash,
     signedAttributes: new Uint8Array(
-      AsnConvert.serialize(tempEDoc.sod.slaveCertificate.certificate.tbsCertificate),
+      AsnConvert.serialize(sigCertificate.certificate.tbsCertificate),
     ),
-    keyOffset: tempEDoc.sod.slaveCertificate.slaveCertPubKeyOffset,
-    expirationOffset: tempEDoc.sod.slaveCertificate.slaveCertExpOffset,
+    keyOffset: sigCertificate.slaveCertPubKeyOffset,
+    expirationOffset: sigCertificate.slaveCertExpOffset,
   }
   console.log({ certificate })
   const icaoMember: Registration2.ICAOMemberStruct = {
-    signature: tempEDoc.sod.slaveCertificate.getSlaveCertIcaoMemberSignature(masterCert),
-    publicKey: tempEDoc.sod.getSlaveCertIcaoMemberKey(masterCert),
+    signature: sigCertificate.getSlaveCertIcaoMemberSignature(masterCert),
+    publicKey: Sod.getSlaveCertIcaoMemberKey(masterCert),
   }
   console.log({ icaoMember })
 
@@ -199,49 +186,6 @@ const newBuildRegisterCertCallData = async (
 const downloadUrl =
   'https://www.googleapis.com/download/storage/v1/b/rarimo-temp/o/icaopkd-list.ldif?generation=1715355629405816&alt=media'
 const icaopkdFileUri = `${FileSystem.documentDirectory}/icaopkd-list.ldif`
-
-const icaoPkdStringToCerts = (icaoLdif: string): Certificate[] => {
-  const regex = /pkdMasterListContent:: (.*?)\n\n/gs
-  const matches = icaoLdif.matchAll(regex)
-
-  const newLinePattern = /\n /g
-
-  const certs: Certificate[][] = Array.from(matches, match => {
-    // Remove newline + space patterns
-    const dataB64 = match[1].replace(newLinePattern, '')
-
-    // Decode base64
-    const decoded = Uint8Array.from(atob(dataB64), c => c.charCodeAt(0))
-
-    const ci = AsnConvert.parse(decoded, ContentInfo)
-    const signedData = AsnConvert.parse(ci.content, SignedData)
-
-    if (!signedData.encapContentInfo.eContent?.single?.buffer) {
-      throw new Error('eContent is missing in SignedData')
-    }
-
-    const asn1ContentInfo = forge.asn1.fromDer(
-      forge.util.createBuffer(signedData.encapContentInfo.eContent?.single?.buffer),
-    )
-
-    const content = asn1ContentInfo.value[1] as forge.asn1.Asn1
-
-    const CSCACerts = AsnConvert.parse(
-      Buffer.from(forge.asn1.toDer(content).toHex(), 'hex'),
-      CertificateSet,
-    )
-
-    return CSCACerts.reduce((acc, cert) => {
-      if (cert.certificate) {
-        acc.push(cert.certificate)
-      }
-
-      return acc
-    }, [] as Certificate[])
-  })
-
-  return certs.flat()
-}
 
 function decToHex(d: string): string {
   return '0x' + BigInt(d).toString(16)
@@ -258,115 +202,9 @@ export default function PassportTests() {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const testEDoc = identityStore.useIdentityStore(state => state.testEDoc)
-
   const downloadResumable = useMemo(() => {
     return FileSystem.createDownloadResumable(downloadUrl, icaopkdFileUri, {})
   }, [])
-
-  const test = useCallback(
-    async (passp: string, _eDoc?: EDocument) => {
-      setIsSubmitting(true)
-      try {
-        const eDoc = (() => {
-          if (_eDoc) return _eDoc
-
-          const passport = JSON.parse(passp)
-
-          // console.log(passport.dg1)
-
-          return new EDocument({
-            docCode: 'P',
-            personDetails: {} as PersonDetails,
-            dg1Bytes: new Uint8Array(Buffer.from(passport.dg1, 'base64')),
-            sodBytes: new Uint8Array(Buffer.from(passport.sod, 'base64')),
-            ...(passport.dg15 && {
-              dg15Bytes: new Uint8Array(Buffer.from(passport.dg15, 'base64')),
-            }),
-          })
-        })()
-
-        // console.log(Buffer.from(eDoc.sodBytes).toString('base64'))
-
-        // console.log(eDoc.dg1Bytes)
-
-        // const circuit = new RegistrationCircuit(eDoc)
-        // console.log(circuit.name, circuit)
-
-        // console.log(eDoc.sod.slaveCertExpOffset)
-
-        // console.log(Buffer.from(eDoc.dg1Bytes).toString('base64'))
-        // console.log(Buffer.from(eDoc.sodBytes).toString('base64'))
-
-        // console.log(
-        //   'slave cert pem',
-        //   Buffer.from(
-        //     toPem(Buffer.from(AsnConvert.serialize(eDoc.sod.slaveCert)).buffer, 'CERTIFICATE'),
-        //     'utf-8',
-        //   ).toString('base64'),
-        // )
-
-        // const x509SlaveCert = new X509Certificate(AsnConvert.serialize(eDoc.sod.slaveCert))
-
-        // console.log({ x509SlaveCert, slaveCert: eDoc.sod.slaveCert })
-
-        // console.log(Hex.encodeString(eDoc.sod.slaveCertificateIndex))
-
-        if (!(await FileSystem.getInfoAsync(icaopkdFileUri)).exists) {
-          await downloadResumable.downloadAsync()
-        }
-
-        const icaoLdif = await FileSystem.readAsStringAsync(icaopkdFileUri, {
-          encoding: FileSystem.EncodingType.UTF8,
-        })
-
-        const CSCACertBytes = parseLdifString(icaoLdif)
-
-        const slaveMaster = await eDoc.sod.slaveCertificate.getSlaveMaster(CSCACertBytes)
-
-        // console.log(
-        //   'inclusionProof',
-        //   inclusionProof.siblings.map(el => Hex.encodeString(getBytes(el))),
-        // )
-
-        // console.log(
-        //   'slave',
-        //   Hex.encodeString(new Uint8Array(AsnConvert.serialize(eDoc.sod.slaveCert))),
-        // )
-
-        // console.log(
-        //   'slaveMaster',
-        //   Hex.encodeString(new Uint8Array(AsnConvert.serialize(slaveMaster))),
-        // )
-
-        // const slaveCertIcaoMemberKey = eDoc.sod.getSlaveCertIcaoMemberKey(slaveMaster)
-
-        // console.log('slaveCertIcaoMemberKey', Hex.encodeString(slaveCertIcaoMemberKey))
-        // console.log(
-        //   'extractRawPubKey(masterCert)',
-        //   Hex.encodeString(extractRawPubKey(eDoc.sod.slaveCert)),
-        // )
-
-        // console.log(
-        //   Buffer.from(
-        //     toPem(Buffer.from(AsnConvert.serialize(slaveMaster)).buffer, 'CERTIFICATE'),
-        //     'utf-8',
-        //   ).toString('base64'),
-        // )
-        // console.log(Hex.encodeString(eDoc.sod.getSlaveCertIcaoMemberSignature(slaveMaster)))
-
-        // console.log(CSCACertBytes.length)
-
-        const callData = await newBuildRegisterCertCallData(CSCACertBytes, eDoc, slaveMaster)
-
-        console.log(callData)
-      } catch (error) {
-        console.error('Error during test:', error)
-      }
-      setIsSubmitting(false)
-    },
-    [downloadResumable],
-  )
 
   const testCert = useCallback(async () => {
     const [authAsset] = await Asset.loadAsync(require('@assets/certificates/AuthCert_0897A6C3.cer'))
@@ -405,8 +243,26 @@ export default function PassportTests() {
 
     const signingCertFileContentBytes = Buffer.from(signingCertFileContent, 'base64')
 
-    console.log(AsnConvert.parse(signingCertFileContentBytes, Certificate))
-  }, [])
+    const sigCert = new ExtendedCertificate(
+      AsnConvert.parse(signingCertFileContentBytes, Certificate),
+    )
+
+    if (!(await FileSystem.getInfoAsync(icaopkdFileUri)).exists) {
+      await downloadResumable.downloadAsync()
+    }
+
+    const icaoLdif = await FileSystem.readAsStringAsync(icaopkdFileUri, {
+      encoding: FileSystem.EncodingType.UTF8,
+    })
+
+    const CSCACertBytes = parseLdifString(icaoLdif)
+
+    const slaveMaster = await sigCert.getSlaveMaster(CSCACertBytes)
+
+    const callData = await newBuildRegisterCertCallData(CSCACertBytes, sigCert, slaveMaster)
+
+    console.log(callData)
+  }, [downloadResumable])
 
   const testNoir = useCallback(async () => {
     // TODO: Replace with the correct circuit after its release
@@ -471,38 +327,7 @@ export default function PassportTests() {
         className='gap-3'
       >
         <View className='flex gap-4'>
-          <UiButton
-            disabled={isSubmitting}
-            onPress={() => test(Config.PASSPORT_1)}
-            title='Test 1'
-          />
-          <UiButton
-            disabled={isSubmitting}
-            onPress={() => test(Config.PASSPORT_2)}
-            title='Test 2'
-          />
-          <UiButton
-            disabled={isSubmitting}
-            onPress={() => test(Config.PASSPORT_3)}
-            title='Test 3'
-          />
-          <UiButton
-            disabled={isSubmitting}
-            onPress={() => test(Config.PASSPORT_4)}
-            title='Test 4'
-          />
-          <UiButton
-            disabled={isSubmitting}
-            onPress={() => test(Config.PASSPORT_5)}
-            title='Test 5'
-          />
-          <UiButton
-            disabled={isSubmitting}
-            onPress={() => test(Config.PASSPORT_6)}
-            title='Test 6'
-          />
-
-          <UiButton disabled={isSubmitting} onPress={() => test('', testEDoc)} title='Test rsa' />
+          <UiButton disabled={isSubmitting} onPress={testCert} title='Test Cert' />
         </View>
       </UiScreenScrollable>
     </AppContainer>

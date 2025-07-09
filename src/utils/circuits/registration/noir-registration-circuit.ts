@@ -3,14 +3,15 @@ import { ExternalCircuitParams } from '@modules/witnesscalculator'
 import { RSAPublicKey } from '@peculiar/asn1-rsa'
 import { toBigInt } from 'ethers'
 
-import { EDocument } from '@/utils/e-document/e-document'
+import { EPassport } from '@/utils/e-document/e-document'
 
-import { extractPubKey } from '../e-document/helpers/misc'
-import { RegistrationCircuit } from './registration-circuit'
-import { PrivateRegisterIdentityBuilderGroth16 } from './types/RegisterIdentityBuilder'
+import { extractPubKey } from '../../e-document/helpers/misc'
+import { ZKProof } from '../types/common'
+import { PrivateRegisterIdentityBuilderGroth16 } from '../types/RegisterIdentityBuilder'
+import { CircomRegistrationCircuit } from './circom-registration-circuit'
 
-export class NoirRegistrationCircuit extends RegistrationCircuit {
-  constructor(public eDoc: EDocument) {
+export class NoirRegistrationCircuit extends CircomRegistrationCircuit {
+  constructor(public eDoc: EPassport) {
     super(eDoc)
   }
 
@@ -50,7 +51,7 @@ export class NoirRegistrationCircuit extends RegistrationCircuit {
         pubKey.modulus[0] === 0x00 ? pubKey.modulus.slice(1) : pubKey.modulus,
       )
 
-      reduction = RegistrationCircuit.splitBigIntToChunks(
+      reduction = CircomRegistrationCircuit.splitBigIntToChunks(
         120,
         defaultChunkedParams.chunk_number,
         NoirRegistrationCircuit.computeBarretReduction(
@@ -60,12 +61,20 @@ export class NoirRegistrationCircuit extends RegistrationCircuit {
       )
     }
 
-    reduction = RegistrationCircuit.splitBigIntToChunks(120, defaultChunkedParams.chunk_number, 0n)
+    reduction = CircomRegistrationCircuit.splitBigIntToChunks(
+      120,
+      defaultChunkedParams.chunk_number,
+      0n,
+    )
 
     return { ...super.chunkedParams, reduction }
   }
 
-  async prove(params: { skIdentity: bigint; icaoRoot: bigint; inclusionBranches: bigint[] }) {
+  async prove(params: {
+    skIdentity: bigint
+    icaoRoot: bigint
+    inclusionBranches: bigint[]
+  }): Promise<ZKProof> {
     await NoirCircuitParams.downloadTrustedSetup()
 
     const byteCode = await this.noirCircuitParams.downloadByteCode()
@@ -85,6 +94,8 @@ export class NoirRegistrationCircuit extends RegistrationCircuit {
       inclusion_branches: params.inclusionBranches,
     }
 
-    return this.noirCircuitParams.prove(JSON.stringify(inputs), byteCode)
+    const proof = await this.noirCircuitParams.prove(JSON.stringify(inputs), byteCode)
+
+    return JSON.parse(proof) as ZKProof
   }
 }
