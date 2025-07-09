@@ -7,7 +7,6 @@ import { AsnConvert } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { getBytes, keccak256, toBeArray } from 'ethers'
-import { Asset } from 'expo-asset'
 import * as FileSystem from 'expo-file-system'
 import forge from 'node-forge'
 import { useCallback, useMemo, useState } from 'react'
@@ -367,46 +366,6 @@ export default function PassportTests() {
     },
     [downloadResumable],
   )
-
-  const testCert = useCallback(async () => {
-    const [authAsset] = await Asset.loadAsync(require('@assets/certificates/AuthCert_0897A6C3.cer'))
-
-    if (!authAsset.localUri) throw new Error('authAsset local URI is not available')
-
-    const authAssetInfo = await FileSystem.getInfoAsync(authAsset.localUri)
-
-    if (!authAssetInfo.uri) throw new Error('authAsset local URI is not available')
-
-    const authFileContent = await FileSystem.readAsStringAsync(authAssetInfo.uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    })
-
-    const authContentBytes = Buffer.from(authFileContent, 'base64')
-
-    const authCertificate = AsnConvert.parse(authContentBytes, Certificate)
-
-    console.log({ authCertificate })
-
-    // ------------------------------------------------------------------------------------------------------------------------------
-
-    const [signingCertAsset] = await Asset.loadAsync(
-      require('@assets/certificates/SigningCert_084384FC.cer'),
-    )
-
-    if (!signingCertAsset.localUri) throw new Error('signingCertAsset local URI is not available')
-
-    const signingCertAssetInfo = await FileSystem.getInfoAsync(signingCertAsset.localUri)
-
-    if (!signingCertAssetInfo.uri) throw new Error('signingCertAsset local URI is not available')
-
-    const signingCertFileContent = await FileSystem.readAsStringAsync(signingCertAssetInfo.uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    })
-
-    const signingCertFileContentBytes = Buffer.from(signingCertFileContent, 'base64')
-
-    console.log(AsnConvert.parse(signingCertFileContentBytes, Certificate))
-  }, [])
 
   const testNoir = useCallback(async () => {
     // TODO: Replace with the correct circuit after its release
