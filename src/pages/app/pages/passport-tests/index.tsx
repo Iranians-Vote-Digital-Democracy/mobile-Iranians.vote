@@ -1,4 +1,4 @@
-import { Hex } from '@iden3/js-crypto'
+import { buildCertTreeAndGenProof, parseLdifString } from '@lukachi/rn-csca'
 import { NoirCircuitParams } from '@modules/noir'
 import { CertificateSet, ContentInfo, SignedData } from '@peculiar/asn1-cms'
 import { ECParameters } from '@peculiar/asn1-ecc'
@@ -7,6 +7,7 @@ import { AsnConvert } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { getBytes, keccak256, toBeArray } from 'ethers'
+import { Asset } from 'expo-asset'
 import * as FileSystem from 'expo-file-system'
 import forge from 'node-forge'
 import { useCallback, useMemo, useState } from 'react'
@@ -21,31 +22,26 @@ import { Registration__factory } from '@/types/contracts/factories/Registration_
 import { Registration2 } from '@/types/contracts/Registration'
 import { UiButton, UiScreenScrollable } from '@/ui'
 import { getCircuitHashAlgorithm } from '@/utils/circuits/helpers'
-import { CertTree } from '@/utils/circuits/helpers/treap-tree'
-import { RegistrationCircuit } from '@/utils/circuits/registration-circuit'
 import { ECDSA_ALGO_PREFIX, EDocument, PersonDetails } from '@/utils/e-document'
 import { getPublicKeyFromEcParameters } from '@/utils/e-document/helpers/crypto'
 
 const registrationContractInterface = Registration__factory.createInterface()
 
 const newBuildRegisterCertCallData = async (
-  CSCAs: Certificate[],
+  CSCABytes: ArrayBuffer[],
   tempEDoc: EDocument,
   masterCert: Certificate,
 ) => {
-  const icaoTree = await CertTree.buildFromX509(CSCAs)
+  const inclusionProofSiblings = buildCertTreeAndGenProof(
+    CSCABytes,
+    AsnConvert.serialize(masterCert),
+  )
 
-  const inclusionProof = icaoTree.genInclusionProof(masterCert)
-
-  const root = icaoTree.tree.merkleRoot()
-
-  if (!root) throw new TypeError('failed to generate inclusion proof')
-
-  console.log('root', Hex.encodeString(root))
-
-  if (inclusionProof.siblings.length === 0) {
+  if (inclusionProofSiblings.length === 0) {
     throw new TypeError('failed to generate inclusion proof')
   }
+
+  console.log({ inclusionProofSiblings })
 
   const dispatcherName = (() => {
     const masterSubjPubKeyAlg = masterCert.tbsCertificate.subjectPublicKeyInfo.algorithm.algorithm
@@ -53,12 +49,13 @@ const newBuildRegisterCertCallData = async (
     if (masterSubjPubKeyAlg.includes(id_pkcs_1)) {
       const bits = (() => {
         if (
-          tempEDoc.sod.slaveCert.tbsCertificate.subjectPublicKeyInfo.algorithm.algorithm.includes(
+          tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm.algorithm.includes(
             id_pkcs_1,
           )
         ) {
           const slaveRSAPubKey = AsnConvert.parse(
-            tempEDoc.sod.slaveCert.tbsCertificate.subjectPublicKeyInfo.subjectPublicKey,
+            tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo
+              .subjectPublicKey,
             RSAPublicKey,
           )
 
@@ -71,22 +68,26 @@ const newBuildRegisterCertCallData = async (
         }
 
         if (
-          tempEDoc.sod.slaveCert.tbsCertificate.subjectPublicKeyInfo.algorithm.algorithm.includes(
+          tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm.algorithm.includes(
             ECDSA_ALGO_PREFIX,
           )
         ) {
-          if (!tempEDoc.sod.slaveCert.tbsCertificate.subjectPublicKeyInfo.algorithm.parameters)
+          if (
+            !tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm
+              .parameters
+          )
             throw new TypeError('ECDSA public key does not have parameters')
 
           const ecParameters = AsnConvert.parse(
-            tempEDoc.sod.slaveCert.tbsCertificate.subjectPublicKeyInfo.algorithm.parameters,
+            tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm
+              .parameters,
             ECParameters,
           )
 
           const [publicKey] = getPublicKeyFromEcParameters(
             ecParameters,
             new Uint8Array(
-              tempEDoc.sod.slaveCert.tbsCertificate.subjectPublicKeyInfo.subjectPublicKey,
+              tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.subjectPublicKey,
             ),
           )
 
@@ -98,7 +99,9 @@ const newBuildRegisterCertCallData = async (
 
       let dispatcherName = `C_RSA`
 
-      const circuitHashAlgorithm = getCircuitHashAlgorithm(tempEDoc.sod.slaveCert)
+      const circuitHashAlgorithm = getCircuitHashAlgorithm(
+        tempEDoc.sod.slaveCertificate.certificate,
+      )
       if (circuitHashAlgorithm) {
         dispatcherName += `_${circuitHashAlgorithm}`
       }
@@ -113,7 +116,10 @@ const newBuildRegisterCertCallData = async (
         throw new TypeError('Master ECDSA public key does not have parameters')
       }
 
-      if (!tempEDoc.sod.slaveCert.tbsCertificate.subjectPublicKeyInfo.algorithm.parameters) {
+      if (
+        !tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm
+          .parameters
+      ) {
         throw new TypeError('Slave ECDSA public key does not have parameters')
       }
 
@@ -123,7 +129,8 @@ const newBuildRegisterCertCallData = async (
       )
 
       const slaveEcParameters = AsnConvert.parse(
-        tempEDoc.sod.slaveCert.tbsCertificate.subjectPublicKeyInfo.algorithm.parameters,
+        tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.algorithm
+          .parameters,
         ECParameters,
       )
 
@@ -134,7 +141,9 @@ const newBuildRegisterCertCallData = async (
 
       const [slaveCertPubKey] = getPublicKeyFromEcParameters(
         slaveEcParameters,
-        new Uint8Array(tempEDoc.sod.slaveCert.tbsCertificate.subjectPublicKeyInfo.subjectPublicKey),
+        new Uint8Array(
+          tempEDoc.sod.slaveCertificate.certificate.tbsCertificate.subjectPublicKeyInfo.subjectPublicKey,
+        ),
       )
 
       const pubKeyBytes = new Uint8Array([
@@ -146,7 +155,9 @@ const newBuildRegisterCertCallData = async (
 
       let dispatcherName = `C_ECDSA_${masterCertCurveName}`
 
-      const circuitHashAlgorithm = getCircuitHashAlgorithm(tempEDoc.sod.slaveCert)
+      const circuitHashAlgorithm = getCircuitHashAlgorithm(
+        tempEDoc.sod.slaveCertificate.certificate,
+      )
       if (circuitHashAlgorithm) {
         dispatcherName += `_${circuitHashAlgorithm}`
       }
@@ -161,23 +172,27 @@ const newBuildRegisterCertCallData = async (
 
   const dispatcherHash = getBytes(keccak256(Buffer.from(dispatcherName, 'utf-8')))
 
+  console.log({ dispatcherHash, dispatcherName })
+
   const certificate: Registration2.CertificateStruct = {
     dataType: dispatcherHash,
-    signedAttributes: new Uint8Array(AsnConvert.serialize(tempEDoc.sod.slaveCert.tbsCertificate)),
-    keyOffset: tempEDoc.sod.slaveCertPubKeyOffset,
-    expirationOffset: tempEDoc.sod.slaveCertExpOffset,
+    signedAttributes: new Uint8Array(
+      AsnConvert.serialize(tempEDoc.sod.slaveCertificate.certificate.tbsCertificate),
+    ),
+    keyOffset: tempEDoc.sod.slaveCertificate.slaveCertPubKeyOffset,
+    expirationOffset: tempEDoc.sod.slaveCertificate.slaveCertExpOffset,
   }
+  console.log({ certificate })
   const icaoMember: Registration2.ICAOMemberStruct = {
-    signature: tempEDoc.sod.getSlaveCertIcaoMemberSignature(masterCert),
+    signature: tempEDoc.sod.slaveCertificate.getSlaveCertIcaoMemberSignature(masterCert),
     publicKey: tempEDoc.sod.getSlaveCertIcaoMemberKey(masterCert),
   }
-
-  const icaoMerkleProofSiblings = inclusionProof.siblings.flat()
+  console.log({ icaoMember })
 
   return registrationContractInterface.encodeFunctionData('registerCertificate', [
     certificate,
     icaoMember,
-    icaoMerkleProofSiblings,
+    inclusionProofSiblings.map(el => Buffer.from(el, 'hex')),
   ])
 }
 
@@ -275,8 +290,8 @@ export default function PassportTests() {
 
         // console.log(eDoc.dg1Bytes)
 
-        const circuit = new RegistrationCircuit(eDoc)
-        console.log(circuit.name, circuit)
+        // const circuit = new RegistrationCircuit(eDoc)
+        // console.log(circuit.name, circuit)
 
         // console.log(eDoc.sod.slaveCertExpOffset)
 
@@ -297,17 +312,17 @@ export default function PassportTests() {
 
         // console.log(Hex.encodeString(eDoc.sod.slaveCertificateIndex))
 
-        // if (!(await FileSystem.getInfoAsync(icaopkdFileUri)).exists) {
-        //   await downloadResumable.downloadAsync()
-        // }
+        if (!(await FileSystem.getInfoAsync(icaopkdFileUri)).exists) {
+          await downloadResumable.downloadAsync()
+        }
 
-        // const icaoLdif = await FileSystem.readAsStringAsync(icaopkdFileUri, {
-        //   encoding: FileSystem.EncodingType.UTF8,
-        // })
+        const icaoLdif = await FileSystem.readAsStringAsync(icaopkdFileUri, {
+          encoding: FileSystem.EncodingType.UTF8,
+        })
 
-        // const CSCACertBytes = parseLdifString(icaoLdif)
+        const CSCACertBytes = parseLdifString(icaoLdif)
 
-        // const slaveMaster = await eDoc.sod.getSlaveMaster(CSCACertBytes)
+        const slaveMaster = await eDoc.sod.slaveCertificate.getSlaveMaster(CSCACertBytes)
 
         // console.log(
         //   'inclusionProof',
@@ -342,23 +357,9 @@ export default function PassportTests() {
 
         // console.log(CSCACertBytes.length)
 
-        // const CSCACerts = CSCACertBytes.map(el => {
-        //   return AsnConvert.parse(el, Certificate)
-        // })
+        const callData = await newBuildRegisterCertCallData(CSCACertBytes, eDoc, slaveMaster)
 
-        // const icaoTree = await CertTree.buildFromX509(CSCACerts)
-
-        // const inclusionProof = icaoTree.genInclusionProof(masterCert)
-
-        // const root = icaoTree.tree.merkleRoot()
-
-        // if (!root) throw new TypeError('failed to generate inclusion proof')
-
-        // console.log('root', Hex.encodeString(root))
-
-        // const callData = await newBuildRegisterCertCallData(CSCACerts, eDoc, slaveMaster)
-
-        // console.log(callData)
+        console.log(callData)
       } catch (error) {
         console.error('Error during test:', error)
       }
@@ -366,6 +367,46 @@ export default function PassportTests() {
     },
     [downloadResumable],
   )
+
+  const testCert = useCallback(async () => {
+    const [authAsset] = await Asset.loadAsync(require('@assets/certificates/AuthCert_0897A6C3.cer'))
+
+    if (!authAsset.localUri) throw new Error('authAsset local URI is not available')
+
+    const authAssetInfo = await FileSystem.getInfoAsync(authAsset.localUri)
+
+    if (!authAssetInfo.uri) throw new Error('authAsset local URI is not available')
+
+    const authFileContent = await FileSystem.readAsStringAsync(authAssetInfo.uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    })
+
+    const authContentBytes = Buffer.from(authFileContent, 'base64')
+
+    const authCertificate = AsnConvert.parse(authContentBytes, Certificate)
+
+    console.log({ authCertificate })
+
+    // ------------------------------------------------------------------------------------------------------------------------------
+
+    const [signingCertAsset] = await Asset.loadAsync(
+      require('@assets/certificates/SigningCert_084384FC.cer'),
+    )
+
+    if (!signingCertAsset.localUri) throw new Error('signingCertAsset local URI is not available')
+
+    const signingCertAssetInfo = await FileSystem.getInfoAsync(signingCertAsset.localUri)
+
+    if (!signingCertAssetInfo.uri) throw new Error('signingCertAsset local URI is not available')
+
+    const signingCertFileContent = await FileSystem.readAsStringAsync(signingCertAssetInfo.uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    })
+
+    const signingCertFileContentBytes = Buffer.from(signingCertFileContent, 'base64')
+
+    console.log(AsnConvert.parse(signingCertFileContentBytes, Certificate))
+  }, [])
 
   const testNoir = useCallback(async () => {
     // TODO: Replace with the correct circuit after its release
@@ -430,8 +471,7 @@ export default function PassportTests() {
         className='gap-3'
       >
         <View className='flex gap-4'>
-          <UiButton title='Test noir' onPress={testNoir} />
-          {/* <UiButton
+          <UiButton
             disabled={isSubmitting}
             onPress={() => test(Config.PASSPORT_1)}
             title='Test 1'
@@ -461,7 +501,7 @@ export default function PassportTests() {
             onPress={() => test(Config.PASSPORT_6)}
             title='Test 6'
           />
-          /> */}
+
           <UiButton disabled={isSubmitting} onPress={() => test('', testEDoc)} title='Test rsa' />
         </View>
       </UiScreenScrollable>
