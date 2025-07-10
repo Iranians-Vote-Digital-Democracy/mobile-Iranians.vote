@@ -10,7 +10,7 @@ import type { AuthStackScreenProps } from '@/route-types'
 import { authStore, walletStore } from '@/store'
 import { cn } from '@/theme'
 import { UiButton, UiCard, UiHorizontalDivider, UiIcon, UiScreenScrollable } from '@/ui'
-import { ControlledUiTextInput } from '@/ui/UiInput'
+import { ControlledUiInput } from '@/ui/UiInput'
 
 type Props = ViewProps & AuthStackScreenProps<'CreateWallet'>
 
@@ -105,7 +105,7 @@ export default function CreateWallet({ route }: Props) {
                 </Text>
               </UiCard>
             </View>
-            <ControlledUiTextInput
+            <ControlledUiInput
               name='privateKey'
               placeholder='Your private key'
               control={control}

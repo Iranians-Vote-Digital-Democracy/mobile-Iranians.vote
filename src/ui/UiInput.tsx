@@ -26,7 +26,7 @@ const UiInput = forwardRef<TextInput, Props>(
 
 export type ControlledInputProps<T extends FieldValues> = Props & UseControllerProps<T>
 
-export function ControlledUiTextInput<T extends FieldValues>({
+export function ControlledUiInput<T extends FieldValues>({
   name,
   control,
   rules,
