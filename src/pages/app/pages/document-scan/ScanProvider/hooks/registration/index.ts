@@ -25,16 +25,18 @@ import { IdentityItem } from '@/store/modules/identity/Identity'
 import { walletStore } from '@/store/modules/wallet'
 import { Registration__factory, StateKeeper } from '@/types'
 import { SparseMerkleTree } from '@/types/contracts/PoseidonSMT'
-import { Groth16VerifierHelper, Registration2 } from '@/types/contracts/Registration'
+import { Registration2 } from '@/types/contracts/Registration'
 import { getCircuitHashAlgorithm } from '@/utils/circuits/helpers'
-import { InidNoirRegistrationCircuit } from '@/utils/circuits/registration/inid-noir-registration-circuit'
-import { NoirRegistrationCircuit } from '@/utils/circuits/registration/noir-registration-circuit'
+import {
+  NoirEIDBasedRegistrationCircuit,
+  NoirEPassportBasedRegistrationCircuit,
+} from '@/utils/circuits/registration/noir-registration-circuit'
 import { EDocument, EID, EPassport } from '@/utils/e-document/e-document'
 import { ExtendedCertificate } from '@/utils/e-document/extended-cert'
 import { getPublicKeyFromEcParameters } from '@/utils/e-document/helpers/crypto'
 import { ECDSA_ALGO_PREFIX, Sod } from '@/utils/e-document/sod'
 
-import { useRegistrationIdentityProof } from './proof'
+import { useRegisterContracts } from './register-contracts'
 
 const ZERO_BYTES32_HEX = ethers.encodeBytes32String('')
 
@@ -44,7 +46,10 @@ type PassportInfo = {
 }
 
 export const useRegistration = () => {
+  const privateKey = walletStore.useWalletStore(state => state.privateKey)
   const publicKeyHash = walletStore.usePublicKeyHash()
+
+  const registerContracts = useRegisterContracts()
 
   // ----------------------------------------------------------------------------------------
 
@@ -70,12 +75,6 @@ export const useRegistration = () => {
   const registrationContractInterface = Registration__factory.createInterface()
 
   // ----------------------------------------------------------------------------------------
-
-  const registerIdentityProvers = useRegistrationIdentityProof({
-    setDownloadingProgress,
-    setIsLoaded,
-    setIsLoadFailed,
-  })
 
   const newBuildRegisterCertCallData = useCallback(
     async (CSCABytes: ArrayBuffer[], cert: ExtendedCertificate, masterCert: Certificate) => {
@@ -257,101 +256,18 @@ export const useRegistration = () => {
     [newBuildRegisterCertCallData, rmoEvmJsonRpcProvider],
   )
 
-  const newBuildRegisterCallData = useCallback(
-    (
-      identityItem: IdentityItem,
-      slaveCertSmtProof: SparseMerkleTree.ProofStructOutput,
-      isRevoked: boolean,
-    ) => {
-      if (identityItem.document instanceof EPassport) {
-        const circuit = new NoirRegistrationCircuit(identityItem.document)
-
-        const aaSignature = identityItem.document.getAASignature()
-
-        if (!aaSignature) throw new TypeError('AA signature is not defined')
-
-        const parts = circuit.name.split('_')
-
-        if (parts.length < 2) {
-          throw new Error('circuit name is in invalid format')
-        }
-
-        // ZKTypePrefix represerts the circuit zk type prefix
-        const ZKTypePrefix = 'Z_PER_PASSPORT'
-
-        const zkTypeSuffix = parts.slice(1).join('_') // support for multi-underscore suffix
-        const zkTypeName = `${ZKTypePrefix}_${zkTypeSuffix}`
-
-        const passport: Registration2.PassportStruct = {
-          dataType: identityItem.document.getAADataType(circuit.eDoc.sod.slaveCertificate.keySize),
-          zkType: keccak256(zkTypeName),
-          signature: aaSignature,
-          publicKey: (() => {
-            const aaPublicKey = identityItem.document.getAAPublicKey()
-
-            if (!aaPublicKey) return identityItem.passportKey
-
-            return aaPublicKey
-          })(),
-          passportHash: identityItem.passportHash,
-        }
-
-        const proofPoints: Groth16VerifierHelper.ProofPointsStruct = {
-          a: [
-            BigInt(identityItem.registrationProof.proof.pi_a[0]),
-            BigInt(identityItem.registrationProof.proof.pi_a[1]),
-          ],
-          b: [
-            [
-              BigInt(identityItem.registrationProof.proof.pi_b[0][0]),
-              BigInt(identityItem.registrationProof.proof.pi_b[0][1]),
-            ],
-            [
-              BigInt(identityItem.registrationProof.proof.pi_b[1][0]),
-              BigInt(identityItem.registrationProof.proof.pi_b[1][1]),
-            ],
-          ],
-          c: [
-            BigInt(identityItem.registrationProof.proof.pi_c[0]),
-            BigInt(identityItem.registrationProof.proof.pi_c[1]),
-          ],
-        }
-
-        if (isRevoked) {
-          return registrationContractInterface.encodeFunctionData('reissueIdentity', [
-            slaveCertSmtProof.root,
-            identityItem.pkIdentityHash,
-            identityItem.dg1Commitment,
-            passport,
-            proofPoints,
-          ])
-        }
-
-        return registrationContractInterface.encodeFunctionData('register', [
-          slaveCertSmtProof.root,
-          identityItem.pkIdentityHash,
-          identityItem.dg1Commitment,
-          passport,
-          proofPoints,
-        ])
-      }
-
-      if (identityItem.document instanceof EID) {
-        throw new TypeError('EID registration is not supported yet')
-      }
-
-      throw new TypeError('Unsupported document type for registration')
-    },
-    [registrationContractInterface],
-  )
-
   const requestRelayerRegisterMethod = useCallback(
     async (
       identityItem: IdentityItem,
       slaveCertSmtProof: SparseMerkleTree.ProofStructOutput,
       isRevoked: boolean,
     ) => {
-      const registerCallData = newBuildRegisterCallData(identityItem, slaveCertSmtProof, isRevoked)
+      // TODO: handle circom
+      const registerCallData = registerContracts.buildNoirRegisterCallData(
+        identityItem,
+        slaveCertSmtProof,
+        isRevoked,
+      )
 
       const { data } = await relayerRegister(registerCallData, Config.REGISTRATION_CONTRACT_ADDRESS)
 
@@ -361,7 +277,7 @@ export const useRegistration = () => {
 
       await tx.wait()
     },
-    [newBuildRegisterCallData, rmoEvmJsonRpcProvider],
+    [registerContracts, rmoEvmJsonRpcProvider],
   )
 
   const registerIdentity = useCallback(
@@ -602,25 +518,25 @@ export const useRegistration = () => {
         }
       }
 
+      const circuit = (() => {
+        if (tempEDoc instanceof EPassport) {
+          return new NoirEPassportBasedRegistrationCircuit(tempEDoc)
+        }
+
+        if (tempEDoc instanceof EID) {
+          return new NoirEIDBasedRegistrationCircuit(tempEDoc)
+        }
+
+        throw new TypeError('Unsupported document type for identity creation')
+      })()
+
       // TODO: prove in different thread
       const [regProof, getRegProofError] = await tryCatch(
-        (async () => {
-          if (tempEDoc instanceof EPassport) {
-            return registerIdentityProvers.getNoirIdentityRegProof(
-              slaveCertSmtProof,
-              new NoirRegistrationCircuit(tempEDoc),
-            )
-          }
-
-          if (tempEDoc instanceof EID) {
-            return registerIdentityProvers.getInidNoirIdentityRegProof(
-              slaveCertSmtProof,
-              new InidNoirRegistrationCircuit(tempEDoc),
-            )
-          }
-
-          throw new TypeError('Unsupported document type for identity creation')
-        })(),
+        circuit.prove({
+          skIdentity: BigInt(`0x${privateKey}`),
+          icaoRoot: BigInt(slaveCertSmtProof.root),
+          inclusionBranches: slaveCertSmtProof.siblings.map(el => BigInt(el)),
+        }),
       )
       if (getRegProofError) {
         throw new TypeError('Failed to get identity registration proof', getRegProofError)
@@ -646,7 +562,7 @@ export const useRegistration = () => {
 
       return identityItem
     },
-    [getSlaveCertSmtProof, registerCertificate, registerIdentity, registerIdentityProvers],
+    [getSlaveCertSmtProof, privateKey, registerCertificate, registerIdentity],
   )
 
   return {

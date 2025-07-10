@@ -273,9 +273,9 @@ export default function PassportTests() {
     } catch (error) {
       console.error('Error in testCert:', error)
       return
+    } finally {
+      setIsSubmitting(true)
     }
-
-    setIsSubmitting(false)
   }, [createIdentity])
 
   // const testNoir = useCallback(async () => {

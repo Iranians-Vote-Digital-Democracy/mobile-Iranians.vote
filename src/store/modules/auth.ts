@@ -1,6 +1,6 @@
 import { groth16Prove } from '@modules/rapidsnark-wrp'
 import { groth16ProveWithZKeyFilePath } from '@modules/rapidsnark-wrp'
-import type { ZKProof } from '@modules/witnesscalculator'
+import type { CircomZKProof } from '@modules/witnesscalculator'
 import { Buffer } from 'buffer'
 import { ethers } from 'ethers'
 import * as FileSystem from 'expo-file-system'
@@ -79,7 +79,7 @@ const useIsAuthorized = () => {
 const useAuthProof = (opts?: { byFilePath?: boolean }) => {
   const getPointsNullifier = walletStore.usePointsNullifier()
 
-  return async (privateKey: string): Promise<ZKProof> => {
+  return async (privateKey: string): Promise<CircomZKProof> => {
     const pkHex = `0x${privateKey}`
 
     const pointsNullifier = await getPointsNullifier(privateKey)

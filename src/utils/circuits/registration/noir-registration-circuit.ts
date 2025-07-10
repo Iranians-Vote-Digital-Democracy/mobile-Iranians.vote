@@ -1,20 +1,25 @@
 import { NoirCircuitParams, NoirZKProof } from '@modules/noir'
-import { ExternalCircuitParams } from '@modules/witnesscalculator'
+import { ExternalCircomCircuitParams } from '@modules/witnesscalculator'
 import { RSAPublicKey } from '@peculiar/asn1-rsa'
-import { toBigInt } from 'ethers'
+import { getBytes, toBigInt, zeroPadBytes } from 'ethers'
 
+import { tryCatch } from '@/helpers/try-catch'
 import { EPassport } from '@/utils/e-document/e-document'
 
 import { extractPubKey } from '../../e-document/helpers/misc'
 import { PrivateRegisterIdentityBuilderGroth16 } from '../types/RegisterIdentityBuilder'
-import { CircomRegistrationCircuit } from './circom-registration-circuit'
+import {
+  EIDBasedRegistrationCircuit,
+  EPassportBasedRegistrationCircuit,
+  RegistrationCircuit,
+} from './registration-circuit'
 
-export class NoirRegistrationCircuit extends CircomRegistrationCircuit {
+export class NoirEPassportBasedRegistrationCircuit extends EPassportBasedRegistrationCircuit {
   constructor(public eDoc: EPassport) {
     super(eDoc)
   }
 
-  public get circuitParams(): ExternalCircuitParams {
+  public get circuitParams(): ExternalCircomCircuitParams {
     throw new Error('Disabled for NoirRegistrationCircuit')
   }
 
@@ -50,21 +55,17 @@ export class NoirRegistrationCircuit extends CircomRegistrationCircuit {
         pubKey.modulus[0] === 0x00 ? pubKey.modulus.slice(1) : pubKey.modulus,
       )
 
-      reduction = CircomRegistrationCircuit.splitBigIntToChunks(
+      reduction = RegistrationCircuit.splitBigIntToChunks(
         120,
         defaultChunkedParams.chunk_number,
-        NoirRegistrationCircuit.computeBarretReduction(
+        NoirEPassportBasedRegistrationCircuit.computeBarretReduction(
           unpaddedModulus.length * 4 + 2,
           toBigInt(unpaddedModulus),
         ),
       )
     }
 
-    reduction = CircomRegistrationCircuit.splitBigIntToChunks(
-      120,
-      defaultChunkedParams.chunk_number,
-      0n,
-    )
+    reduction = RegistrationCircuit.splitBigIntToChunks(120, defaultChunkedParams.chunk_number, 0n)
 
     return { ...super.chunkedParams, reduction }
   }
@@ -94,5 +95,52 @@ export class NoirRegistrationCircuit extends CircomRegistrationCircuit {
     }
 
     return this.noirCircuitParams.prove(JSON.stringify(inputs), byteCode)
+  }
+}
+
+export class NoirEIDBasedRegistrationCircuit extends EIDBasedRegistrationCircuit {
+  public get noirCircuitParams(): NoirCircuitParams {
+    return NoirCircuitParams.fromName('registerIdentity_inid_ca')
+  }
+
+  async prove(params: {
+    skIdentity: bigint
+    icaoRoot: bigint
+    inclusionBranches: bigint[]
+  }): Promise<NoirZKProof> {
+    await NoirCircuitParams.downloadTrustedSetup()
+
+    const byteCode = await this.noirCircuitParams.downloadByteCode()
+
+    const inputs = {
+      tbs: Array.from(getBytes(zeroPadBytes(new Uint8Array(this.tbsRaw), 1200))).map(String),
+      pk: RegistrationCircuit.splitBigIntToChunks(120, 18, toBigInt(this.pubKey)),
+      reduction: RegistrationCircuit.splitBigIntToChunks(
+        120,
+        18,
+        NoirEPassportBasedRegistrationCircuit.computeBarretReduction(
+          2048 + 2,
+          toBigInt(this.pubKey),
+        ),
+      ),
+      len: String(this.tbsRaw.byteLength),
+      signature: RegistrationCircuit.splitBigIntToChunks(
+        120,
+        18,
+        toBigInt(new Uint8Array(this.eID.sigCertificate.certificate.signatureValue)),
+      ),
+      icao_root: String(params.icaoRoot),
+      inclusion_branches: params.inclusionBranches.map(String),
+      sk_identity: String(params.skIdentity),
+    }
+
+    const [proof, getProofError] = await tryCatch(
+      this.noirCircuitParams.prove(JSON.stringify(inputs), byteCode),
+    )
+    if (getProofError) {
+      throw getProofError
+    }
+
+    return proof
   }
 }
