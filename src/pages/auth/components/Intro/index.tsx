@@ -141,6 +141,7 @@ export default function Intro() {
         <UiButton
           className={cn('mb-5 w-full')}
           title={translate('auth.intro.next-btn')}
+          size='large'
           onPress={() => {
             bottomSheet.present()
           }}
