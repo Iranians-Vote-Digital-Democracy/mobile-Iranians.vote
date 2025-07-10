@@ -9,14 +9,8 @@ import { useCopyToClipboard, useForm, useLoading } from '@/hooks'
 import type { AuthStackScreenProps } from '@/route-types'
 import { authStore, walletStore } from '@/store'
 import { cn } from '@/theme'
-import {
-  ControlledUiTextField,
-  UiButton,
-  UiCard,
-  UiHorizontalDivider,
-  UiIcon,
-  UiScreenScrollable,
-} from '@/ui'
+import { UiButton, UiCard, UiHorizontalDivider, UiIcon, UiScreenScrollable } from '@/ui'
+import { ControlledUiTextInput } from '@/ui/UiInput'
 
 type Props = ViewProps & AuthStackScreenProps<'CreateWallet'>
 
@@ -111,7 +105,7 @@ export default function CreateWallet({ route }: Props) {
                 </Text>
               </UiCard>
             </View>
-            <ControlledUiTextField
+            <ControlledUiTextInput
               name='privateKey'
               placeholder='Your private key'
               control={control}
