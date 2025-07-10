@@ -53,13 +53,18 @@ export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>
     >
       <View className={cn('flex-1')}>
         <View className={cn('my-auto flex w-full items-center gap-4 p-5')}>
-          <Text className={cn('text-center text-textPrimary typography-h4')}>
-            {translate('set-passcode.title')}
-          </Text>
+          <View>
+            <Text className={cn('text-center text-textPrimary typography-h4')}>
+              {translate('set-passcode.title')}
+            </Text>
+            <Text className={cn('typography-body-3 text-center text-textSecondary')}>
+              {translate('set-passcode.subtitle')}
+            </Text>
+          </View>
 
-          <View className='flex h-[16] flex-row items-center gap-2'>
+          <View className='flex h-[16] flex-row items-center gap-4'>
             {Array.from({ length: passcode.length }).map((_, i) => (
-              <View key={i} className='size-[16] rounded-full bg-textPrimary' />
+              <View key={i} className='size-[16] rounded-full bg-primaryMain' />
             ))}
           </View>
         </View>
