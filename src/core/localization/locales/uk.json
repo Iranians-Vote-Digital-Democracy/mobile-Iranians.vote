@@ -10,6 +10,12 @@
         "subtitle": "For those who seek justice",
         "title": "Anonymous votes"
       }
+    },
+    "sign-in": {
+      "tip": "Provide your private key to log in. Remember, only you should ever know this key."
+    },
+    "sign-up": {
+      "tip": "Please store the private key safely and do not share it with anyone. If you lose this key, you will not be able to recover the account and will lose access forever."
     }
   },
   "enable-biometrics": {
