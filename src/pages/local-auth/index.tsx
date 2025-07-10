@@ -36,7 +36,7 @@ export default function LocalAuthLayout({}: RootStackScreenProps<'LocalAuth'>) {
         name='EnablePasscode'
         component={EnablePasscodeScreen}
         options={{
-          headerShown: false,
+          headerShown: false, //maybe not needed because close button
         }}
       />
       <Stack.Screen
