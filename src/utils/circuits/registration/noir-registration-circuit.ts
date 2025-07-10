@@ -1,4 +1,4 @@
-import { NoirCircuitParams } from '@modules/noir'
+import { NoirCircuitParams, NoirZKProof } from '@modules/noir'
 import { ExternalCircuitParams } from '@modules/witnesscalculator'
 import { RSAPublicKey } from '@peculiar/asn1-rsa'
 import { toBigInt } from 'ethers'
@@ -6,7 +6,6 @@ import { toBigInt } from 'ethers'
 import { EPassport } from '@/utils/e-document/e-document'
 
 import { extractPubKey } from '../../e-document/helpers/misc'
-import { ZKProof } from '../types/common'
 import { PrivateRegisterIdentityBuilderGroth16 } from '../types/RegisterIdentityBuilder'
 import { CircomRegistrationCircuit } from './circom-registration-circuit'
 
@@ -74,7 +73,7 @@ export class NoirRegistrationCircuit extends CircomRegistrationCircuit {
     skIdentity: bigint
     icaoRoot: bigint
     inclusionBranches: bigint[]
-  }): Promise<ZKProof> {
+  }): Promise<NoirZKProof> {
     await NoirCircuitParams.downloadTrustedSetup()
 
     const byteCode = await this.noirCircuitParams.downloadByteCode()
@@ -94,8 +93,6 @@ export class NoirRegistrationCircuit extends CircomRegistrationCircuit {
       inclusion_branches: params.inclusionBranches,
     }
 
-    const proof = await this.noirCircuitParams.prove(JSON.stringify(inputs), byteCode)
-
-    return JSON.parse(proof) as ZKProof
+    return this.noirCircuitParams.prove(JSON.stringify(inputs), byteCode)
   }
 }

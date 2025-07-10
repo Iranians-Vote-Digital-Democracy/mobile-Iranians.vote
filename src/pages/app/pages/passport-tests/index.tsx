@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable unused-imports/no-unused-vars */
 import { buildCertTreeAndGenProof, parseLdifString } from '@lukachi/rn-csca'
-import { NoirCircuitParams } from '@modules/noir'
 import { ECParameters } from '@peculiar/asn1-ecc'
 import { id_pkcs_1, RSAPublicKey } from '@peculiar/asn1-rsa'
 import { AsnConvert } from '@peculiar/asn1-schema'
@@ -10,21 +9,21 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { getBytes, keccak256, toBeArray } from 'ethers'
 import { Asset } from 'expo-asset'
 import * as FileSystem from 'expo-file-system'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { Config } from '@/config'
-import { tryCatch } from '@/helpers/try-catch'
 import AppContainer from '@/pages/app/components/AppContainer'
 import { useAppPaddings } from '@/theme'
 import { Registration__factory } from '@/types/contracts/factories/Registration__factory'
 import { Registration2 } from '@/types/contracts/Registration'
 import { UiButton, UiScreenScrollable } from '@/ui'
 import { getCircuitHashAlgorithm } from '@/utils/circuits/helpers'
-import { ECDSA_ALGO_PREFIX, Sod } from '@/utils/e-document'
+import { ECDSA_ALGO_PREFIX, EID, Sod } from '@/utils/e-document'
 import { ExtendedCertificate } from '@/utils/e-document/extended-cert'
 import { getPublicKeyFromEcParameters } from '@/utils/e-document/helpers/crypto'
+
+import { useRegistration } from '../document-scan/ScanProvider/hooks/registration'
 
 const registrationContractInterface = Registration__factory.createInterface()
 
@@ -188,6 +187,20 @@ const downloadUrl =
   'https://www.googleapis.com/download/storage/v1/b/rarimo-temp/o/icaopkd-list.ldif?generation=1715355629405816&alt=media'
 const icaopkdFileUri = `${FileSystem.documentDirectory}/icaopkd-list.ldif`
 
+const getIcaoPkdLdifFile = async () => {
+  const downloadResumable = FileSystem.createDownloadResumable(downloadUrl, icaopkdFileUri, {})
+
+  if (!(await FileSystem.getInfoAsync(icaopkdFileUri)).exists) {
+    await downloadResumable.downloadAsync()
+  }
+
+  const icaoLdif = await FileSystem.readAsStringAsync(icaopkdFileUri, {
+    encoding: FileSystem.EncodingType.UTF8,
+  })
+
+  return parseLdifString(icaoLdif)
+}
+
 function decToHex(d: string): string {
   return '0x' + BigInt(d).toString(16)
 }
@@ -203,126 +216,118 @@ export default function PassportTests() {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const downloadResumable = useMemo(() => {
-    return FileSystem.createDownloadResumable(downloadUrl, icaopkdFileUri, {})
-  }, [])
+  const { createIdentity } = useRegistration()
 
   const testCert = useCallback(async () => {
-    const [authAsset] = await Asset.loadAsync(require('@assets/certificates/AuthCert_0897A6C3.cer'))
+    setIsSubmitting(true)
+    try {
+      const [authAsset] = await Asset.loadAsync(
+        require('@assets/certificates/AuthCert_0897A6C3.cer'),
+      )
 
-    if (!authAsset.localUri) throw new Error('authAsset local URI is not available')
+      if (!authAsset.localUri) throw new Error('authAsset local URI is not available')
 
-    const authAssetInfo = await FileSystem.getInfoAsync(authAsset.localUri)
+      const authAssetInfo = await FileSystem.getInfoAsync(authAsset.localUri)
 
-    if (!authAssetInfo.uri) throw new Error('authAsset local URI is not available')
+      if (!authAssetInfo.uri) throw new Error('authAsset local URI is not available')
 
-    const authFileContent = await FileSystem.readAsStringAsync(authAssetInfo.uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    })
+      const authFileContent = await FileSystem.readAsStringAsync(authAssetInfo.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      })
 
-    const authContentBytes = Buffer.from(authFileContent, 'base64')
+      const authContentBytes = Buffer.from(authFileContent, 'base64')
 
-    const authCertificate = AsnConvert.parse(authContentBytes, Certificate)
+      const authCertificate = new ExtendedCertificate(
+        AsnConvert.parse(authContentBytes, Certificate),
+      )
 
-    console.log({ authCertificate })
+      // ------------------------------------------------------------------------------------------------------------------------------
 
-    // ------------------------------------------------------------------------------------------------------------------------------
+      const [signingCertAsset] = await Asset.loadAsync(
+        require('@assets/certificates/SigningCert_084384FC.cer'),
+      )
 
-    const [signingCertAsset] = await Asset.loadAsync(
-      require('@assets/certificates/SigningCert_084384FC.cer'),
-    )
+      if (!signingCertAsset.localUri) throw new Error('signingCertAsset local URI is not available')
 
-    if (!signingCertAsset.localUri) throw new Error('signingCertAsset local URI is not available')
+      const signingCertAssetInfo = await FileSystem.getInfoAsync(signingCertAsset.localUri)
 
-    const signingCertAssetInfo = await FileSystem.getInfoAsync(signingCertAsset.localUri)
+      if (!signingCertAssetInfo.uri) throw new Error('signingCertAsset local URI is not available')
 
-    if (!signingCertAssetInfo.uri) throw new Error('signingCertAsset local URI is not available')
+      const signingCertFileContent = await FileSystem.readAsStringAsync(signingCertAssetInfo.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      })
 
-    const signingCertFileContent = await FileSystem.readAsStringAsync(signingCertAssetInfo.uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    })
+      const signingCertFileContentBytes = Buffer.from(signingCertFileContent, 'base64')
 
-    const signingCertFileContentBytes = Buffer.from(signingCertFileContent, 'base64')
+      const sigCertificate = new ExtendedCertificate(
+        AsnConvert.parse(signingCertFileContentBytes, Certificate),
+      )
 
-    const sigCert = new ExtendedCertificate(
-      AsnConvert.parse(signingCertFileContentBytes, Certificate),
-    )
+      // ------------------------------------------------------------------------------------------------------------------------------
 
-    if (!(await FileSystem.getInfoAsync(icaopkdFileUri)).exists) {
-      await downloadResumable.downloadAsync()
-    }
+      const eID = new EID(sigCertificate, authCertificate)
 
-    const icaoLdif = await FileSystem.readAsStringAsync(icaopkdFileUri, {
-      encoding: FileSystem.EncodingType.UTF8,
-    })
-
-    console.log(icaoLdif.length)
-
-    const CSCACertBytes = parseLdifString(icaoLdif)
-
-    const [slaveMaster, getSlaveMasterError] = await tryCatch(sigCert.getSlaveMaster(CSCACertBytes))
-    if (getSlaveMasterError) {
-      console.error('Error getting slave master:', getSlaveMasterError)
+      await createIdentity(eID, {
+        onRevocation: () => {},
+      })
+    } catch (error) {
+      console.error('Error in testCert:', error)
       return
     }
 
-    console.log({ slaveMaster })
+    setIsSubmitting(false)
+  }, [createIdentity])
 
-    const callData = await newBuildRegisterCertCallData(CSCACertBytes, sigCert, slaveMaster)
+  // const testNoir = useCallback(async () => {
+  //   // TODO: Replace with the correct circuit after its release
+  //   const noirInstance = NoirCircuitParams.fromName('registerIdentity_26_512_3_3_336_248_NA')
+  //   const RAW_TEST_INPUTS = JSON.parse(Config.TEST_INPUTS) as {
+  //     dg1: string[]
+  //     dg15: string[]
+  //     ec: string[]
+  //     icao_root: string
+  //     inclusion_branches: string[]
+  //     pk: string[]
+  //     reduction_pk: string[]
+  //     sa: string[]
+  //     sig: string[]
+  //     sk_identity: string
+  //   }
 
-    console.log(callData)
-  }, [downloadResumable])
+  //   /**
+  //    * IMPORTANT: All values in HEX_INPUTS must be hexadecimal strings
+  //    * and include the '0x' prefix.
+  //    */
+  //   const HEX_INPUTS = {
+  //     dg1: RAW_TEST_INPUTS.dg1.map(decToHex),
+  //     dg15: RAW_TEST_INPUTS.dg15.map(decToHex),
+  //     ec: RAW_TEST_INPUTS.ec.map(decToHex),
+  //     icao_root: ensureHex(RAW_TEST_INPUTS.icao_root),
+  //     inclusion_branches: RAW_TEST_INPUTS.inclusion_branches.map(decToHex),
+  //     pk: RAW_TEST_INPUTS.pk.map(ensureHex),
+  //     reduction_pk: RAW_TEST_INPUTS.reduction_pk.map(ensureHex),
+  //     sa: RAW_TEST_INPUTS.sa.map(decToHex),
+  //     sig: RAW_TEST_INPUTS.sig.map(ensureHex),
+  //     sk_identity: ensureHex(RAW_TEST_INPUTS.sk_identity),
+  //   }
 
-  const testNoir = useCallback(async () => {
-    // TODO: Replace with the correct circuit after its release
-    const noirInstance = NoirCircuitParams.fromName('registerIdentity_26_512_3_3_336_248_NA')
-    const RAW_TEST_INPUTS = JSON.parse(Config.TEST_INPUTS) as {
-      dg1: string[]
-      dg15: string[]
-      ec: string[]
-      icao_root: string
-      inclusion_branches: string[]
-      pk: string[]
-      reduction_pk: string[]
-      sa: string[]
-      sig: string[]
-      sk_identity: string
-    }
+  //   await NoirCircuitParams.downloadTrustedSetup({
+  //     // TODO: Add download trusted setup UI progress if needed
+  //     // onDownloadingProgress: downloadProgress => {
+  //     //   console.log('progress:', downloadProgress)
+  //     // },
+  //   })
 
-    /**
-     * IMPORTANT: All values in HEX_INPUTS must be hexadecimal strings
-     * and include the '0x' prefix.
-     */
-    const HEX_INPUTS = {
-      dg1: RAW_TEST_INPUTS.dg1.map(decToHex),
-      dg15: RAW_TEST_INPUTS.dg15.map(decToHex),
-      ec: RAW_TEST_INPUTS.ec.map(decToHex),
-      icao_root: ensureHex(RAW_TEST_INPUTS.icao_root),
-      inclusion_branches: RAW_TEST_INPUTS.inclusion_branches.map(decToHex),
-      pk: RAW_TEST_INPUTS.pk.map(ensureHex),
-      reduction_pk: RAW_TEST_INPUTS.reduction_pk.map(ensureHex),
-      sa: RAW_TEST_INPUTS.sa.map(decToHex),
-      sig: RAW_TEST_INPUTS.sig.map(ensureHex),
-      sk_identity: ensureHex(RAW_TEST_INPUTS.sk_identity),
-    }
+  //   // TODO: replace test `@assets/noir_dl.json` with noirInstance.downloadByteCode()
+  //   // after its release
+  //   // const bytesCodeString = await noirInstance.downloadByteCode()
+  //   const bytesCodeString = JSON.stringify(require('@assets/noir_dl.json'))
 
-    await NoirCircuitParams.downloadTrustedSetup({
-      // TODO: Add download trusted setup UI progress if needed
-      // onDownloadingProgress: downloadProgress => {
-      //   console.log('progress:', downloadProgress)
-      // },
-    })
+  //   const inputsJson = JSON.stringify(HEX_INPUTS)
 
-    // TODO: replace test `@assets/noir_dl.json` with noirInstance.downloadByteCode()
-    // after its release
-    // const bytesCodeString = await noirInstance.downloadByteCode()
-    const bytesCodeString = JSON.stringify(require('@assets/noir_dl.json'))
-
-    const inputsJson = JSON.stringify(HEX_INPUTS)
-
-    const proof = await noirInstance.prove(inputsJson, bytesCodeString)
-    console.log('Proof:', proof)
-  }, [])
+  //   const proof = await noirInstance.prove(inputsJson, bytesCodeString)
+  //   console.log('Proof:', proof)
+  // }, [])
 
   return (
     <AppContainer>

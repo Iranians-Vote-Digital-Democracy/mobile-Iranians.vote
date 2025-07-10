@@ -1,10 +1,10 @@
+import type { ZKProof } from '@modules/witnesscalculator'
 import { getBigInt, JsonRpcProvider, zeroPadValue } from 'ethers'
 import SuperJSON from 'superjson'
 
 import { RARIMO_CHAINS } from '@/api/modules/rarimo'
 import { Config } from '@/config'
 import { createStateKeeperContract } from '@/helpers/contracts'
-import type { ZKProof } from '@/utils/circuits/types/common'
 import { EDocument, EPassport } from '@/utils/e-document/e-document'
 
 // TODO: add checking if the passport need to be revoked

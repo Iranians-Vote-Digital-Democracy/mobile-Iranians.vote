@@ -1,6 +1,4 @@
 import { babyJub, ffUtils, Hex, Poseidon, poseidon, PublicKey } from '@iden3/js-crypto'
-import { Buffer } from 'buffer'
-import { randomBytes } from 'ethers'
 import { useMemo } from 'react'
 import { create } from 'zustand'
 import { combine, createJSONStorage, persist } from 'zustand/middleware'
@@ -43,7 +41,7 @@ const useWalletStore = create(
 
 const useGeneratePrivateKey = () => {
   return async () => {
-    return Buffer.from(randomBytes(32)).toString('hex')
+    return babyJub.F.random().toString(16)
   }
 }
 

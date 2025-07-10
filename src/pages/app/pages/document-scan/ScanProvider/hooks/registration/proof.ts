@@ -1,4 +1,5 @@
 import { groth16ProveWithZKeyFilePath } from '@modules/rapidsnark-wrp'
+import type { ZKProof } from '@modules/witnesscalculator'
 import { useCallback } from 'react'
 
 import { walletStore } from '@/store/modules/wallet'
@@ -6,7 +7,6 @@ import { SparseMerkleTree } from '@/types/contracts/PoseidonSMT'
 import { CircomRegistrationCircuit } from '@/utils/circuits/registration/circom-registration-circuit'
 import { InidNoirRegistrationCircuit } from '@/utils/circuits/registration/inid-noir-registration-circuit'
 import { NoirRegistrationCircuit } from '@/utils/circuits/registration/noir-registration-circuit'
-import type { ZKProof } from '@/utils/circuits/types/common'
 
 export const useRegistrationIdentityProof = (circuitLoadingOpts: {
   setDownloadingProgress: (progress: string) => void

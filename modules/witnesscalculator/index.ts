@@ -3,6 +3,18 @@ import WitnesscalculatorModule from './src/WitnesscalculatorModule'
 import * as FileSystem from 'expo-file-system'
 import { unzip } from 'react-native-zip-archive'
 
+export type ZKProof = {
+  proof: ProofData
+  pub_signals: string[]
+}
+
+export type ProofData = {
+  pi_a: string[]
+  pi_b: string[][]
+  pi_c: string[]
+  protocol: string
+}
+
 class CircuitParams {
   constructor(
     public name: string,

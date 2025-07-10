@@ -1,4 +1,4 @@
-import { buildCertTreeAndGenProof, parseLdifString } from '@lukachi/rn-csca'
+import { buildCertTreeAndGenProof, parsePemString } from '@lukachi/rn-csca'
 import { scanDocument } from '@modules/e-document'
 import { ECParameters } from '@peculiar/asn1-ecc'
 import { id_pkcs_1, RSAPublicKey } from '@peculiar/asn1-rsa'
@@ -6,6 +6,7 @@ import { AsnConvert } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
 import { AxiosError } from 'axios'
 import { ethers, getBytes, JsonRpcProvider, keccak256, toBeArray, zeroPadValue } from 'ethers'
+import { Asset } from 'expo-asset'
 import * as FileSystem from 'expo-file-system'
 import { FieldRecords } from 'mrz'
 import { useCallback, useMemo, useRef, useState } from 'react'
@@ -42,16 +43,8 @@ type PassportInfo = {
   identityInfo_: StateKeeper.IdentityInfoStructOutput
 }
 
-const icaoDownloadUrl =
-  'https://www.googleapis.com/download/storage/v1/b/rarimo-temp/o/icaopkd-list.ldif?generation=1715355629405816&alt=media'
-const icaoPkdFileUri = `${FileSystem.documentDirectory}/icaopkd-list.ldif`
-
 export const useRegistration = () => {
   const publicKeyHash = walletStore.usePublicKeyHash()
-
-  const downloadResumable = useMemo(() => {
-    return FileSystem.createDownloadResumable(icaoDownloadUrl, icaoPkdFileUri, {})
-  }, [])
 
   // ----------------------------------------------------------------------------------------
 
@@ -248,7 +241,13 @@ export const useRegistration = () => {
       } catch (error) {
         const axiosError = error as AxiosError
 
-        if (JSON.stringify(axiosError.response?.data)?.includes('the key already exists')) {
+        const stringifiedError = JSON.stringify(axiosError.response?.data)
+
+        if (
+          stringifiedError?.includes('the key already exists') &&
+          // TODO: remove once contracts got fixed
+          stringifiedError?.includes('code = Unknown desc = execution reverted')
+        ) {
           throw new CertificateAlreadyRegisteredError()
         }
 
@@ -554,23 +553,34 @@ export const useRegistration = () => {
         }
 
         if (tempEDoc instanceof EID) {
-          return tempEDoc.sigCertificate
+          return tempEDoc.authCertificate
         }
 
         throw new TypeError('Unsupported document type for identity creation')
       })()
 
-      if (!(await FileSystem.getInfoAsync(icaoPkdFileUri)).exists) {
-        await downloadResumable.downloadAsync()
-      }
+      const [CSCAPemAsset] = await Asset.loadAsync(
+        require('@assets/certificates/master_000316.pem'),
+      )
 
-      const icaoLdif = await FileSystem.readAsStringAsync(icaoPkdFileUri, {
+      if (!CSCAPemAsset.localUri) throw new Error('CSCA cert asset local URI is not available')
+
+      const CSCAPemFileInfo = await FileSystem.getInfoAsync(CSCAPemAsset.localUri)
+
+      if (!CSCAPemFileInfo.exists) throw new Error('CSCA cert file does not exist')
+
+      const CSCAPemFileContent = await FileSystem.readAsStringAsync(CSCAPemFileInfo.uri, {
         encoding: FileSystem.EncodingType.UTF8,
       })
 
-      const CSCACertBytes = parseLdifString(icaoLdif)
+      const CSCACertBytes = parsePemString(CSCAPemFileContent)
 
-      const slaveMaster = await targetCertificate.getSlaveMaster(CSCACertBytes)
+      const [slaveMaster, getSlaveMasterError] = await tryCatch(
+        targetCertificate.getSlaveMaster(CSCACertBytes),
+      )
+      if (getSlaveMasterError) {
+        throw new TypeError('Failed to get slave master certificate', getSlaveMasterError)
+      }
 
       const [slaveCertSmtProof, getSlaveCertSmtProofError] = await tryCatch(
         getSlaveCertSmtProof(targetCertificate),
@@ -615,6 +625,7 @@ export const useRegistration = () => {
       if (getRegProofError) {
         throw new TypeError('Failed to get identity registration proof', getRegProofError)
       }
+
       const identityItem = new IdentityItem(tempEDoc, regProof)
 
       const [passportInfo, getPassportInfoError] = await tryCatch(identityItem.getPassportInfo())
@@ -635,13 +646,7 @@ export const useRegistration = () => {
 
       return identityItem
     },
-    [
-      downloadResumable,
-      getSlaveCertSmtProof,
-      registerCertificate,
-      registerIdentity,
-      registerIdentityProvers,
-    ],
+    [getSlaveCertSmtProof, registerCertificate, registerIdentity, registerIdentityProvers],
   )
 
   return {
