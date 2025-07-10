@@ -10436,7 +10436,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-status-bar@npm:~2.0.0":
+"expo-status-bar@npm:~2.0.1":
   version: 2.0.1
   resolution: "expo-status-bar@npm:2.0.1"
   peerDependencies:
@@ -17202,9 +17202,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-svg@npm:15.9.0":
-  version: 15.9.0
-  resolution: "react-native-svg@npm:15.9.0"
+"react-native-svg@npm:^15.12.0":
+  version: 15.12.0
+  resolution: "react-native-svg@npm:15.12.0"
   dependencies:
     css-select: "npm:^5.1.0"
     css-tree: "npm:^1.1.3"
@@ -17212,7 +17212,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10/10c2c5e0239c8a90dab95fc29e306852d3b8a3318d3930c1ab0ac03853baed8fb7f3bb5299cc367b83a9e67ddf8ebd5cdda8cb0878c3394799d112c7c9979db6
+  checksum: 10/e7df04154fcb76a5a7b0b4e376395f44cc4b90ca6df9d04cff8835546b0a501acf31c2d468742f4accf9ba6fe9e5efd8e5880133d518ad6fc1f3164d79674c8f
   languageName: node
   linkType: hard
 
@@ -19457,7 +19457,7 @@ __metadata:
     expo-secure-store: "npm:~14.0.0"
     expo-sharing: "npm:~13.0.1"
     expo-splash-screen: "npm:^0.29.24"
-    expo-status-bar: "npm:~2.0.0"
+    expo-status-bar: "npm:~2.0.1"
     expo-system-ui: "npm:~4.0.6"
     expo-updates: "npm:~0.27.4"
     expo-web-browser: "npm:~14.0.1"
@@ -19495,7 +19495,7 @@ __metadata:
     react-native-restart: "npm:^0.0.27"
     react-native-safe-area-context: "npm:4.14.0"
     react-native-screens: "npm:4.9.0"
-    react-native-svg: "npm:15.9.0"
+    react-native-svg: "npm:^15.12.0"
     react-native-svg-transformer: "npm:^1.5.0"
     react-native-toast-message: "npm:^2.2.0"
     react-native-vision-camera: "npm:4.6.3"

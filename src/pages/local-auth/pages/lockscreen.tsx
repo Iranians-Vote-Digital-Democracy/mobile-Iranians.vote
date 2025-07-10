@@ -57,7 +57,7 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
     state => state.tryUnlockWithPasscode,
   )
 
-  // const { unlockWithBiometrics } = useUnlockWithBiometrics()
+  const { unlockWithBiometrics } = useUnlockWithBiometrics()
 
   const navigation = useNavigation()
 
@@ -162,11 +162,11 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
               value={passcode}
               setValue={handleSetPasscode}
               // TODO: is it necessary? The BiometricsLockScreen will handle it
-              // extra={
-              //   <Pressable onPress={unlockWithBiometrics}>
-              //     <BiometricsIcon size={20} />
-              //   </Pressable>
-              // }
+              extra={
+                <Pressable onPress={unlockWithBiometrics}>
+                  <BiometricsIcon size={32} />
+                </Pressable>
+              }
             />
             <UiButton
               variant='outlined'

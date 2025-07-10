@@ -1,9 +1,10 @@
 import { BottomSheetView } from '@gorhom/bottom-sheet'
 import { useNavigation } from '@react-navigation/native'
 import { useCallback, useMemo, useRef } from 'react'
-import { Dimensions, Text, View } from 'react-native'
+import { Dimensions, Image, Text, View } from 'react-native'
+import { useSharedValue } from 'react-native-reanimated'
 import type { ICarouselInstance } from 'react-native-reanimated-carousel'
-import Carousel from 'react-native-reanimated-carousel'
+import Carousel, { Pagination } from 'react-native-reanimated-carousel'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { translate } from '@/core'
@@ -13,7 +14,6 @@ import {
   UiBottomSheet,
   UiButton,
   UiHorizontalDivider,
-  UiIcon,
   UiScreenScrollable,
   useUiBottomSheet,
 } from '@/ui'
@@ -31,32 +31,31 @@ export default function Intro() {
   const ref = useRef<ICarouselInstance>(null)
 
   const bottomSheet = useUiBottomSheet()
-
+  const progress = useSharedValue<number>(0)
   const navigation = useNavigation()
-
   const steps = useMemo(() => {
     return [
       {
         title: translate('auth.intro.step-1.title'),
         subtitle: translate('auth.intro.step-1.subtitle'),
-        media: <UiIcon customIcon='starFillIcon' className='size-[150px] text-textSecondary' />,
+        media: (
+          <Image
+            source={require('@assets/images/bg-welcome-screen.png')}
+            resizeMode='contain'
+            className='size-[400px] justify-self-center'
+          />
+        ),
       },
       {
         title: translate('auth.intro.step-2.title'),
         subtitle: translate('auth.intro.step-2.subtitle'),
-        media: <UiIcon customIcon='sealCheckIcon' className='size-[150px] text-textSecondary' />,
-      },
-      {
-        title: translate('auth.intro.step-3.title'),
-        subtitle: translate('auth.intro.step-3.subtitle'),
         media: (
-          <UiIcon customIcon='suitcaseSimpleFillIcon' className='size-[150px] text-textSecondary' />
+          <Image
+            source={require('@assets/images/bg-welcome-screen.png')}
+            resizeMode='contain'
+            className='size-[400px] justify-self-center'
+          />
         ),
-      },
-      {
-        title: translate('auth.intro.step-4.title'),
-        subtitle: translate('auth.intro.step-4.subtitle'),
-        media: <UiIcon customIcon='sunIcon' className='size-[150px] text-textSecondary' />,
       },
     ]
   }, [])
@@ -90,6 +89,8 @@ export default function Intro() {
           loop={false}
           autoPlay={true}
           autoPlayInterval={5_000}
+          pagingEnabled={true}
+          onProgressChange={progress}
           renderItem={({ index }) => (
             <StepLayout
               className='flex-1'
@@ -99,6 +100,37 @@ export default function Intro() {
             />
           )}
         />
+        <View className='mt-6 w-full items-center'>
+          <Pagination.Custom<{ color: string }>
+            progress={progress}
+            data={steps.map(() => ({ color: palette.textPrimary }))}
+            dotStyle={{
+              width: 4,
+              height: 4,
+              borderRadius: 999,
+              backgroundColor: palette.componentPrimary,
+            }}
+            activeDotStyle={{
+              overflow: 'hidden',
+              width: 8,
+              height: 8,
+              backgroundColor: palette.primaryDark,
+            }}
+            containerStyle={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: 20,
+              gap: 8,
+              backgroundColor: palette.backgroundContainer,
+              borderRadius: 999,
+              overflow: 'hidden',
+              marginBottom: 32,
+              paddingHorizontal: 8,
+            }}
+            horizontal
+          />
+        </View>
       </View>
 
       <View className='p-5'>
@@ -107,8 +139,9 @@ export default function Intro() {
 
       <View className='flex flex-col px-5'>
         <UiButton
-          className={cn('w-full')}
+          className={cn('mb-5 w-full')}
           title={translate('auth.intro.next-btn')}
+          size='large'
           onPress={() => {
             bottomSheet.present()
           }}
@@ -120,7 +153,7 @@ export default function Intro() {
           <BottomSheetHeader
             title='Authorization'
             dismiss={bottomSheet.dismiss}
-            className='px-5 text-center'
+            className='px-5 text-center text-textPrimary typography-h6'
           />
         }
         ref={bottomSheet.ref}
@@ -130,14 +163,22 @@ export default function Intro() {
         }}
       >
         <BottomSheetView style={{ paddingBottom: insets.bottom }}>
-          <View className={cn('py-0, flex flex-col items-center gap-4 p-5')}>
+          <View className={cn('py-0, flex flex-col gap-4 p-5')}>
+            <Text className='text-textSecondary typography-body3'>Choose a preferred method</Text>
             <UiHorizontalDivider />
-
-            <Text className='text-textSecondary typography-body2'>Choose a preferred method</Text>
-
             <View className='mt-auto flex w-full flex-col gap-2'>
-              <UiButton size='large' title='Create a new profile' onPress={handleCreatePK} />
-              <UiButton size='large' title='Re-activate old profile' onPress={handleImportPK} />
+              <UiButton
+                size='large'
+                leadingIconProps={{ customIcon: 'userPlusIcon' }}
+                title='Create a new profile'
+                onPress={handleCreatePK}
+              />
+              <UiButton
+                size='large'
+                leadingIconProps={{ customIcon: 'share1Icon' }}
+                title='Re-activate old profile'
+                onPress={handleImportPK}
+              />
             </View>
           </View>
         </BottomSheetView>

@@ -4,19 +4,13 @@ import type { ViewProps } from 'react-native'
 import { Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { ErrorHandler } from '@/core'
+import { ErrorHandler, translate } from '@/core'
 import { useCopyToClipboard, useForm, useLoading } from '@/hooks'
 import type { AuthStackScreenProps } from '@/route-types'
 import { authStore, walletStore } from '@/store'
 import { cn } from '@/theme'
-import {
-  ControlledUiTextField,
-  UiButton,
-  UiCard,
-  UiHorizontalDivider,
-  UiIcon,
-  UiScreenScrollable,
-} from '@/ui'
+import { UiButton, UiCard, UiHorizontalDivider, UiIcon, UiScreenScrollable } from '@/ui'
+import { ControlledUiInput } from '@/ui/UiInput'
 
 type Props = ViewProps & AuthStackScreenProps<'CreateWallet'>
 
@@ -97,48 +91,53 @@ export default function CreateWallet({ route }: Props) {
         />
       </View>
       <View className='flex flex-1 flex-col px-5'>
-        <View className='my-auto flex flex-col items-center gap-4'>
-          <UiIcon customIcon='starFillIcon' className='size-[200px] text-primaryMain' />
+        <View className='flex flex-col items-center gap-5'>
+          <UiIcon customIcon='keyIcon' className='size-[200px] justify-center text-primaryMain' />
           <Text className='text-textPrimary typography-h4'>Your keys</Text>
         </View>
-        <UiCard className={cn('mt-5 flex gap-4')}>
-          {isImporting ? (
-            <>
-              <ControlledUiTextField
-                name='privateKey'
-                placeholder='Your private key'
-                control={control}
-                disabled={isFormDisabled}
-              />
-
-              <UiButton
-                variant='text'
-                color='text'
-                leadingIconProps={{
-                  customIcon: isCopied ? 'checkIcon' : 'copySimpleIcon',
-                }}
-                title='Paste From Clipboard'
-                onPress={pasteFromClipboard}
-              />
-            </>
-          ) : (
-            <>
-              <UiCard className='bg-backgroundPrimary'>
-                <Text className='text-textPrimary typography-body3'>{formState.privateKey}</Text>
+        {isImporting ? (
+          <View className='flex flex-1 flex-col items-center justify-center gap-4'>
+            <View>
+              <UiCard className='mt-5 flex w-full flex-row items-center justify-between gap-3 bg-warningLight'>
+                <UiIcon customIcon='infoIcon' className='color-warningMain' />
+                <Text className='typography typograthy-body4 flex-1 text-warningMain'>
+                  {translate('auth.sign-in.tip')}
+                </Text>
               </UiCard>
-
-              <UiButton
-                variant='text'
-                color='text'
-                leadingIconProps={{
-                  customIcon: isCopied ? 'checkIcon' : 'copySimpleIcon',
-                }}
-                title='Copy to Clipboard'
-                onPress={() => copy(formState.privateKey)}
-              />
-            </>
-          )}
-        </UiCard>
+            </View>
+            <ControlledUiInput
+              name='privateKey'
+              placeholder='Your private key'
+              control={control}
+              disabled={isFormDisabled}
+            />
+          </View>
+        ) : (
+          <View className='flex flex-1 flex-col items-center justify-center gap-4'>
+            <UiCard className={cn('mt-5 flex gap-4')}>
+              <>
+                <UiCard className='bg-backgroundPrimary'>
+                  <Text className='text-textPrimary typography-body3'>{formState.privateKey}</Text>
+                </UiCard>
+                <UiButton
+                  variant='text'
+                  color='text'
+                  leadingIconProps={{
+                    customIcon: isCopied ? 'checkIcon' : 'copySimpleIcon',
+                  }}
+                  title='Copy to Clipboard'
+                  onPress={() => copy(formState.privateKey)}
+                />
+              </>
+            </UiCard>
+            <UiCard className='mt-5 flex w-full flex-row items-center justify-between gap-3 bg-warningLight'>
+              <UiIcon customIcon='infoIcon' className='color-warningMain' />
+              <Text className='typography typograthy-body4 flex-1 text-warningMain'>
+                {translate('auth.sign-up.tip')}
+              </Text>
+            </UiCard>
+          </View>
+        )}
       </View>
       <View className='p-5'>
         <UiHorizontalDivider />
@@ -146,7 +145,7 @@ export default function CreateWallet({ route }: Props) {
       <View className='flex w-full flex-row px-5'>
         <UiButton
           title={isImporting ? 'Import Key' : 'Create Key'}
-          className='mt-auto w-full'
+          className='mb-5 mt-auto w-full'
           onPress={handleSubmit(submit)}
           disabled={isFormDisabled}
         />
