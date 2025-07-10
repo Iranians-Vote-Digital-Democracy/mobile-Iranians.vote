@@ -1,9 +1,9 @@
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import * as SplashScreen from 'expo-splash-screen'
+import { StatusBar } from 'expo-status-bar'
 import { useMemo, useState } from 'react'
-import { StatusBar, View } from 'react-native'
+import { View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { APIProvider } from '@/api/client'
 import { initInterceptors } from '@/api/interceptors'
@@ -57,17 +57,15 @@ export default function App() {
   return (
     <View style={{ flex: 1 }} key={[language, isStoresHydrated].join(';')} onLayout={initApp}>
       {isAppInitialized && (
-        <SafeAreaProvider>
-          <GestureHandlerRootView>
-            <APIProvider>
-              <BottomSheetModalProvider>
-                <StatusBar translucent={true} backgroundColor='transparent' />
-                <AppRoutes />
-              </BottomSheetModalProvider>
-            </APIProvider>
-            <Toasts />
-          </GestureHandlerRootView>
-        </SafeAreaProvider>
+        <GestureHandlerRootView>
+          <APIProvider>
+            <BottomSheetModalProvider>
+              <StatusBar />
+              <AppRoutes />
+            </BottomSheetModalProvider>
+          </APIProvider>
+          <Toasts />
+        </GestureHandlerRootView>
       )}
     </View>
   )
