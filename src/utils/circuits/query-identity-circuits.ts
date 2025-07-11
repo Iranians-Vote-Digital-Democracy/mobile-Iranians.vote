@@ -118,13 +118,8 @@ export class QueryIdentityCircuit {
     this.circuitParams = NoirCircuitParams.fromName('queryIdentity_inid_ca')
   }
 
-  async downloadByteCode() {
-    return this.circuitParams.downloadByteCode({
-      onDownloadingProgress: progress => console.log('progress', progress),
-    })
-  }
-
-  async prove(inputs: string, byteCodeString: string) {
+  async prove(inputs: string) {
+    const byteCodeString = await this.circuitParams.downloadByteCode()
     const trustedSetupUri = await NoirCircuitParams.getTrustedSetupUri()
 
     if (!trustedSetupUri) {

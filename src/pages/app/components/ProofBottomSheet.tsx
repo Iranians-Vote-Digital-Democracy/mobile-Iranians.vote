@@ -20,13 +20,7 @@ export default function ProofBottomSheet() {
 
   const generateProof = async () => {
     const circuitParams = new QueryIdentityCircuit()
-    console.log('download started')
-    const byteCodeString = await circuitParams.downloadByteCode()
-    console.log('download ended')
-    const proof = await circuitParams.prove(
-      JSON.stringify(QueryIdentityCircuit.TEST_DATA),
-      byteCodeString,
-    )
+    const proof = await circuitParams.prove(JSON.stringify(QueryIdentityCircuit.TEST_DATA))
     console.log('success', proof)
   }
 
@@ -54,9 +48,7 @@ export default function ProofBottomSheet() {
 
       if (params && Object.keys(params).length > 0) {
         setModalParams(params)
-        setTimeout(() => {
-          cardUiSettingsBottomSheet.present()
-        }, 0)
+        cardUiSettingsBottomSheet.present()
       }
     })
 
