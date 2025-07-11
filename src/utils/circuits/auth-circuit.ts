@@ -1,5 +1,4 @@
 import { LocalCircomCircuitParams } from '@modules/witnesscalculator'
-import { toBeArray, zeroPadValue } from 'ethers'
 
 import { PrivateAuthGroth16 } from './types/Auth'
 
@@ -18,7 +17,7 @@ export class AuthCircuit {
           eventID: '0x' + BigInt(inputs.eventID).toString(16),
           eventData: '0x' + inputs.eventData.toString(16),
           revealPkIdentityHash: inputs.revealPkIdentityHash,
-          skIdentity: zeroPadValue(toBeArray(inputs.skIdentity), 32),
+          skIdentity: '0x' + inputs.skIdentity.toString(16).padStart(64, '0'),
         }),
       ),
     )

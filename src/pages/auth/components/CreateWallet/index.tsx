@@ -4,7 +4,7 @@ import type { ViewProps } from 'react-native'
 import { Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { ErrorHandler, translate } from '@/core'
+import { ErrorHandler, translate, useSoftKeyboardEffect } from '@/core'
 import { useCopyToClipboard, useForm, useLoading } from '@/hooks'
 import type { AuthStackScreenProps } from '@/route-types'
 import { authStore, walletStore } from '@/store'
@@ -81,6 +81,8 @@ export default function CreateWallet({ route }: Props) {
       loadOnMount: true,
     },
   )
+
+  useSoftKeyboardEffect(0)
 
   return (
     <UiScreenScrollable style={{ paddingBottom: insets.bottom, paddingTop: insets.top }}>
