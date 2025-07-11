@@ -4,7 +4,7 @@ import type { ViewProps } from 'react-native'
 import { Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { ErrorHandler, translate } from '@/core'
+import { ErrorHandler, translate, useSoftKeyboardEffect } from '@/core'
 import { useCopyToClipboard, useForm, useLoading } from '@/hooks'
 import type { AuthStackScreenProps } from '@/route-types'
 import { authStore, walletStore } from '@/store'
@@ -39,7 +39,9 @@ export default function CreateWallet({ route }: Props) {
           privateKey: yup.string().test('is-valid-pk', 'Invalid Private Key', value => {
             if (!isImporting) return true
 
-            return !value || value.length > 64
+            if (!value) return false
+
+            return value.length <= 64
           }),
         }),
     )
@@ -79,6 +81,8 @@ export default function CreateWallet({ route }: Props) {
       loadOnMount: true,
     },
   )
+
+  useSoftKeyboardEffect(0)
 
   return (
     <UiScreenScrollable style={{ paddingBottom: insets.bottom, paddingTop: insets.top }}>

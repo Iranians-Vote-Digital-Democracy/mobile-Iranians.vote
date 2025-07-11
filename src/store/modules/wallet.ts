@@ -41,11 +41,11 @@ const useWalletStore = create(
 
 const useGeneratePrivateKey = () => {
   return async () => {
-    return babyJub.F.random().toString(16)
+    return babyJub.F.random().toString(16).padStart(64, '0')
   }
 }
 
-const usePublicKeyKey = () => {
+const usePublicKey = () => {
   const privateKeyHex = useWalletStore(state => state.privateKey)
 
   const skBuff = Hex.decodeString(privateKeyHex)
@@ -57,7 +57,7 @@ const usePublicKeyKey = () => {
 }
 
 const usePublicKeyHash = () => {
-  const publicKey = usePublicKeyKey()
+  const publicKey = usePublicKey()
 
   return useMemo(() => {
     const hash = poseidon.hash(publicKey.p)
@@ -100,7 +100,7 @@ export const walletStore = {
   useGeneratePrivateKey: useGeneratePrivateKey,
   usePointsNullifier: usePointsNullifier,
   useDeletePrivateKey,
-  usePublicKeyKey,
+  usePublicKey: usePublicKey,
   usePublicKeyHash,
   useRegistrationChallenge,
 }

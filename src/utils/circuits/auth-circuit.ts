@@ -17,7 +17,7 @@ export class AuthCircuit {
           eventID: '0x' + BigInt(inputs.eventID).toString(16),
           eventData: '0x' + inputs.eventData.toString(16),
           revealPkIdentityHash: inputs.revealPkIdentityHash,
-          skIdentity: '0x' + inputs.skIdentity.toString(16),
+          skIdentity: '0x' + inputs.skIdentity.toString(16).padStart(64, '0'),
         }),
       ),
     )
