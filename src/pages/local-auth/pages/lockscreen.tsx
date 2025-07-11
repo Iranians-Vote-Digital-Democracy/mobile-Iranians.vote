@@ -158,16 +158,19 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
           </View>
 
           <View className={cn('flex w-full gap-10 p-5')}>
-            <UiNumPad
-              value={passcode}
-              setValue={handleSetPasscode}
-              // TODO: is it necessary? The BiometricsLockScreen will handle it
-              extra={
-                <Pressable onPress={unlockWithBiometrics}>
-                  <BiometricsIcon size={32} />
-                </Pressable>
-              }
-            />
+            {biometricStatus === BiometricStatuses.Enabled ? (
+              <UiNumPad
+                value={passcode}
+                setValue={handleSetPasscode}
+                extra={
+                  <Pressable onPress={unlockWithBiometrics}>
+                    <BiometricsIcon size={32} />
+                  </Pressable>
+                }
+              />
+            ) : (
+              <UiNumPad value={passcode} setValue={handleSetPasscode} />
+            )}
             <UiButton
               variant='outlined'
               color='error'
