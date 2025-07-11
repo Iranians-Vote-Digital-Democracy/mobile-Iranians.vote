@@ -128,24 +128,20 @@ export class NoirCircuitParams {
       throw new Error(`Failed to generate proof for noir circuit ${this.name}`)
     }
 
-    const proofBytes = Buffer.from(proof, 'hex')
-
-    const pubSignalDataLength = 32
-
-    const pubSignalsCount = this.pub_signals_count
+    const pubSignalDataLength = 64 // hex
 
     const pubSignals: string[] = []
-    for (let i = 0; i < pubSignalsCount; i++) {
+    for (let i = 0; i < this.pub_signals_count; i++) {
       const start = i * pubSignalDataLength
       const end = start + pubSignalDataLength
-      const pubSignalBytes = proofBytes.slice(start, end)
-      const pubSignalHex = pubSignalBytes.toString('hex')
-      pubSignals.push(pubSignalHex)
+      pubSignals.push(proof.substring(start, end))
     }
+
+    const actualProof = proof.substring(pubSignalDataLength * this.pub_signals_count)
 
     return {
       pub_signals: pubSignals,
-      proof: proof,
+      proof: actualProof,
     }
   }
 }
@@ -167,6 +163,11 @@ export class NoirLocalCircuitParams extends NoirCircuitParams {
 }
 
 const supportedNoirCircuits: NoirCircuitParams[] = [
+  new NoirLocalCircuitParams(
+    'queryIdentity_inid_ca',
+    () => require('@assets/circuits/noir/register/inid/byte_code.json'),
+    6,
+  ),
   new NoirLocalCircuitParams(
     'registerIdentity_inid_ca',
     () => require('@assets/circuits/noir/register/inid/byte_code.json'),

@@ -162,7 +162,7 @@ export class EPassport extends EDocument {
 
   getAADataType(ecSizeInBits: number) {
     if (!this.dg15PubKey) {
-      return getBytes(keccak256(Buffer.from('P_NO_DATA', 'utf-8')))
+      return getBytes(keccak256(Buffer.from('P_NO_AA', 'utf-8')))
     }
 
     if (this.dg15PubKey?.algorithm.algorithm.includes(id_pkcs_1)) {
@@ -173,7 +173,7 @@ export class EPassport extends EDocument {
       const hashAlg = figureOutRSAAAHashAlgorithm(rsaPubKey, this.aaSignature)
 
       if (!hashAlg) {
-        return getBytes(keccak256(Buffer.from('P_NO_DATA', 'utf-8')))
+        return getBytes(keccak256(Buffer.from('P_NO_AA', 'utf-8')))
       }
 
       const exponentHex = Buffer.from(rsaPubKey.publicExponent).toString('hex')
@@ -271,7 +271,7 @@ export class EID extends EDocument {
   }
 
   get AADataType() {
-    return getBytes(keccak256(Buffer.from('P_NO_DATA', 'utf-8')))
+    return keccak256(Buffer.from('P_NO_AA', 'utf-8'))
   }
 
   static fromBytes(sigBytes: Uint8Array, authBytes: Uint8Array): EID {
