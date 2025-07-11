@@ -118,7 +118,23 @@ export default function App({}: RootStackScreenProps<'App'>) {
     }
 
     handleDeepLink()
-  }, [cardUiSettingsBottomSheet])
+  }, [])
+
+  useEffect(() => {
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      const parsed = Linking.parse(url)
+      const params = parsed.queryParams
+
+      if (params && Object.keys(params).length > 0) {
+        setModalParams(params)
+        setTimeout(() => {
+          cardUiSettingsBottomSheet.present()
+        }, 0)
+      }
+    })
+
+    return () => subscription.remove()
+  }, [])
 
   return (
     <>
