@@ -39,7 +39,9 @@ export default function CreateWallet({ route }: Props) {
           privateKey: yup.string().test('is-valid-pk', 'Invalid Private Key', value => {
             if (!isImporting) return true
 
-            return !value || value.length > 64
+            if (!value) return false
+
+            return value.length <= 64
           }),
         }),
     )
