@@ -12,16 +12,22 @@ export default function DocumentPreviewStep() {
   if (tempEDoc instanceof EPassport) {
     if (!tempEDoc?.personDetails) return null
 
-    const { firstName, lastName, gender, passportImageRaw, ...restDetails } = tempEDoc.personDetails
+    const { firstName, lastName, passportImageRaw, ...restDetails } = tempEDoc.personDetails
 
     return (
-      <AppContainer className='pb-20'>
+      <AppContainer className='mb-20 mt-10 flex-1 items-center justify-center p-6'>
+        <Text className='mb-2 text-textPrimary typography-h5'>Information</Text>
+        <Text className='mb-8 text-textSecondary typography-body3'>
+          Data generates a digital profile
+        </Text>
         <View className='flex-1 flex-col gap-4 p-5'>
           <UiCard>
             <View className='flex flex-row'>
               <View className='flex flex-1 flex-col gap-2'>
-                <Text className='text-textPrimary'>{`${firstName} ${lastName}`}</Text>
-                <Text className='text-textPrimary'>{gender}</Text>
+                <Text className='text-textPrimary typography-h6'>{`${firstName} ${lastName}`}</Text>
+                <Text className='text-textSecondary typography-body3'>
+                  Age: ${restDetails.birthDate} {/* TODO change in the future */}
+                </Text>
               </View>
 
               <Image
@@ -38,15 +44,15 @@ export default function DocumentPreviewStep() {
               Object.keys(restDetails).map(key => {
                 return (
                   <View key={key} className='flex flex-row items-center justify-between gap-2'>
-                    <Text className='capitalize text-textPrimary typography-body3'>{key}</Text>
+                    <Text className='capitalize text-textSecondary typography-body3'>{key}</Text>
                     <Text className='text-textPrimary typography-subtitle4'>
                       {restDetails?.[key as keyof typeof tempEDoc.personDetails]}
                     </Text>
                   </View>
                 )
               })}
-
-            <View className='flex flex-row items-center justify-between gap-2'>
+            {/* Only for Testing*/}
+            {/* <View className='flex flex-row items-center justify-between gap-2'>
               <Text className='capitalize text-textPrimary typography-body3'>dg1</Text>
               <Text className='text-textPrimary typography-subtitle4'>
                 {tempEDoc.dg1Bytes.length} length
@@ -72,7 +78,7 @@ export default function DocumentPreviewStep() {
               <Text className='text-textPrimary typography-subtitle4'>
                 {tempEDoc?.aaSignature?.length ?? 0} length
               </Text>
-            </View>
+            </View>*/}
           </View>
 
           <View className='mt-auto'>
