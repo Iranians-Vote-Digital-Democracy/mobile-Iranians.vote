@@ -1,7 +1,8 @@
 import { AsnConvert } from '@peculiar/asn1-schema'
 import { useCallback, useEffect, useState } from 'react'
-import { ActivityIndicator, Text, View } from 'react-native'
+import { ActivityIndicator, Image, Text, View } from 'react-native'
 
+import { translate } from '@/core'
 import { UiButton } from '@/ui'
 import { initNfc } from '@/utils/e-document/inid-nfc-reader'
 
@@ -51,13 +52,23 @@ export default function ScanNfcStep() {
   }, [])
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', padding: 24 }}>
-      {busy && <ActivityIndicator />}
-      {error && <Text className='bg-errorLight text-errorMain typography-body2'>{error}</Text>}
+    <View className='mb-20 mt-10 flex-1 justify-center p-6'>
+      <Text className='mb-2 text-textPrimary typography-h5'>NFC Reader</Text>
+      <Text className='mb-6 text-textSecondary typography-body3'>Reading personal data</Text>
+      <Image
+        source={require('@assets/images/passport-scan-example.png')}
+        resizeMode='contain'
+        className='my-6 size-[300px] self-center' // Added vertical margin
+      />
+      <Text className='mb-6 text-textSecondary typography-body3'>
+        {translate('tabs.scan-nfc.tip')}
+      </Text>
+      {busy && <ActivityIndicator className='my-4' />}
+      {error && <Text className='mt-4 text-errorMain typography-body2'>{error}</Text>}
       <UiButton
-        title='Read Signing Certificate'
+        title={busy ? 'Read Signing Certificate' : 'Start NFC Scan'}
         onPress={onReadPress}
-        className='mb-auto w-full'
+        className='mt-auto w-full' // Used mt-auto to push button to bottom, adjusted if other elements are pushing it
         disabled={busy}
       />
     </View>
