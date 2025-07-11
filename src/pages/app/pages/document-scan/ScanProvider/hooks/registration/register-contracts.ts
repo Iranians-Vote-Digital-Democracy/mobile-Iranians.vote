@@ -21,6 +21,56 @@ export const useRegisterContracts = () => {
       slaveCertSmtProof: SparseMerkleTree.ProofStructOutput,
       isRevoked: boolean,
     ) => {
+      if (identityItem.document instanceof EID) {
+        if (typeof identityItem.registrationProof.proof !== 'string') {
+          throw new TypeError('Noir proof is not supported for Circom registration')
+        }
+
+        const registrationProof = identityItem.registrationProof as NoirZKProof
+
+        const passportHash = identityItem.passportHash.startsWith('0x')
+          ? identityItem.passportHash
+          : `0x${identityItem.passportHash}`
+
+        const passport: Registration2.PassportStruct = {
+          dataType: identityItem.document.AADataType,
+          zkType: keccak256(Buffer.from('Z_NOIR_PASSPORT_ID_CARD_I', 'utf-8')),
+          signature: new Uint8Array(),
+          publicKey: new Uint8Array(),
+          passportHash: passportHash,
+        }
+
+        const pkIdentityHash = identityItem.pkIdentityHash.startsWith('0x')
+          ? identityItem.pkIdentityHash
+          : `0x${identityItem.pkIdentityHash}`
+
+        const dg1Commitment = identityItem.dg1Commitment.startsWith('0x')
+          ? identityItem.dg1Commitment
+          : `0x${identityItem.dg1Commitment}`
+
+        const proof = registrationProof.proof.startsWith('0x')
+          ? registrationProof.proof
+          : `0x${registrationProof.proof}`
+
+        if (isRevoked) {
+          return registrationContractInterface.encodeFunctionData('reissueIdentityViaNoir', [
+            slaveCertSmtProof.root,
+            pkIdentityHash,
+            dg1Commitment,
+            passport,
+            proof,
+          ])
+        }
+
+        return registrationContractInterface.encodeFunctionData('registerViaNoir', [
+          slaveCertSmtProof.root,
+          pkIdentityHash,
+          dg1Commitment,
+          passport,
+          proof,
+        ])
+      }
+
       if (identityItem.document instanceof EPassport) {
         if (typeof identityItem.registrationProof !== 'string') {
           throw new TypeError('Noir proof is not supported for Circom registration')
@@ -77,10 +127,6 @@ export const useRegisterContracts = () => {
           passport,
           registrationProof.proof,
         ])
-      }
-
-      if (identityItem.document instanceof EID) {
-        throw new TypeError('EID registration is not supported yet')
       }
 
       throw new TypeError('Unsupported document type for registration')

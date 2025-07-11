@@ -270,6 +270,10 @@ export class EID extends EDocument {
     super({ docCode: 'ID' })
   }
 
+  get AADataType() {
+    return getBytes(keccak256(Buffer.from('P_NO_DATA', 'utf-8')))
+  }
+
   static fromBytes(sigBytes: Uint8Array, authBytes: Uint8Array): EID {
     const sigCert = AsnConvert.parse(sigBytes, Certificate)
     const authCert = AsnConvert.parse(authBytes, Certificate)

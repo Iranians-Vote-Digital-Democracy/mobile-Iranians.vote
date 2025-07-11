@@ -1,12 +1,12 @@
 import { NoirZKProof } from '@modules/noir'
 import type { CircomZKProof } from '@modules/witnesscalculator'
-import { getBigInt, JsonRpcProvider, zeroPadValue } from 'ethers'
+import { getBigInt, JsonRpcProvider } from 'ethers'
 import SuperJSON from 'superjson'
 
 import { RARIMO_CHAINS } from '@/api/modules/rarimo'
 import { Config } from '@/config'
 import { createStateKeeperContract } from '@/helpers/contracts'
-import { EDocument, EPassport } from '@/utils/e-document/e-document'
+import { EDocument, EID, EPassport } from '@/utils/e-document/e-document'
 
 // TODO: add checking if the passport need to be revoked
 export class IdentityItem {
@@ -41,20 +41,26 @@ export class IdentityItem {
     )
   }
 
-  get identityKey() {
-    return this.registrationProof.pub_signals[3]
-  }
+  // (len, icao_root, 0, pasport_hash, dg1_commitment, sk_hash)
 
   get publicKey() {
+    if (this.document instanceof EID) throw new Error('EID does not have a public key')
+
     return this.registrationProof.pub_signals[0]
   }
   get passportHash() {
+    if (this.document instanceof EID) return this.registrationProof.pub_signals[3]
+
     return this.registrationProof.pub_signals[1]
   }
   get dg1Commitment() {
+    if (this.document instanceof EID) return this.registrationProof.pub_signals[4]
+
     return this.registrationProof.pub_signals[2]
   }
   get pkIdentityHash() {
+    if (this.document instanceof EID) return this.registrationProof.pub_signals[5]
+
     return this.registrationProof.pub_signals[3]
   }
 
@@ -65,10 +71,10 @@ export class IdentityItem {
           return this.document.dg15Bytes?.length ? this.publicKey : this.passportHash
         }
 
-        return this.identityKey.startsWith('0x') ? this.passportHash : '0x' + this.passportHash
+        return this.passportHash.startsWith('0x') ? this.passportHash : '0x' + this.passportHash
       })()
 
-      const passportInfoKeyBytes = zeroPadValue('0x' + getBigInt(passportInfoKey).toString(16), 32)
+      const passportInfoKeyBytes = '0x' + getBigInt(passportInfoKey).toString(16).padStart(64, '0')
 
       return await IdentityItem.stateKeeperContract.contractInstance.getPassportInfo(
         passportInfoKeyBytes,
