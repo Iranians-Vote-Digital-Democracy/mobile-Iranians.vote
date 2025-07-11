@@ -53,18 +53,18 @@ export default function ScanNfcStep() {
 
   return (
     <View className='mb-20 mt-10 flex-1 justify-center p-6'>
-      <Text className='mb-2 text-textPrimary typography-h5'>NFC Reader</Text>
-      <Text className='mb-6 text-textSecondary typography-body3'>Reading personal data</Text>
+      <Text className='typography-h5 mb-2 text-textPrimary'>NFC Reader</Text>
+      <Text className='typography-body3 mb-6 text-textSecondary'>Reading personal data</Text>
       <Image
         source={require('@assets/images/passport-scan-example.png')}
         resizeMode='contain'
         className='my-6 size-[300px] self-center' // Added vertical margin
       />
-      <Text className='mb-6 text-textSecondary typography-body3'>
+      <Text className='typography-body3 mb-6 text-textSecondary'>
         {translate('tabs.scan-nfc.tip')}
       </Text>
       {busy && <ActivityIndicator className='my-4' />}
-      {error && <Text className='mt-4 text-errorMain typography-body2'>{error}</Text>}
+      {error && <Text className='typography-body2 mt-4 text-errorMain'>{error}</Text>}
       <UiButton
         title={busy ? 'Read Signing Certificate' : 'Start NFC Scan'}
         onPress={onReadPress}

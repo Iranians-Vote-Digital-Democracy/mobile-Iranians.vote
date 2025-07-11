@@ -33,8 +33,8 @@ function DocumentScanContent() {
         [Steps.ScanNfcStep]: () => <ScanNfcStep />,
         [Steps.DocumentPreviewStep]: () => <DocumentPreviewStep />,
         [Steps.GenerateProofStep]: () => <GenerateProofStep />,
-        [Steps.RevocationStep]: () => <RevocationStep />,
-        [Steps.FinishStep]: () => <SuccessStep />,
+        [Steps.RevocationStep]: () => <RevocationStep />, //TODO
+        [Steps.FinishStep]: () => <SuccessStep />, //TODO  meybe delete because in generate proof we have similar display
       }[currentStep]()}
     </>
   )
