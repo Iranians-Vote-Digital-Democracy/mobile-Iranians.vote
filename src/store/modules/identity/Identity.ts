@@ -1,17 +1,18 @@
-import { ZKProof } from '@modules/rapidsnark-wrp'
+import { NoirZKProof } from '@modules/noir'
+import type { CircomZKProof } from '@modules/witnesscalculator'
 import { getBigInt, JsonRpcProvider, zeroPadValue } from 'ethers'
 import SuperJSON from 'superjson'
 
 import { RARIMO_CHAINS } from '@/api/modules/rarimo'
 import { Config } from '@/config'
 import { createStateKeeperContract } from '@/helpers/contracts'
-import { EDocument } from '@/utils/e-document/e-document'
+import { EDocument, EPassport } from '@/utils/e-document/e-document'
 
 // TODO: add checking if the passport need to be revoked
 export class IdentityItem {
   constructor(
     public document: EDocument,
-    public registrationProof: ZKProof,
+    public registrationProof: CircomZKProof | NoirZKProof,
   ) {}
 
   serialize() {
@@ -24,7 +25,7 @@ export class IdentityItem {
   static deserialize(serialized: string): IdentityItem {
     const deserialized = SuperJSON.parse<{
       document: string
-      registrationProof: ZKProof
+      registrationProof: CircomZKProof
     }>(serialized)
 
     return new IdentityItem(
@@ -40,20 +41,11 @@ export class IdentityItem {
     )
   }
 
-  get passportInfoKeyBytes(): string {
-    const passportInfoKeyBigIntString = this.document.dg15Bytes?.length
-      ? this.registrationProof.pub_signals[0]
-      : this.registrationProof.pub_signals[1]
-
-    const passportInfoKeyBytes = zeroPadValue(
-      '0x' + getBigInt(passportInfoKeyBigIntString).toString(16),
-      32,
-    )
-
-    return passportInfoKeyBytes
+  get identityKey() {
+    return this.registrationProof.pub_signals[3]
   }
 
-  get passportKey() {
+  get publicKey() {
     return this.registrationProof.pub_signals[0]
   }
   get passportHash() {
@@ -68,8 +60,18 @@ export class IdentityItem {
 
   async getPassportInfo() {
     try {
+      const passportInfoKey = (() => {
+        if (this.document instanceof EPassport) {
+          return this.document.dg15Bytes?.length ? this.publicKey : this.passportHash
+        }
+
+        return this.identityKey.startsWith('0x') ? this.passportHash : '0x' + this.passportHash
+      })()
+
+      const passportInfoKeyBytes = zeroPadValue('0x' + getBigInt(passportInfoKey).toString(16), 32)
+
       return await IdentityItem.stateKeeperContract.contractInstance.getPassportInfo(
-        this.passportInfoKeyBytes,
+        passportInfoKeyBytes,
       )
     } catch (error) {
       console.error('getPassportInfo', error)

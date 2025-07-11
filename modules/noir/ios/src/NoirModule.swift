@@ -1,5 +1,6 @@
 import ExpoModulesCore
 import SwoirenbergLib
+import Foundation
 
 public class NoirModule: Module {
   public func definition() -> ModuleDefinition {
@@ -35,17 +36,43 @@ public class NoirModule: Module {
 
       // Parse input values
       guard let inputsData = inputsJson.data(using: .utf8),
-            let inputsMap = try JSONSerialization.jsonObject(with: inputsData, options: []) as? [String: Any] else {
+            let rawInputsMap = try JSONSerialization.jsonObject(with: inputsData, options: []) as? [String: Any] else {
         throw NSError(domain: "NoirModule", code: 3, userInfo: [
           NSLocalizedDescriptionKey: "Failed to parse inputs JSON"
         ])
       }
 
-      // Generate proof
-      let proof = try circuit.prove(inputsMap, proof_type: "plonk")
-      let hexProof = proof.proof.map { String(format: "%02x", $0) }.joined()
+      // Convert values: arrays to arrays of strings, everything else to strings
+      var inputsMap: [String: Any] = [:]
+      for (key, value) in rawInputsMap {
+        if let arrayValue = value as? [Any] {
+          inputsMap[key] = arrayValue.map { String(describing: $0) }
+          continue
+        }
+        if let intValue = value as? Int {
+          inputsMap[key] = String(intValue)
+          continue
+        }
+        if let doubleValue = value as? Double {
+          inputsMap[key] = String(doubleValue)
+          continue
+        }
 
-      return hexProof
+        inputsMap[key] = String(describing: value)
+      }
+
+      // Generate proof
+      do {
+        let proof = try circuit.prove(inputsMap, proof_type: "plonk")
+
+        print("Generated proof: \(proof)")
+        let hexProof = proof.proof.map { String(format: "%02x", $0) }.joined()
+
+        return hexProof
+      } catch {
+        print("Error generating proof: \(error)")
+        throw error
+      }
     }
   }
 }

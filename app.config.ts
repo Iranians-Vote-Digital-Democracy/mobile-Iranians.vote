@@ -108,7 +108,7 @@ export default ({config}: ConfigContext): ExpoConfig => ({
         "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
       }
     ],
-    // since "modules/e-document" uses custom pod,
+    // TEMP: since "modules/e-document" uses custom pod,
     // we need to use `withBuildProperties` in module's plugin
     // in order to incapsulate per module configuration.
     // But `withBuildProperties` method ain't supposed to be called multiple times,
@@ -135,12 +135,6 @@ export default ({config}: ConfigContext): ExpoConfig => ({
       ios: {
         deploymentTarget: '17.5',
         extraPods: [
-          // {
-          //   name: 'TensorFlowLiteSwift',
-          //   git: 'https://github.com/rarimo/TensorFlowLiteSwift.git',
-          //   commit: '8c3b0f9638eedfa9138789cf07b55433c03b8225',
-          // },
-
           {
             name: "OpenSSL-Universal",
             configurations: ["Release", "Debug"],
@@ -151,19 +145,6 @@ export default ({config}: ConfigContext): ExpoConfig => ({
             git: 'https://github.com/rarimo/NFCPassportReader.git',
             commit: '4c463a687f59eb6cc5c7955af854c7d41295d54f',
           },
-          // {
-          //   name: 'SwoirCore',
-          //   podspec: 'https://raw.githubusercontent.com/lukachi/rn-template/refs/heads/feature/upd-e-doc/modules/noir/ios/specs/SwoirCore.podspec',
-          //   // git: 'https://github.com/Swoir/SwoirCore.git',
-          //   // tag: '0.7.1',
-          //   // source: 'https://github.com/Swoir/SwoirCore.git'
-          // },
-          // {
-          //   name: 'Swoir',
-          //   podspec: 'https://raw.githubusercontent.com/lukachi/rn-template/refs/heads/feature/upd-e-doc/modules/noir/ios/specs/Swoir.podspec'
-          //   // git: 'https://github.com/rarimo/Swoir.git',
-          //   // commit: '59bf91879d5aca5c275d6c646f65d47c97fa14eb',
-          // },
         ]
       },
     }],
@@ -194,7 +175,7 @@ export default ({config}: ConfigContext): ExpoConfig => ({
     [ "react-native-vision-camera", {
       "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera.",
     }],
-    ['./modules/e-document/app.plugin.js'],
+    ['./plugins/withNfc.plugin/build/index.js'],
     ['./plugins/withLocalAar.plugin.js']
   ],
   extra: {
