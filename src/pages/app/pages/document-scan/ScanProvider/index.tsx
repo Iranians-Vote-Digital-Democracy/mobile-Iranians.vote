@@ -90,7 +90,7 @@ export function ScanContextProvider({
   const addIdentity = identityStore.useIdentityStore(state => state.addIdentity)
 
   const [currentStep, setCurrentStep] = useState<Steps>(
-    Steps.ScanNfcStep, // Default to NFC scan step for now
+    Steps.GenerateProofStep, // Default to NFC scan step for now
   )
   const [selectedDocType, setSelectedDocType] = useState(docType)
 

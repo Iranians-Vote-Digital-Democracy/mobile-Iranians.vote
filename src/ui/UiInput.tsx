@@ -45,12 +45,12 @@ export function ControlledUiInput<T extends FieldValues>({
           onChangeText?.(v)
           field.onChange(v)
         }}
-        multiline={true}
+        multiline={false}
         value={(field.value as string) || ''}
         {...rest}
       />
       {fieldState.error?.message && (
-        <Text className='w-full text-errorMain typography-body2'>{fieldState.error?.message}</Text>
+        <Text className='typography-body2 w-full text-errorMain'>{fieldState.error?.message}</Text>
       )}
     </View>
   )
