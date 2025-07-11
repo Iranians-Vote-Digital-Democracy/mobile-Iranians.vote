@@ -14,8 +14,8 @@ import { DocType, EDocument } from '@/utils/e-document/e-document'
 import { useRegistration } from './hooks/registration'
 
 export enum Steps {
-  SelectDocTypeStep,
-  ScanMrzStep,
+  // SelectDocTypeStep,
+  // ScanMrzStep,
   ScanNfcStep,
   DocumentPreviewStep,
   GenerateProofStep,
@@ -49,7 +49,7 @@ type DocumentScanContext = {
 }
 
 const documentScanContext = createContext<DocumentScanContext>({
-  currentStep: Steps.SelectDocTypeStep,
+  currentStep: Steps.ScanNfcStep,
 
   setCurrentStep: () => {
     throw new Error('setCurrentStep not implemented')
@@ -90,7 +90,7 @@ export function ScanContextProvider({
   const addIdentity = identityStore.useIdentityStore(state => state.addIdentity)
 
   const [currentStep, setCurrentStep] = useState<Steps>(
-    docType ? Steps.ScanMrzStep : Steps.SelectDocTypeStep,
+    Steps.ScanNfcStep, // Default to NFC scan step for now
   )
   const [selectedDocType, setSelectedDocType] = useState(docType)
 
@@ -147,9 +147,8 @@ export function ScanContextProvider({
 
   const handleSetSelectedDocType = useCallback((value: DocType) => {
     setSelectedDocType(value)
-    setCurrentStep(Steps.ScanMrzStep)
+    // setCurrentStep(Steps.ScanMrzStep)
   }, [])
-
   const handleSetMrz = useCallback((value: FieldRecords) => {
     setTempMRZ(value)
     setCurrentStep(Steps.ScanNfcStep)

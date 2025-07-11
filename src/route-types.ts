@@ -2,8 +2,6 @@ import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
 import type { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 
-import { DocType } from './utils/e-document'
-
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamsList>
   LocalAuth: NavigatorScreenParams<LocalAuthStackParamsList>
@@ -51,11 +49,10 @@ export type AppTabParamsList = {
   Documents: undefined
   Home: undefined
   Profile: undefined
-  Scan:
-    | {
-        documentType?: DocType
-      }
-    | undefined
+  Scan: // | {
+  //     documentType?: DocType
+  //   }
+  undefined
   PassportTests: undefined
 }
 
