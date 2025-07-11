@@ -53,7 +53,7 @@ export default function EnablePasscode({}: LocalAuthStackScreenProps<'EnablePass
           onPress={onConfirm}
         />
         <UiButton
-          className='typography-buttonMedium bg-transparent text-textSecondary'
+          className='text-textSecondary typography-buttonMedium'
           title={translate('enable-passcode.skip-btn')}
           onPress={onSkip}
         />
