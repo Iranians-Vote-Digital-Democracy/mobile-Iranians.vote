@@ -271,8 +271,6 @@ export const useRegistration = () => {
 
       const { data } = await relayerRegister(registerCallData, Config.REGISTRATION_CONTRACT_ADDRESS)
 
-      console.log({ data })
-
       const tx = await rmoEvmJsonRpcProvider.getTransaction(data.tx_hash)
 
       if (!tx) throw new TypeError('Transaction not found')
@@ -550,8 +548,6 @@ export const useRegistration = () => {
       if (getPassportInfoError) {
         throw new TypeError('Failed to get passport info', getPassportInfoError)
       }
-
-      console.log({ passportInfo })
 
       const [, registerIdentityError] = await tryCatch(
         registerIdentity(identityItem, slaveCertSmtProof, passportInfo),
