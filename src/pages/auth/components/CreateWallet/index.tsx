@@ -37,7 +37,9 @@ export default function CreateWallet({ route }: Props) {
       yup =>
         yup.object().shape({
           privateKey: yup.string().test('is-valid-pk', 'Invalid Private Key', value => {
-            return value?.length === 64 || value?.length === 32
+            if (!isImporting) return true
+
+            return !value || value.length > 64
           }),
         }),
     )
@@ -54,6 +56,7 @@ export default function CreateWallet({ route }: Props) {
     enableForm()
   }, [disableForm, enableForm, formState.privateKey, login, setPrivateKey])
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const pasteFromClipboard = useCallback(async () => {
     const res = await fetchFromClipboard()
     setValue('privateKey', res)
@@ -93,7 +96,7 @@ export default function CreateWallet({ route }: Props) {
       <View className='flex flex-1 flex-col px-5'>
         <View className='flex flex-col items-center gap-5'>
           <UiIcon customIcon='keyIcon' className='size-[200px] justify-center text-primaryMain' />
-          <Text className='text-textPrimary typography-h4'>Your keys</Text>
+          <Text className='typography-h4 text-textPrimary'>Your keys</Text>
         </View>
         {isImporting ? (
           <View className='flex flex-1 flex-col items-center justify-center gap-4'>
@@ -117,7 +120,7 @@ export default function CreateWallet({ route }: Props) {
             <UiCard className={cn('mt-5 flex gap-4')}>
               <>
                 <UiCard className='bg-backgroundPrimary'>
-                  <Text className='text-textPrimary typography-body3'>{formState.privateKey}</Text>
+                  <Text className='typography-body3 text-textPrimary'>{formState.privateKey}</Text>
                 </UiCard>
                 <UiButton
                   variant='text'

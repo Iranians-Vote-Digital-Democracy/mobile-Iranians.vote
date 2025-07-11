@@ -22,8 +22,8 @@ export default function StepLayout({
       <View className={cn('flex-grow items-center justify-center')}>{media}</View>
 
       <View className={cn('flex flex-col items-center justify-center')}>
-        <Text className={cn('text-center text-textPrimary typography-h4')}>{title}</Text>
-        <Text className={cn('mt-5 text-center text-textSecondary typography-body2')}>
+        <Text className={cn('typography-h4 text-center text-textPrimary')}>{title}</Text>
+        <Text className={cn('typography-body2 mt-5 text-center text-textSecondary')}>
           {subtitle}
         </Text>
       </View>

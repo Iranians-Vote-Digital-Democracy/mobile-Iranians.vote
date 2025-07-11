@@ -53,9 +53,9 @@ export const useRegistration = () => {
 
   // ----------------------------------------------------------------------------------------
 
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [isLoadFailed, setIsLoadFailed] = useState(false)
-  const [downloadingProgress, setDownloadingProgress] = useState('')
+  const [isLoaded] = useState(false)
+  const [isLoadFailed] = useState(false)
+  const [downloadingProgress] = useState('')
 
   // ----------------------------------------------------------------------------------------
 

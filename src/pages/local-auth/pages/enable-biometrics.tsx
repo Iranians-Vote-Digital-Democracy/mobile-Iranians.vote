@@ -54,19 +54,19 @@ export default function EnableBiometrics({}: LocalAuthStackScreenProps<'EnableBi
           {biometricIcon}
         </View>
 
-        <Text className={cn('text-textPrimary typography-h4')}>
+        <Text className={cn('typography-h4 text-textPrimary')}>
           {translate('enable-biometrics.title')}
         </Text>
       </View>
 
       <View className={cn('flex w-full gap-6 p-5')}>
         <UiButton
-          className='text-textPrimary typography-buttonMedium'
+          className='typography-buttonMedium text-textPrimary'
           title={translate('enable-biometrics.enable-btn')}
           onPress={tryToEnableBiometrics}
         />
         <UiButton
-          className='bg-transparent text-textSecondary typography-buttonMedium'
+          className='typography-buttonMedium bg-transparent text-textSecondary'
           title={translate('enable-biometrics.skip-btn')}
           onPress={onSkip}
         />

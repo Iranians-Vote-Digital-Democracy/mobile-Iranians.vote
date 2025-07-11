@@ -153,7 +153,7 @@ export default function Intro() {
           <BottomSheetHeader
             title='Authorization'
             dismiss={bottomSheet.dismiss}
-            className='px-5 text-center text-textPrimary typography-h6'
+            className='typography-h6 px-5 text-center text-textPrimary'
           />
         }
         ref={bottomSheet.ref}
@@ -164,7 +164,7 @@ export default function Intro() {
       >
         <BottomSheetView style={{ paddingBottom: insets.bottom }}>
           <View className={cn('py-0, flex flex-col gap-4 p-5')}>
-            <Text className='text-textSecondary typography-body3'>Choose a preferred method</Text>
+            <Text className='typography-body3 text-textSecondary'>Choose a preferred method</Text>
             <UiHorizontalDivider />
             <View className='mt-auto flex w-full flex-col gap-2'>
               <UiButton

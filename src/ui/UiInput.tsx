@@ -48,7 +48,7 @@ export function ControlledUiInput<T extends FieldValues>({
         {...rest}
       />
       {fieldState.error?.message && (
-        <Text className='bg-errorLight text-errorMain typography-body2'>
+        <Text className='typography-body2 bg-errorLight text-errorMain'>
           {fieldState.error?.message}
         </Text>
       )}
