@@ -110,60 +110,9 @@ export default function PassportTests() {
     } catch (error) {
       console.error('Error in testCert:', error)
     } finally {
-      setIsSubmitting(true)
+      setIsSubmitting(false)
     }
   }, [createIdentity])
-
-  // const testNoir = useCallback(async () => {
-  //   // TODO: Replace with the correct circuit after its release
-  //   const noirInstance = NoirCircuitParams.fromName('registerIdentity_26_512_3_3_336_248_NA')
-  //   const RAW_TEST_INPUTS = JSON.parse(Config.TEST_INPUTS) as {
-  //     dg1: string[]
-  //     dg15: string[]
-  //     ec: string[]
-  //     icao_root: string
-  //     inclusion_branches: string[]
-  //     pk: string[]
-  //     reduction_pk: string[]
-  //     sa: string[]
-  //     sig: string[]
-  //     sk_identity: string
-  //   }
-
-  //   /**
-  //    * IMPORTANT: All values in HEX_INPUTS must be hexadecimal strings
-  //    * and include the '0x' prefix.
-  //    */
-  //   const HEX_INPUTS = {
-  //     dg1: RAW_TEST_INPUTS.dg1.map(decToHex),
-  //     dg15: RAW_TEST_INPUTS.dg15.map(decToHex),
-  //     ec: RAW_TEST_INPUTS.ec.map(decToHex),
-  //     icao_root: ensureHex(RAW_TEST_INPUTS.icao_root),
-  //     inclusion_branches: RAW_TEST_INPUTS.inclusion_branches.map(decToHex),
-  //     pk: RAW_TEST_INPUTS.pk.map(ensureHex),
-  //     reduction_pk: RAW_TEST_INPUTS.reduction_pk.map(ensureHex),
-  //     sa: RAW_TEST_INPUTS.sa.map(decToHex),
-  //     sig: RAW_TEST_INPUTS.sig.map(ensureHex),
-  //     sk_identity: ensureHex(RAW_TEST_INPUTS.sk_identity),
-  //   }
-
-  //   await NoirCircuitParams.downloadTrustedSetup({
-  //     // TODO: Add download trusted setup UI progress if needed
-  //     // onDownloadingProgress: downloadProgress => {
-  //     //   console.log('progress:', downloadProgress)
-  //     // },
-  //   })
-
-  //   // TODO: replace test `@assets/noir_dl.json` with noirInstance.downloadByteCode()
-  //   // after its release
-  //   // const bytesCodeString = await noirInstance.downloadByteCode()
-  //   const bytesCodeString = JSON.stringify(require('@assets/noir_dl.json'))
-
-  //   const inputsJson = JSON.stringify(HEX_INPUTS)
-
-  //   const proof = await noirInstance.prove(inputsJson, bytesCodeString)
-  //   console.log('Proof:', proof)
-  // }, [])
 
   return (
     <AppContainer>

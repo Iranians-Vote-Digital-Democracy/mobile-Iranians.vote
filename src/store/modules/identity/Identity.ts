@@ -49,17 +49,17 @@ export class IdentityItem {
     return this.registrationProof.pub_signals[0]
   }
   get passportHash() {
-    if (this.document instanceof EID) return this.registrationProof.pub_signals[3]
+    if (this.document instanceof EID) return this.registrationProof.pub_signals[2]
 
     return this.registrationProof.pub_signals[1]
   }
   get dg1Commitment() {
-    if (this.document instanceof EID) return this.registrationProof.pub_signals[4]
+    if (this.document instanceof EID) return this.registrationProof.pub_signals[3]
 
     return this.registrationProof.pub_signals[2]
   }
   get pkIdentityHash() {
-    if (this.document instanceof EID) return this.registrationProof.pub_signals[5]
+    if (this.document instanceof EID) return this.registrationProof.pub_signals[4]
 
     return this.registrationProof.pub_signals[3]
   }

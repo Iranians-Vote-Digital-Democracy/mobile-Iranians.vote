@@ -263,7 +263,7 @@ export const useRegistration = () => {
       isRevoked: boolean,
     ) => {
       // TODO: handle circom
-      const registerCallData = registerContracts.buildNoirRegisterCallData(
+      const registerCallData = await registerContracts.buildNoirRegisterCallData(
         identityItem,
         slaveCertSmtProof,
         isRevoked,

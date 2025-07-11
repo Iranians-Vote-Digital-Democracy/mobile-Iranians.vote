@@ -16,7 +16,7 @@ export const useRegisterContracts = () => {
 
   // TODO: check if it works
   const buildNoirRegisterCallData = useCallback(
-    (
+    async (
       identityItem: IdentityItem,
       slaveCertSmtProof: SparseMerkleTree.ProofStructOutput,
       isRevoked: boolean,
@@ -51,6 +51,25 @@ export const useRegisterContracts = () => {
         const proof = registrationProof.proof.startsWith('0x')
           ? registrationProof.proof
           : `0x${registrationProof.proof}`
+
+        // const voidSigner = new VoidSigner(
+        //   '0x52749da41B7196A7001D85Ce38fa794FE0F9044E',
+        //   new JsonRpcProvider(RARIMO_CHAINS[Config.RMO_CHAIN_ID].rpcEvm),
+        // )
+        // const preparedTx = await voidSigner.populateCall({
+        //   to: Config.REGISTRATION_CONTRACT_ADDRESS,
+        //   data: registrationContractInterface.encodeFunctionData('registerViaNoir', [
+        //     slaveCertSmtProof.root,
+        //     pkIdentityHash,
+        //     dg1Commitment,
+        //     passport,
+        //     proof,
+        //   ]),
+        // })
+
+        // console.log({ preparedTx })
+
+        // throw new Error('purpose')
 
         if (isRevoked) {
           return registrationContractInterface.encodeFunctionData('reissueIdentityViaNoir', [
