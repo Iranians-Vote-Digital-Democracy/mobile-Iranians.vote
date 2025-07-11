@@ -10,6 +10,7 @@ export type RootStackParamList = {
   App: NavigatorScreenParams<AppStackParamsList>
 }
 
+// FIXME: Inherits wrong `params` interface
 export type RootStackScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<
   RootStackParamList,
   T

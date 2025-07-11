@@ -1,5 +1,11 @@
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import * as Linking from 'expo-linking'
+import { QueryParams } from 'expo-linking'
+import { useEffect, useState } from 'react'
+import { Text, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import InviteOthers from '@/pages/app/pages/invite-others'
 import type {
@@ -8,7 +14,9 @@ import type {
   AppTabParamsList,
   RootStackScreenProps,
 } from '@/route-types'
-import { UiIcon } from '@/ui'
+import { useAppTheme } from '@/theme'
+import { UiBottomSheet, UiHorizontalDivider, UiIcon, useUiBottomSheet } from '@/ui'
+import { BottomSheetHeader } from '@/ui/UiBottomSheet'
 
 import BottomTabBar from './components/BottomTabBarTabBar'
 import DocumentScanScreen from './pages/document-scan'
@@ -90,20 +98,69 @@ function AppTabs({}: AppStackScreenProps<'Tabs'>) {
 
 // eslint-disable-next-line no-empty-pattern
 export default function App({}: RootStackScreenProps<'App'>) {
+  const [modalParams, setModalParams] = useState<QueryParams | null>(null)
+  const cardUiSettingsBottomSheet = useUiBottomSheet()
+  const { palette } = useAppTheme()
+  const insets = useSafeAreaInsets()
+
+  useEffect(() => {
+    const handleDeepLink = async () => {
+      const url = await Linking.getInitialURL()
+      if (!url) return
+
+      const parsed = Linking.parse(url)
+      const params = parsed.queryParams
+
+      if (params && Object.keys(params).length > 0) {
+        setModalParams(params)
+        cardUiSettingsBottomSheet.present()
+      }
+    }
+
+    handleDeepLink()
+  }, [cardUiSettingsBottomSheet])
+
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen name='Tabs' component={AppTabs} />
-      <Stack.Screen
-        name='InviteOthers'
-        component={InviteOthers}
-        options={{
-          animation: 'fade',
+    <>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
         }}
-      />
-    </Stack.Navigator>
+      >
+        <Stack.Screen name='Tabs' component={AppTabs} />
+        <Stack.Screen
+          name='InviteOthers'
+          component={InviteOthers}
+          options={{
+            animation: 'fade',
+          }}
+        />
+      </Stack.Navigator>
+
+      <UiBottomSheet
+        ref={cardUiSettingsBottomSheet.ref}
+        headerComponent={
+          <BottomSheetHeader
+            title='Settings'
+            dismiss={cardUiSettingsBottomSheet.dismiss}
+            className='px-5'
+          />
+        }
+        backgroundStyle={{
+          backgroundColor: palette.backgroundContainer,
+        }}
+        snapPoints={['50%']}
+      >
+        <UiHorizontalDivider />
+        <BottomSheetScrollView style={{ paddingBottom: insets.bottom }}>
+          <View style={{ padding: 16 }}>
+            <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>Deep link params:</Text>
+            <Text selectable>
+              {modalParams ? JSON.stringify(modalParams, null, 2) : 'No params'}
+            </Text>
+          </View>
+        </BottomSheetScrollView>
+      </UiBottomSheet>
+    </>
   )
 }
