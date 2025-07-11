@@ -67,7 +67,7 @@ export default function AppRoutes() {
         }}
       >
         <Stack.Navigator>
-          {isAuthorized ? (
+          {!isAuthorized ? (
             <>
               {isUserNeedToLocalAuth ? (
                 <Stack.Screen
