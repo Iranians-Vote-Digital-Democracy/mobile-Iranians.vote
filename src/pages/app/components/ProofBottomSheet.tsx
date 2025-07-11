@@ -7,14 +7,28 @@ import { Text } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useAppTheme } from '@/theme'
-import { UiBottomSheet, UiHorizontalDivider, useUiBottomSheet } from '@/ui'
+import { UiBottomSheet, UiButton, UiHorizontalDivider, useUiBottomSheet } from '@/ui'
 import { BottomSheetHeader } from '@/ui/UiBottomSheet'
+import { QueryIdentityCircuit } from '@/utils/circuits/query-identity-circuits'
 
 export default function ProofBottomSheet() {
   const [modalParams, setModalParams] = useState<QueryParams | null>(null)
   const cardUiSettingsBottomSheet = useUiBottomSheet()
+
   const { palette } = useAppTheme()
   const insets = useSafeAreaInsets()
+
+  const generateProof = async () => {
+    const circuitParams = new QueryIdentityCircuit()
+    console.log('download started')
+    const byteCodeString = await circuitParams.downloadByteCode()
+    console.log('download ended')
+    const proof = await circuitParams.prove(
+      JSON.stringify(QueryIdentityCircuit.TEST_DATA),
+      byteCodeString,
+    )
+    console.log('success', proof)
+  }
 
   useEffect(() => {
     const handleDeepLink = async () => {
@@ -51,7 +65,22 @@ export default function ProofBottomSheet() {
 
   return (
     <UiBottomSheet
+      enableDynamicSizing={true}
       ref={cardUiSettingsBottomSheet.ref}
+      footerComponent={() => (
+        <View
+          className='flex w-full flex-row gap-2'
+          style={{ paddingBottom: insets.bottom + 1, paddingHorizontal: 10 }}
+        >
+          <UiButton
+            title='Cancel'
+            variant='outlined'
+            className='flex-1'
+            onPress={() => cardUiSettingsBottomSheet.dismiss()}
+          />
+          <UiButton title='Generate proof' className='flex-1' onPress={generateProof} />
+        </View>
+      )}
       headerComponent={
         <BottomSheetHeader
           title='Settings'
@@ -65,7 +94,7 @@ export default function ProofBottomSheet() {
       snapPoints={['50%']}
     >
       <UiHorizontalDivider />
-      <BottomSheetScrollView style={{ paddingBottom: insets.bottom }}>
+      <BottomSheetScrollView>
         <View style={{ padding: 16 }}>
           <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>Deep link params:</Text>
           <Text selectable>{modalParams ? JSON.stringify(modalParams, null, 2) : 'No params'}</Text>
