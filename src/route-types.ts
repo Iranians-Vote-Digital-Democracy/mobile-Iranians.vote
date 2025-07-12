@@ -40,6 +40,12 @@ export type AppStackParamsList = {
   InviteOthers?: {
     tag?: string
   }
+
+  Scan:
+    | {
+        documentType?: DocType
+      }
+    | undefined
 }
 
 export type AppStackScreenProps<T extends keyof AppStackParamsList> = NativeStackScreenProps<
@@ -51,11 +57,6 @@ export type AppTabParamsList = {
   Documents: undefined
   Home: undefined
   Profile: undefined
-  Scan:
-    | {
-        documentType?: DocType
-      }
-    | undefined
   PassportTests: undefined
 }
 
