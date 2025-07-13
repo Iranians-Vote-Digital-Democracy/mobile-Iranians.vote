@@ -34,12 +34,13 @@ require('dotenv').config({
 
 // TODO: Replace these values with your own
 
-const BUNDLE_ID = 'com.lukachi.template' // ios bundle id
-const PACKAGE = 'com.lukachi.template' // android package name
-const NAME = 'lukachi-template' // app name
-const EXPO_ACCOUNT_OWNER = 'lukachi' // expo account owner
-const EAS_PROJECT_ID = '40c83c51-180e-486a-bb1e-290cd69e8fe3' // eas project id
-const SCHEME = 'lukachiTemplateApp' // app scheme
+const BUNDLE_ID = 'com.inid.app' // ios bundle id
+const PACKAGE = 'com.inid.app' // android package name
+const NAME = 'Inid App' // app name
+const SLUG = 'inid-app' // app name
+const EXPO_ACCOUNT_OWNER = 'dl-expo' // expo account owner
+const EAS_PROJECT_ID = '96af8807-05d4-41a3-9d2c-aa5940892f89' // eas project id
+const SCHEME = 'inidApp' // app scheme
 
 /**
  * We declare a function withEnvSuffix that will add a suffix to the variable name based on the APP_ENV
@@ -79,6 +80,7 @@ const getSecretWithSuffix = name => {
 const client = z.object({
   APP_ENV: z.enum(['development', 'staging', 'production']),
   NAME: z.string(),
+  SLUG: z.string(),
   SCHEME: z.string(),
   BUNDLE_ID: z.string(),
   PACKAGE: z.string(),
@@ -109,6 +111,7 @@ const _clientEnv = {
   APP_ENV,
   NAME: NAME,
   SCHEME: SCHEME,
+  SLUG: SLUG,
   BUNDLE_ID: withEnvSuffix(BUNDLE_ID),
   PACKAGE: withEnvSuffix(PACKAGE),
   VERSION: packageJSON.version,
