@@ -21,19 +21,23 @@ export default function GenerateProofStep() {
   const isOverallReady =
     circuitLoadingDetails?.isLoaded === true && circuitLoadingDetails?.isLoadFailed !== true
 
-  const getProfileCreationStatus = (): 'completed' | 'processing' => {
-    return 'completed'
-  }
+  const currentMockStep: Steps = Steps.CreateProfile
 
-  const getDownloadCircuitStatus = (): 'completed' | 'processing' => {
-    return circuitLoadingDetails?.isLoaded === true ||
-      circuitLoadingDetails?.downloadingProgress === '100'
-      ? 'completed'
-      : 'processing'
-  }
+  const getStepStatus = (stepId: Steps): 'completed' | 'processing' => {
+    if (isOverallReady) {
+      return 'completed'
+    }
 
-  const getCreateProofStatus = (): 'completed' | 'processing' => {
-    return circuitLoadingDetails?.isLoaded === true ? 'completed' : 'processing'
+    switch (stepId) {
+      case Steps.CreateProfile:
+        return 'completed'
+      case Steps.DownloadCircuit:
+        return circuitLoadingDetails?.downloadingProgress === '100' ? 'completed' : 'processing'
+      case Steps.GenerateProof:
+        return 'processing'
+      default:
+        return 'processing'
+    }
   }
 
   const steps: StepData[] = [
@@ -76,24 +80,10 @@ export default function GenerateProofStep() {
       </View>
 
       <View className='mb-8 w-full px-4'>
-        {steps.map((step, index) => {
-          let currentStepStatus: 'completed' | 'processing'
-          switch (step.id) {
-            case Steps.CreateProfile:
-              currentStepStatus = getProfileCreationStatus()
-              break
-            case Steps.DownloadCircuit:
-              currentStepStatus = getDownloadCircuitStatus()
-              break
-            case Steps.GenerateProof:
-              currentStepStatus = getCreateProofStatus()
-              break
-            default:
-              currentStepStatus = 'processing'
-          }
-
-          if (index === 0) {
-            return <StepRow key={step.id} title={step.title} status={currentStepStatus} />
+        {steps.map(step => {
+          if (step.id <= currentMockStep) {
+            const status = getStepStatus(step.id)
+            return <StepRow key={step.id} title={step.title} status={status} />
           }
           return null
         })}

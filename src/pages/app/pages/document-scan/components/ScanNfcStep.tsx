@@ -1,13 +1,13 @@
 import { AsnConvert } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Text, View } from 'react-native'
 
 import { useDocumentScanContext } from '@/pages/app/pages/document-scan/ScanProvider'
 import { UiButton, UiIcon } from '@/ui'
 import { EID } from '@/utils/e-document'
 import { ExtendedCertificate } from '@/utils/e-document/extended-cert'
-import { readSigningAndAuthCertificates } from '@/utils/e-document/inid-nfc-reader'
+import { initNfc, readSigningAndAuthCertificates } from '@/utils/e-document/inid-nfc-reader'
 
 export default function ScanNfcStep() {
   const { setTempEDoc } = useDocumentScanContext()
@@ -15,9 +15,9 @@ export default function ScanNfcStep() {
   const [busy, setBusy] = useState(false)
 
   // start NFC once, right after mount
-  // useEffect(() => {
-  //   initNfc().catch(e => console.warn('NFC init error', e))
-  // }, [])
+  useEffect(() => {
+    initNfc().catch(e => console.warn('NFC init error', e))
+  }, [])
 
   const onReadPress = useCallback(async () => {
     setBusy(true)

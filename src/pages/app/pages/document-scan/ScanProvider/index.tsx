@@ -15,7 +15,7 @@ import { DocType, EDocument, EPassport } from '@/utils/e-document/e-document'
 
 export enum Steps {
   // SelectDocTypeStep,
-  // ScanMrzStep,
+  ScanMrzStep,
   ScanNfcStep,
   DocumentPreviewStep,
   GenerateProofStep,
@@ -154,7 +154,7 @@ export function ScanContextProvider({
 
   const handleSetSelectedDocType = useCallback((value: DocType) => {
     setSelectedDocType(value)
-    // setCurrentStep(Steps.ScanMrzStep)
+    setCurrentStep(Steps.ScanMrzStep)
   }, [])
   const handleSetMrz = useCallback((value: FieldRecords) => {
     setTempMRZ(value)
