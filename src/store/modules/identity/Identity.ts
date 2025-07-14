@@ -99,13 +99,13 @@ export class NoirEIDIdentity extends IdentityItem {
     throw new Error('EID does not have a public key')
   }
   get passportHash() {
-    return this.registrationProof.pub_signals[2]
+    return this.registrationProof.pub_signals[1]
   }
   get dg1Commitment() {
-    return this.registrationProof.pub_signals[3]
+    return this.registrationProof.pub_signals[2]
   }
   get pkIdentityHash() {
-    return this.registrationProof.pub_signals[4]
+    return this.registrationProof.pub_signals[3]
   }
   get identityKey() {
     return this.passportHash
