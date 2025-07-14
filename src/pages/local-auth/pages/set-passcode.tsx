@@ -52,7 +52,7 @@ export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>
       <View className={cn('flex-1')}>
         <View className={cn('my-auto flex w-full items-center gap-4 p-5')}>
           <View>
-            <Text className={cn('text-center text-textPrimary typography-h4')}>
+            <Text className={cn('typography-h4 text-center text-textPrimary')}>
               {translate('set-passcode.title')}
             </Text>
             <Text className={cn('typography-body-3 text-center text-textSecondary')}>

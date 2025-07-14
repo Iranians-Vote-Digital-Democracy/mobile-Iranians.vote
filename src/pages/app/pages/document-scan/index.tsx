@@ -3,7 +3,6 @@ import {
   Steps,
   useDocumentScanContext,
 } from '@/pages/app/pages/document-scan/ScanProvider'
-import type { AppStackScreenProps } from '@/route-types'
 import { DocType } from '@/utils/e-document'
 
 import {
@@ -14,7 +13,7 @@ import {
   SuccessStep,
 } from './components'
 
-export default function DocumentScanScreen({ route }: AppStackScreenProps<'Scan'>) {
+export default function DocumentScanScreen() {
   return (
     <ScanContextProvider docType={DocType.ID}>
       <DocumentScanContent />

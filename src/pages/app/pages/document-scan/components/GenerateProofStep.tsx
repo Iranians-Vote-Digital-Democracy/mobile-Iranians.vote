@@ -3,20 +3,44 @@ import { Text, View } from 'react-native'
 import { useDocumentScanContext } from '@/pages/app/pages/document-scan/ScanProvider'
 import { UiButton, UiIcon } from '@/ui'
 
+export enum Steps {
+  CreateProfile,
+  DownloadCircuit,
+  GenerateProof,
+  Final,
+}
+
+interface StepData {
+  id: Steps
+  title: string
+}
+
 export default function GenerateProofStep() {
   const { circuitLoadingDetails } = useDocumentScanContext()
 
   const isOverallReady =
     circuitLoadingDetails?.isLoaded === true && circuitLoadingDetails?.isLoadFailed !== true
 
-  const profileCreationStatus = 'completed'
+  const getProfileCreationStatus = (): 'completed' | 'processing' => {
+    return 'completed'
+  }
 
-  const downloadCircuitStatus =
-    circuitLoadingDetails?.isLoaded === true || circuitLoadingDetails?.downloadingProgress === '100'
+  const getDownloadCircuitStatus = (): 'completed' | 'processing' => {
+    return circuitLoadingDetails?.isLoaded === true ||
+      circuitLoadingDetails?.downloadingProgress === '100'
       ? 'completed'
       : 'processing'
+  }
 
-  const createProofStatus = circuitLoadingDetails?.isLoaded === true ? 'completed' : 'processing'
+  const getCreateProofStatus = (): 'completed' | 'processing' => {
+    return circuitLoadingDetails?.isLoaded === true ? 'completed' : 'processing'
+  }
+
+  const steps: StepData[] = [
+    { id: Steps.CreateProfile, title: 'Profile creation' },
+    { id: Steps.DownloadCircuit, title: 'Download Circuit' },
+    { id: Steps.GenerateProof, title: 'Create Proof' },
+  ]
 
   const StepRow = ({ title, status }: { title: string; status: 'completed' | 'processing' }) => (
     <View className='flex-row items-center justify-between border-b border-componentHovered py-2'>
@@ -52,13 +76,31 @@ export default function GenerateProofStep() {
       </View>
 
       <View className='mb-8 w-full px-4'>
-        <StepRow title='Profile creation' status={profileCreationStatus} />
-        <StepRow title='Download Circuit' status={downloadCircuitStatus} />
-        <StepRow title='Create Proof' status={createProofStatus} />
+        {steps.map((step, index) => {
+          let currentStepStatus: 'completed' | 'processing'
+          switch (step.id) {
+            case Steps.CreateProfile:
+              currentStepStatus = getProfileCreationStatus()
+              break
+            case Steps.DownloadCircuit:
+              currentStepStatus = getDownloadCircuitStatus()
+              break
+            case Steps.GenerateProof:
+              currentStepStatus = getCreateProofStatus()
+              break
+            default:
+              currentStepStatus = 'processing'
+          }
+
+          if (index === 0) {
+            return <StepRow key={step.id} title={step.title} status={currentStepStatus} />
+          }
+          return null
+        })}
       </View>
 
       {isOverallReady && (
-        <View className='mt-auto'>
+        <View className='mt-auto w-full'>
           <UiButton
             title='Home Page'
             onPress={() => {}} // TODO:logic in future

@@ -1,10 +1,9 @@
-import { AsnConvert } from '@peculiar/asn1-schema'
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Image, Text, View } from 'react-native'
 
 import { translate } from '@/core'
 import { UiButton } from '@/ui'
-import { initNfc } from '@/utils/e-document/inid-nfc-reader'
+import { initNfc, readSigningAndAuthCertificates } from '@/utils/e-document/inid-nfc-reader'
 
 export default function ScanNfcStep() {
   const [busy, setBusy] = useState(false)
@@ -38,11 +37,11 @@ export default function ScanNfcStep() {
 
       if (!signingCert) throw new Error('Signing certificate not found')
 
-      console.log(AsnConvert.parse(Buffer.from(signingCert, 'hex'), Certificate))
+      //console.log(AsnConvert.parse(Buffer.from(signingCert, 'hex'), Certificate))
 
       if (!authCert) throw new Error('Authentication certificate not found')
 
-      console.log(AsnConvert.parse(Buffer.from(authCert, 'hex'), Certificate))
+      //console.log(AsnConvert.parse(Buffer.from(authCert, 'hex'), Certificate))
     } catch (e) {
       console.error({ e })
       setError(e.message ?? String(e))

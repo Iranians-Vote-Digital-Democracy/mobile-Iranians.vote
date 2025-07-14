@@ -16,16 +16,16 @@ export default function DocumentPreviewStep() {
 
     return (
       <AppContainer className='mb-20 mt-10 flex-1 items-center justify-center p-6'>
-        <Text className='mb-2 text-textPrimary typography-h5'>Information</Text>
-        <Text className='mb-8 text-textSecondary typography-body3'>
+        <Text className='typography-h5 mb-2 text-textPrimary'>Information</Text>
+        <Text className='typography-body3 mb-8 text-textSecondary'>
           Data generates a digital profile
         </Text>
         <View className='flex-1 flex-col gap-4 p-5'>
           <UiCard>
             <View className='flex flex-row'>
               <View className='flex flex-1 flex-col gap-2'>
-                <Text className='text-textPrimary typography-h6'>{`${firstName} ${lastName}`}</Text>
-                <Text className='text-textSecondary typography-body3'>
+                <Text className='typography-h6 text-textPrimary'>{`${firstName} ${lastName}`}</Text>
+                <Text className='typography-body3 text-textSecondary'>
                   Age: ${restDetails.birthDate} {/* TODO change in the future */}
                 </Text>
               </View>
@@ -44,8 +44,8 @@ export default function DocumentPreviewStep() {
               Object.keys(restDetails).map(key => {
                 return (
                   <View key={key} className='flex flex-row items-center justify-between gap-2'>
-                    <Text className='capitalize text-textSecondary typography-body3'>{key}</Text>
-                    <Text className='text-textPrimary typography-subtitle4'>
+                    <Text className='typography-body3 capitalize text-textSecondary'>{key}</Text>
+                    <Text className='typography-subtitle4 text-textPrimary'>
                       {restDetails?.[key as keyof typeof tempEDoc.personDetails]}
                     </Text>
                   </View>
@@ -94,7 +94,7 @@ export default function DocumentPreviewStep() {
     return (
       <AppContainer className='flex-1 items-center justify-center'>
         <Text className='typography-title1 text-textPrimary'>EID Document Preview</Text>
-        <Text className='mt-2 text-textPrimary typography-body2'>
+        <Text className='typography-body2 mt-2 text-textPrimary'>
           EID document preview is not implemented yet.
         </Text>
       </AppContainer>
@@ -103,8 +103,8 @@ export default function DocumentPreviewStep() {
 
   return (
     <AppContainer className='mb-20 mt-10 flex-1 items-center justify-center p-6'>
-      <Text className='mb-2 text-textPrimary typography-h5'>Information</Text>
-      <Text className='mb-8 text-textSecondary typography-body3'>
+      <Text className='typography-h5 mb-2 text-textPrimary'>Information</Text>
+      <Text className='typography-body3 mb-8 text-textSecondary'>
         Data generates a digital profile
       </Text>
       <UiIcon
@@ -112,7 +112,7 @@ export default function DocumentPreviewStep() {
         customIcon='userCircleIcon'
         size={250}
       />
-      <Text className='max-w-sm text-center text-textSecondary typography-body2'>
+      <Text className='typography-body2 max-w-sm text-center text-textSecondary'>
         Document preview is not currently unavailable for this document type. We are actively
         working on adding support!
       </Text>
