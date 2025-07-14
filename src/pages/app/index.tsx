@@ -55,16 +55,6 @@ function AppTabs({}: AppStackScreenProps<'Tabs'>) {
         }}
       />
       <Tab.Screen
-        name='Scan'
-        component={DocumentScanScreen}
-        options={{
-          headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <UiIcon libIcon='MaterialCommunityIcons' name='line-scan' size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
         name='Profile'
         component={ProfileScreen}
         options={{
@@ -102,6 +92,14 @@ export default function App({}: RootStackScreenProps<'App'>) {
         component={InviteOthers}
         options={{
           animation: 'fade',
+        }}
+      />
+
+      <Stack.Screen
+        name='Scan'
+        component={DocumentScanScreen}
+        options={{
+          headerShown: false,
         }}
       />
     </Stack.Navigator>

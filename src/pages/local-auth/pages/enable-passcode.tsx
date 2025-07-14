@@ -41,19 +41,19 @@ export default function EnablePasscode({}: LocalAuthStackScreenProps<'EnablePass
           <UiIcon customIcon='lockIcon' size={64} color={palette.textPrimary} />
         </View>
 
-        <Text className={cn('text-textPrimary typography-h4')}>
+        <Text className={cn('typography-h4 text-textPrimary')}>
           {translate('enable-passcode.title')}
         </Text>
       </View>
 
       <View className={cn('flex w-full gap-6 p-5')}>
         <UiButton
-          className='text-textPrimary typography-buttonMedium'
+          className='typography-buttonMedium text-textPrimary'
           title={translate('enable-passcode.enable-btn')}
           onPress={onConfirm}
         />
         <UiButton
-          className='bg-transparent text-textSecondary typography-buttonMedium'
+          className='typography-buttonMedium text-textSecondary'
           title={translate('enable-passcode.skip-btn')}
           onPress={onSkip}
         />

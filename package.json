@@ -1,10 +1,7 @@
 {
   "name": "template-v1",
   "main": "src/main.ts",
-  "version": "1.2.0",
-  "gitHooks": {
-    "pre-push": "yarn lint && yarn type-check"
-  },
+  "version": "0.1.0",
   "scripts": {
     "prebuild": "npx expo prebuild --clean && npx pod-install",
     "start": "npx expo start --clear",
@@ -24,10 +21,8 @@
     "ios:production": "cross-env APP_ENV=production yarn ios",
     "build:production:ios": "cross-env APP_ENV=production eas build --profile production --platform ios",
     "build:production:android": "cross-env APP_ENV=production eas build --profile production --platform android",
-    "prepare": "husky",
     "prepare-secrets": "node ./scripts/prepare-secrets.cjs",
-    "app-release": "cross-env SKIP_BRANCH_PROTECTION=true np --no-publish --no-cleanup --no-release-draft",
-    "version": "yarn prebuild && git add .",
+    "release": "release-it --verbose",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --cache --cache-location 'node_modules/.cache/.eslintcache' --max-warnings 0",
     "lint:fix": "eslint . --fix --cache --cache-location 'node_modules/.cache/.eslintcache' --max-warnings 0",
@@ -41,6 +36,28 @@
     "doctor": "npx expo-doctor@latest",
     "eas-build-pre-install": "./scripts/git-lfs-pre-install.sh"
   },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release ${version}",
+      "tagName": "v${version}",
+      "requireCleanWorkingDir": false,
+      "requireBranch": "main"
+    },
+    "github": {
+      "release": true
+    },
+    "npm": {
+      "publish": false,
+      "skipChecks": true
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": {
+          "name": "angular"
+        }
+      }
+    }
+  },
   "jest": {
     "preset": "jest-expo"
   },
@@ -51,16 +68,13 @@
     "@gorhom/bottom-sheet": "^5.0.6",
     "@hookform/resolvers": "^3.9.0",
     "@iden3/js-crypto": "^1.3.1",
-    "@iden3/js-merkletree": "^1.5.0",
     "@li0ard/tsemrtd": "^0.2.2",
     "@lukachi/rn-csca": "^0.2.0",
     "@noble/curves": "^1.9.2",
-    "@peculiar/asn1-cert-transparency": "^2.3.15",
     "@peculiar/asn1-cms": "^2.3.15",
     "@peculiar/asn1-ecc": "^2.3.15",
     "@peculiar/asn1-rsa": "^2.3.15",
     "@peculiar/asn1-schema": "^2.3.15",
-    "@peculiar/asn1-x509-post-quantum": "^2.3.15",
     "@peculiar/x509": "^1.12.4",
     "@react-native-community/hooks": "^3.0.0",
     "@react-native-community/slider": "^4.5.5",
@@ -92,7 +106,6 @@
     "expo-build-properties": "~0.13.3",
     "expo-clipboard": "~7.0.0",
     "expo-constants": "~17.0.3",
-    "expo-crypto": "14.0.2",
     "expo-dev-client": "~5.0.5",
     "expo-file-system": "~18.0.4",
     "expo-font": "~13.0.1",
@@ -112,7 +125,6 @@
     "i18next": "^23.11.5",
     "jsona": "^1.12.1",
     "lodash": "^4.17.21",
-    "merkletreejs": "^0.5.2",
     "mrz": "^4.2.0",
     "nativewind": "4.1.21",
     "os-browserify": "^0.3.0",
@@ -123,13 +135,12 @@
     "react-hook-form": "^7.52.1",
     "react-i18next": "^14.1.2",
     "react-native": "0.76.9",
-    "react-native-avoid-softinput": "7.0.0",
-    "react-native-executorch": "^0.3.2",
     "react-native-gesture-handler": "2.21.2",
     "react-native-get-random-values": "^1.11.0",
+    "react-native-keyboard-controller": "^1.17.5",
+    "react-native-linear-gradient": "^2.8.3",
     "react-native-mmkv": "3.1.0",
     "react-native-nfc-manager": "^3.16.2",
-    "react-native-quick-base64": "^2.1.2",
     "react-native-reanimated": "3.16.7",
     "react-native-reanimated-carousel": "4.0.2",
     "react-native-restart": "^0.0.27",
@@ -161,6 +172,7 @@
     "@expo/config-plugins": "~9.0.0",
     "@expo/metro-config": "~0.19.5",
     "@expo/metro-runtime": "~4.0.0",
+    "@release-it/conventional-changelog": "^10.0.1",
     "@stylistic/eslint-plugin-js": "^3.0.1",
     "@stylistic/eslint-plugin-jsx": "^3.0.1",
     "@stylistic/eslint-plugin-ts": "^3.0.1",
@@ -202,16 +214,17 @@
     "jest-environment-jsdom": "^29.7.0",
     "jest-expo": "~52.0.2",
     "jest-junit": "^16.0.0",
+    "lefthook": "^1.12.2",
     "np": "^10.0.7",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "react-native-svg": "^15.12.0",
     "react-native-svg-transformer": "^1.5.0",
+    "release-it": "^19.0.3",
     "ts-jest": "^29.1.2",
     "typechain": "^8.3.2",
     "typescript": "~5.7.3",
-    "typescript-eslint": "^8.23.0",
-    "yorkie": "^2.0.0"
+    "typescript-eslint": "^8.23.0"
   },
   "private": true,
   "packageManager": "yarn@4.5.0"
