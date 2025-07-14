@@ -3,7 +3,7 @@ import { parsePemString } from '@lukachi/rn-csca'
 import { AsnConvert } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
 import { JsonRpcProvider, zeroPadValue } from 'ethers'
-import { Asset } from 'expo-asset'
+import { Asset, useAssets } from 'expo-asset'
 import * as FileSystem from 'expo-file-system'
 import { QueryParams } from 'expo-linking'
 import * as Linking from 'expo-linking'
@@ -26,6 +26,7 @@ import { EID, EPassport } from '@/utils/e-document'
 import { ExtendedCertificate } from '@/utils/e-document/extended-cert'
 
 export default function ProofBottomSheet() {
+  const [authAssets] = useAssets([require('@assets/certificates/AuthCert_0897A6C3.cer')])
   const [modalParams, setModalParams] = useState<QueryParams | null>(null)
   const cardUiSettingsBottomSheet = useUiBottomSheet()
   const privateKey = walletStore.useWalletStore.getState().privateKey
@@ -84,6 +85,7 @@ export default function ProofBottomSheet() {
       console.log('🔍 SigningCert parsed successfully')
 
       const eID = new EID(signingCertificate, authCertificate)
+
       console.log('🧬 EID created')
 
       const targetCertificate =
@@ -108,6 +110,7 @@ export default function ProofBottomSheet() {
           inclusionBranches: slaveCertSmtProof.siblings.map(el => BigInt(el)),
         }),
       )
+
       if (getRegProofError) {
         throw new TypeError('Failed to get identity registration proof', getRegProofError)
       }
@@ -115,7 +118,12 @@ export default function ProofBottomSheet() {
       const identity = new IdentityItem(eID, regProof)
       console.log('✅ IdentityItem successfully created')
 
-      return { identity, slaveCertSmtProof, targetCertificate }
+      return {
+        identity,
+        slaveCertSmtProof,
+        targetCertificate,
+        sigCert: eID.sigCertificate,
+      }
     } catch (err) {
       console.error('🔥 Error in getMinimalIdentityData:', err)
       throw err
@@ -128,7 +136,8 @@ export default function ProofBottomSheet() {
     const circuitParams = new QueryIdentityCircuit()
     console.log('✅ [circuit] QueryIdentityCircuit initialized')
 
-    const { identity, slaveCertSmtProof, targetCertificate } = await getMinimalIdentityData()
+    const { identity, slaveCertSmtProof, targetCertificate, sigCert } =
+      await getMinimalIdentityData()
     console.log('✅ [identity] Minimal identity data received')
     console.log('🧾 identity:', identity)
     console.log('🌿 slaveCertSmtProof.root:', slaveCertSmtProof.root)
@@ -157,12 +166,17 @@ export default function ProofBottomSheet() {
 
     console.log('🔑 [PrivateKey] Pulled from walletStore', privateKey)
 
+    const dg1 = circuitParams.buildDg1FromTbs(sigCert.certificate.tbsCertificate)
+
+    console.log('dg1', dg1)
+
     const inputs = circuitParams.buildInputs({
-      icaoRoot: slaveCertSmtProof.root.toString(),
-      skIdentity: `0x${privateKey}`,
+      skIdentity: String(BigInt(`0x${privateKey}`)),
+      icaoRoot: String(BigInt(slaveCertSmtProof.root)),
       pkPassportHash: identity?.passportHash as string,
-      dg1: Array.from(Buffer.from((identity?.dg1Commitment as string)?.replace(/^0x/, ''), 'hex')),
-      inclusionBranches: slaveCertSmtProof.siblings,
+      dg1,
+      // inclusionBranches: slaveCertSmtProof.siblings,
+      inclusionBranches: slaveCertSmtProof.siblings.map(el => BigInt(el)).map(String),
     })
 
     console.log('🛠️ [Inputs] Prepared inputs for circuit')
