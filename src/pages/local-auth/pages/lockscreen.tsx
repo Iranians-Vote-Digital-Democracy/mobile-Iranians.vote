@@ -98,7 +98,8 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
     if (biometricStatus === BiometricStatuses.Enabled) {
       unlockWithBiometrics()
     }
-  })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <UiScreenScrollable className={cn('flex flex-1 items-center justify-center')}>
