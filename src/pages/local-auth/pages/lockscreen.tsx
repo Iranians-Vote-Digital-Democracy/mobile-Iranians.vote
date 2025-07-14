@@ -1,15 +1,15 @@
+import { useNavigation } from '@react-navigation/native'
 import { useCallback, useEffect, useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ErrorHandler, translate } from '@/core'
+import BiometricsIcon from '@/pages/local-auth/components/BiometricsIcon'
 import HiddenPasscodeView from '@/pages/local-auth/components/HiddenPasscodeView'
 import type { LocalAuthStackScreenProps } from '@/route-types'
 import { authStore, BiometricStatuses, localAuthStore, MAX_ATTEMPTS } from '@/store'
 import { cn } from '@/theme'
 import { UiButton, UiNumPad, UiScreenScrollable } from '@/ui'
-
-import BiometricsIcon from '../components/BiometricsIcon'
 
 const useUnlockWithBiometrics = () => {
   const tryUnlockWithBiometrics = localAuthStore.useLocalAuthStore(
@@ -45,7 +45,6 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
   const biometricStatus = localAuthStore.useLocalAuthStore(state => state.biometricStatus)
   const attemptsLeft = localAuthStore.useLocalAuthStore(state => state.attemptsLeft)
   const lockDeadline = localAuthStore.useLocalAuthStore(state => state.lockDeadline)
-  const logout = authStore.useLogout()
 
   const checkLockDeadline = localAuthStore.useCheckLockDeadline()
   const { unlockWithBiometrics } = useUnlockWithBiometrics()
@@ -69,6 +68,18 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
     },
     [tryUnlockWithPasscode],
   )
+  const logout = authStore.useLogout()
+  const navigation = useNavigation()
+  const resetLocalAuthStore = localAuthStore.useLocalAuthStore(state => state.resetStore)
+  const tryLogout = useCallback(async () => {
+    logout()
+
+    await resetLocalAuthStore()
+
+    navigation.navigate('Auth', {
+      screen: 'Intro',
+    })
+  }, [logout, navigation, resetLocalAuthStore])
 
   const handleSetPasscode = useCallback(
     async (value: string) => {
@@ -87,7 +98,7 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
     if (biometricStatus === BiometricStatuses.Enabled) {
       unlockWithBiometrics()
     }
-  }, [biometricStatus, unlockWithBiometrics])
+  })
 
   return (
     <UiScreenScrollable className={cn('flex flex-1 items-center justify-center')}>
@@ -107,7 +118,7 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
               <UiButton
                 className='mt-auto w-full'
                 title={translate('lockscreen.logout-btn')}
-                onPress={logout}
+                onPress={tryLogout}
               />
             </View>
           ) : (
@@ -165,7 +176,7 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
               variant='outlined'
               color='error'
               title={translate('lockscreen.forgot-btn')}
-              onPress={logout}
+              onPress={tryLogout}
             />
           </View>
         </View>
