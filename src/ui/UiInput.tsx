@@ -38,19 +38,19 @@ export function ControlledUiInput<T extends FieldValues>({
   return (
     <View className='flex w-full gap-3'>
       <UiInput
+        className='w-full'
         ref={field.ref}
         autoCapitalize='none'
         onChangeText={v => {
           onChangeText?.(v)
           field.onChange(v)
         }}
+        multiline={false}
         value={(field.value as string) || ''}
         {...rest}
       />
       {fieldState.error?.message && (
-        <Text className='typography-body2 bg-errorLight text-errorMain'>
-          {fieldState.error?.message}
-        </Text>
+        <Text className='typography-body2 w-full text-errorMain'>{fieldState.error?.message}</Text>
       )}
     </View>
   )

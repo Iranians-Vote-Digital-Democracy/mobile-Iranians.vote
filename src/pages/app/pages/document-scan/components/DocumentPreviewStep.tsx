@@ -14,7 +14,7 @@ export default function DocumentPreviewStep() {
   if (tempEDoc instanceof EPassport) {
     if (!tempEDoc?.personDetails) return null
 
-    const { firstName, lastName, gender, passportImageRaw, ...restDetails } = tempEDoc.personDetails
+    const { firstName, lastName, passportImageRaw, ...restDetails } = tempEDoc.personDetails
 
     return (
       <UiScreenScrollable
@@ -28,8 +28,10 @@ export default function DocumentPreviewStep() {
           <UiCard>
             <View className='flex flex-row'>
               <View className='flex flex-1 flex-col gap-2'>
-                <Text className='text-textPrimary'>{`${firstName} ${lastName}`}</Text>
-                <Text className='text-textPrimary'>{gender}</Text>
+                <Text className='typography-h6 text-textPrimary'>{`${firstName} ${lastName}`}</Text>
+                <Text className='typography-body3 text-textSecondary'>
+                  Age: ${restDetails.birthDate} {/* TODO change in the future */}
+                </Text>
               </View>
 
               <Image
@@ -46,41 +48,41 @@ export default function DocumentPreviewStep() {
               Object.keys(restDetails).map(key => {
                 return (
                   <View key={key} className='flex flex-row items-center justify-between gap-2'>
-                    <Text className='typography-body3 capitalize text-textPrimary'>{key}</Text>
+                    <Text className='typography-body3 capitalize text-textSecondary'>{key}</Text>
                     <Text className='typography-subtitle4 text-textPrimary'>
                       {restDetails?.[key as keyof typeof tempEDoc.personDetails]}
                     </Text>
                   </View>
                 )
               })}
-
-            <View className='flex flex-row items-center justify-between gap-2'>
-              <Text className='typography-body3 capitalize text-textPrimary'>dg1</Text>
-              <Text className='typography-subtitle4 text-textPrimary'>
+            {/* Only for Testing*/}
+            {/* <View className='flex flex-row items-center justify-between gap-2'>
+              <Text className='capitalize text-textPrimary typography-body3'>dg1</Text>
+              <Text className='text-textPrimary typography-subtitle4'>
                 {tempEDoc.dg1Bytes.length} length
               </Text>
             </View>
 
             <View className='flex flex-row items-center justify-between gap-2'>
-              <Text className='typography-body3 capitalize text-textPrimary'>dg11</Text>
-              <Text className='typography-subtitle4 text-textPrimary'>
+              <Text className='capitalize text-textPrimary typography-body3'>dg11</Text>
+              <Text className='text-textPrimary typography-subtitle4'>
                 {tempEDoc.dg11Bytes?.length} length
               </Text>
             </View>
 
             <View className='flex flex-row items-center justify-between gap-2'>
-              <Text className='typography-body3 capitalize text-textPrimary'>dg15</Text>
-              <Text className='typography-subtitle4 text-textPrimary'>
+              <Text className='capitalize text-textPrimary typography-body3'>dg15</Text>
+              <Text className='text-textPrimary typography-subtitle4'>
                 {tempEDoc.dg15Bytes?.length ?? 0} length
               </Text>
             </View>
 
             <View className='flex flex-row items-center justify-between gap-2'>
-              <Text className='typography-body3 capitalize text-textPrimary'>signature</Text>
-              <Text className='typography-subtitle4 text-textPrimary'>
+              <Text className='capitalize text-textPrimary typography-body3'>signature</Text>
+              <Text className='text-textPrimary typography-subtitle4'>
                 {tempEDoc?.aaSignature?.length ?? 0} length
               </Text>
-            </View>
+            </View>*/}
           </View>
 
           <View className='mt-auto'>

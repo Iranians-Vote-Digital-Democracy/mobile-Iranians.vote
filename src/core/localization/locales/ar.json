@@ -92,6 +92,9 @@
   },
   "tabs": {
     "one": "TAB one",
+    "scan-nfc": {
+      "tip": "1. Make sure you remove the case from the device\n\n2. Place your Passport/ID to the back of your phone and press start\n\n3. Press Continue"
+    },
     "two": "TAB two",
     "typography": "Typography"
   },
