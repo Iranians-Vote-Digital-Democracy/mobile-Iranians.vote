@@ -1,75 +1,113 @@
-import { useCallback, useEffect, useState } from 'react'
-import { ActivityIndicator, Image, Text, View } from 'react-native'
+import {
+  EDocumentModuleEvents,
+  EDocumentModuleListener,
+  EDocumentModuleRemoveAllListeners,
+  scanDocument,
+} from '@modules/e-document'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Text, View } from 'react-native'
 
-import { translate } from '@/core'
-import { UiButton } from '@/ui'
-import { initNfc, readSigningAndAuthCertificates } from '@/utils/e-document/inid-nfc-reader'
+import { ErrorHandler } from '@/core'
+import { useDocumentScanContext } from '@/pages/app/pages/document-scan/ScanProvider'
+import { walletStore } from '@/store'
+import { UiButton, UiIcon } from '@/ui'
 
 export default function ScanNfcStep() {
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { tempMRZ, setTempEDoc } = useDocumentScanContext()
 
-  // start NFC once, right after mount
-  useEffect(() => {
-    initNfc().catch(e => console.warn('NFC init error', e))
-  }, [])
+  const pk = walletStore.useWalletStore(state => state.privateKey)
+  const registrationChallenge = walletStore.useRegistrationChallenge()
 
-  // single handler – will be attached to the <Button>
-  const onReadPress = useCallback(async () => {
-    setBusy(true)
-    setError(null)
+  const isScanning = useRef(false)
+
+  const [title, setTitle] = useState('Scan NFC')
+
+  const startScanListener = useCallback(async () => {
+    if (!tempMRZ) throw new TypeError('MRZ data is not available')
+
+    if (!tempMRZ.documentCode) throw new TypeError('Document code is not available in MRZ data')
+
+    if (!tempMRZ.birthDate) throw new TypeError('Birth date is not available in MRZ data')
+
+    if (!tempMRZ.expirationDate) throw new TypeError('Expiration date is not available in MRZ data')
+
+    if (!tempMRZ.documentNumber) throw new TypeError('Document number is not available in MRZ data')
+
+    if (!pk) return
+
     try {
-      // const signingCertHex = await readSigningCertificate()
+      const eDocumentResponse = await scanDocument(
+        tempMRZ.documentCode,
+        {
+          dateOfBirth: tempMRZ.birthDate,
+          dateOfExpiry: tempMRZ.expirationDate,
+          documentNumber: tempMRZ.documentNumber,
+        },
+        registrationChallenge,
+      )
 
-      // if (!signingCertHex) throw new Error('Signing certificate not found')
+      setTempEDoc(eDocumentResponse)
+    } catch (error) {
+      ErrorHandler.processWithoutFeedback(error)
+    }
+  }, [pk, registrationChallenge, setTempEDoc, tempMRZ])
 
-      // console.log(AsnConvert.parse(Buffer.from(signingCertHex, 'hex'), Certificate))
+  useEffect(() => {
+    if (isScanning.current) return
 
-      // await sleep(2_000)
+    isScanning.current = true
 
-      // const authCertHex = await readAuthenticationCertificate()
+    startScanListener()
+  }, [startScanListener])
 
-      // if (!authCertHex) throw new Error('Authentication certificate not found')
+  useEffect(() => {
+    EDocumentModuleListener(EDocumentModuleEvents.ScanStarted, () => {
+      setTitle('ScanStarted')
+    })
+    EDocumentModuleListener(EDocumentModuleEvents.RequestPresentPassport, () => {
+      setTitle('RequestPresentPassport')
+    })
+    EDocumentModuleListener(EDocumentModuleEvents.AuthenticatingWithPassport, () => {
+      setTitle('AuthenticatingWithPassport')
+    })
+    EDocumentModuleListener(EDocumentModuleEvents.ReadingDataGroupProgress, () => {
+      setTitle('ReadingDataGroupProgress')
+    })
+    EDocumentModuleListener(EDocumentModuleEvents.ActiveAuthentication, () => {
+      setTitle('ActiveAuthentication')
+    })
+    EDocumentModuleListener(EDocumentModuleEvents.SuccessfulRead, () => {
+      setTitle('SuccessfulRead')
+    })
+    EDocumentModuleListener(EDocumentModuleEvents.ScanError, () => {
+      setTitle('ScanError')
+    })
+    EDocumentModuleListener(EDocumentModuleEvents.ScanStopped, () => {
+      setTitle('ScanStopped')
+    })
 
-      // console.log(AsnConvert.parse(Buffer.from(authCertHex, 'hex'), Certificate))
-
-      const { signingCert, authCert } = await readSigningAndAuthCertificates()
-
-      if (!signingCert) throw new Error('Signing certificate not found')
-
-      //console.log(AsnConvert.parse(Buffer.from(signingCert, 'hex'), Certificate))
-
-      if (!authCert) throw new Error('Authentication certificate not found')
-
-      //console.log(AsnConvert.parse(Buffer.from(authCert, 'hex'), Certificate))
-    } catch (e) {
-      console.error({ e })
-      setError(e.message ?? String(e))
-    } finally {
-      setBusy(false)
+    return () => {
+      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ScanStarted)
+      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.RequestPresentPassport)
+      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.AuthenticatingWithPassport)
+      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ReadingDataGroupProgress)
+      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ActiveAuthentication)
+      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.SuccessfulRead)
+      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ScanError)
+      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ScanStopped)
     }
   }, [])
 
   return (
-    <View className='mb-20 mt-10 flex-1 justify-center p-6'>
-      <Text className='typography-h5 mb-2 text-textPrimary'>NFC Reader</Text>
-      <Text className='typography-body3 mb-6 text-textSecondary'>Reading personal data</Text>
-      <Image
-        source={require('@assets/images/passport-scan-example.png')}
-        resizeMode='contain'
-        className='my-6 size-[300px] self-center' // Added vertical margin
-      />
-      <Text className='typography-body3 mb-6 text-textSecondary'>
-        {translate('tabs.scan-nfc.tip')}
-      </Text>
-      {busy && <ActivityIndicator className='my-4' />}
-      {error && <Text className='typography-body2 mt-4 text-errorMain'>{error}</Text>}
-      <UiButton
-        title={busy ? 'Read Signing Certificate' : 'Start NFC Scan'}
-        onPress={onReadPress}
-        className='mt-auto w-full' // Used mt-auto to push button to bottom, adjusted if other elements are pushing it
-        disabled={busy}
-      />
+    <View className='flex flex-1 flex-col justify-center'>
+      <Text className='typography-h5 text-center text-textPrimary'>{title}</Text>
+      {isScanning ? (
+        <View className='flex items-center'>
+          <UiIcon customIcon='bellFillIcon' className='size-[120] text-textPrimary' />
+        </View>
+      ) : (
+        <UiButton onPress={startScanListener} title='Try Scan Again' />
+      )}
     </View>
   )
 }

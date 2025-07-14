@@ -1,11 +1,10 @@
-import { scanDocument } from '@modules/e-document'
 import type { FieldRecords } from 'mrz'
 import type { PropsWithChildren } from 'react'
 import { useCallback } from 'react'
 import { useState } from 'react'
 import { createContext, useContext } from 'react'
 
-import { NoirEPassportRegistration } from '@/api/modules/registration/variants/noir-epassport'
+import { NoirEIDRegistration } from '@/api/modules/registration/variants/noir-eid'
 import { ErrorHandler } from '@/core'
 import { tryCatch } from '@/helpers/try-catch'
 import { identityStore } from '@/store/modules/identity'
@@ -83,7 +82,7 @@ export function useDocumentScanContext() {
 }
 
 // TODO: add circuit strategy selection
-const registrationStrategy = new NoirEPassportRegistration()
+const registrationStrategy = new NoirEIDRegistration()
 
 export function ScanContextProvider({
   docType,
@@ -96,9 +95,7 @@ export function ScanContextProvider({
 
   const addIdentity = identityStore.useIdentityStore(state => state.addIdentity)
 
-  const [currentStep, setCurrentStep] = useState<Steps>(
-    Steps.ScanNfcStep, // Default to NFC scan step for now
-  )
+  const [currentStep, setCurrentStep] = useState<Steps>(Steps.ScanNfcStep)
   const [selectedDocType, setSelectedDocType] = useState(docType)
 
   const [tempMRZ, setTempMRZ] = useState<FieldRecords>()
@@ -107,19 +104,20 @@ export function ScanContextProvider({
   const [identity, setIdentity] = useState<IdentityItem>()
 
   const revokeIdentity = useCallback(async () => {
-    if (!identity) throw new TypeError('Identity is not set for revocation')
+    throw new Error('Revoke identity is not implemented for EID')
+    // if (!identity) throw new TypeError('Identity is not set for revocation')
 
-    if (!tempMRZ) throw new TypeError('MRZ is not set for revocation')
+    // if (!tempMRZ) throw new TypeError('MRZ is not set for revocation')
 
-    const [, revokeIdentityError] = await tryCatch(
-      registrationStrategy.revokeIdentity(tempMRZ, identity, async (docCode, bac, challenge) => {
-        return scanDocument(docCode, bac, challenge)
-      }),
-    )
-    if (revokeIdentityError) {
-      throw new TypeError('Failed to revoke identity after registration error', revokeIdentityError)
-    }
-  }, [identity, tempMRZ])
+    // const [, revokeIdentityError] = await tryCatch(
+    //   registrationStrategy.revokeIdentity(tempMRZ, identity, async (docCode, bac, challenge) => {
+    //     return scanDocument(docCode, bac, challenge)
+    //   }),
+    // )
+    // if (revokeIdentityError) {
+    //   throw new TypeError('Failed to revoke identity after registration error', revokeIdentityError)
+    // }
+  }, [])
 
   const createIdentity = useCallback(async () => {
     if (!tempEDoc) {
