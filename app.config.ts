@@ -2,26 +2,6 @@ import type { ConfigContext, ExpoConfig } from '@expo/config'
 
 import { ClientEnv, Env } from './env'
 
-// TODO: rollback once ready
-// import {
-//   extraBuildPropertyProps as eDocExtraBuildPropertyProps
-// } from './modules/e-document/extra-build-properties'
-// import {
-//   extraBuildPropertyProps as tfExecExtraBuildPropertyProps
-// } from './modules/tf-exec/extra-build-properties'
-
-// const buildPropertiesProps = tfExecExtraBuildPropertyProps(
-//   eDocExtraBuildPropertyProps({
-//     android: {
-//       minSdkVersion: 27,
-//       targetSdkVersion: 34,
-//     },
-//     ios: {
-//       deploymentTarget: '17.5',
-//     },
-//   })
-// )
-
 export default ({config}: ConfigContext): ExpoConfig => ({
   ...config,
   newArchEnabled: true,
@@ -29,7 +9,7 @@ export default ({config}: ConfigContext): ExpoConfig => ({
   description: `${Env.NAME} Mobile App`,
   owner: Env.EXPO_ACCOUNT_OWNER,
   scheme: Env.SCHEME,
-  slug: 'template',
+  slug: Env.SLUG,
   version: Env.VERSION.toString(),
   orientation: 'portrait',
   icon: './assets/icon.png',
@@ -41,14 +21,9 @@ export default ({config}: ConfigContext): ExpoConfig => ({
   runtimeVersion: {
     policy: 'appVersion',
   },
-  // assetBundlePatterns: ['**/*'],
   ios: {
-    // supportsTablet: true,
     bundleIdentifier: Env.BUNDLE_ID,
   },
-  // experiments: {
-  //   typedRoutes: true,
-  // },
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
@@ -101,7 +76,6 @@ export default ({config}: ConfigContext): ExpoConfig => ({
         "imageWidth": 200
       }
     ],
-    // 'expo-localization',
     [
       "expo-secure-store",
       {

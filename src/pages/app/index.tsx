@@ -1,7 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
-import InviteOthers from '@/pages/app/pages/invite-others'
 import type {
   AppStackParamsList,
   AppStackScreenProps,
@@ -56,16 +55,6 @@ function AppTabs({}: AppStackScreenProps<'Tabs'>) {
         }}
       />
       <Tab.Screen
-        name='Scan'
-        component={DocumentScanScreen}
-        options={{
-          headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <UiIcon libIcon='MaterialCommunityIcons' name='line-scan' size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
         name='Profile'
         component={ProfileScreen}
         options={{
@@ -98,12 +87,11 @@ export default function App({}: RootStackScreenProps<'App'>) {
           headerShown: false,
         }}
       >
-        <Stack.Screen name='Tabs' component={AppTabs} />
         <Stack.Screen
-          name='InviteOthers'
-          component={InviteOthers}
+          name='Scan'
+          component={DocumentScanScreen}
           options={{
-            animation: 'fade',
+            headerShown: false,
           }}
         />
       </Stack.Navigator>

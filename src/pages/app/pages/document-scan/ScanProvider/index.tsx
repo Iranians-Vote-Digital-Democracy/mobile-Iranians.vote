@@ -4,14 +4,14 @@ import { useCallback } from 'react'
 import { useState } from 'react'
 import { createContext, useContext } from 'react'
 
+import { NoirEIDRegistration } from '@/api/modules/registration/variants/noir-eid'
 import { ErrorHandler } from '@/core'
 import { tryCatch } from '@/helpers/try-catch'
 import { identityStore } from '@/store/modules/identity'
 import { PassportRegisteredWithAnotherPKError } from '@/store/modules/identity/errors'
 import { IdentityItem } from '@/store/modules/identity/Identity'
-import { DocType, EDocument } from '@/utils/e-document/e-document'
-
-import { useRegistration } from './hooks/registration'
+import { walletStore } from '@/store/modules/wallet'
+import { DocType, EDocument, EPassport } from '@/utils/e-document/e-document'
 
 export enum Steps {
   SelectDocTypeStep,
@@ -81,17 +81,21 @@ export function useDocumentScanContext() {
   return useContext(documentScanContext)
 }
 
+// TODO: add circuit strategy selection
+const registrationStrategy = new NoirEIDRegistration()
+
 export function ScanContextProvider({
   docType,
   children,
 }: {
   docType?: DocType
 } & PropsWithChildren) {
+  const privateKey = walletStore.useWalletStore(state => state.privateKey)
+  const publicKeyHash = walletStore.usePublicKeyHash()
+
   const addIdentity = identityStore.useIdentityStore(state => state.addIdentity)
 
-  const [currentStep, setCurrentStep] = useState<Steps>(
-    docType ? Steps.ScanMrzStep : Steps.SelectDocTypeStep,
-  )
+  const [currentStep, setCurrentStep] = useState<Steps>(Steps.ScanNfcStep)
   const [selectedDocType, setSelectedDocType] = useState(docType)
 
   const [tempMRZ, setTempMRZ] = useState<FieldRecords>()
@@ -99,18 +103,21 @@ export function ScanContextProvider({
 
   const [identity, setIdentity] = useState<IdentityItem>()
 
-  const registration = useRegistration()
-
   const revokeIdentity = useCallback(async () => {
-    if (!identity) throw new TypeError('Identity is not set for revocation')
+    throw new Error('Revoke identity is not implemented for EID')
+    // if (!identity) throw new TypeError('Identity is not set for revocation')
 
-    if (!tempMRZ) throw new TypeError('MRZ is not set for revocation')
+    // if (!tempMRZ) throw new TypeError('MRZ is not set for revocation')
 
-    const [, revokeIdentityError] = await tryCatch(registration.revokeIdentity(tempMRZ, identity))
-    if (revokeIdentityError) {
-      throw new TypeError('Failed to revoke identity after registration error', revokeIdentityError)
-    }
-  }, [identity, registration, tempMRZ])
+    // const [, revokeIdentityError] = await tryCatch(
+    //   registrationStrategy.revokeIdentity(tempMRZ, identity, async (docCode, bac, challenge) => {
+    //     return scanDocument(docCode, bac, challenge)
+    //   }),
+    // )
+    // if (revokeIdentityError) {
+    //   throw new TypeError('Failed to revoke identity after registration error', revokeIdentityError)
+    // }
+  }, [])
 
   const createIdentity = useCallback(async () => {
     if (!tempEDoc) {
@@ -119,21 +126,21 @@ export function ScanContextProvider({
 
     setCurrentStep(Steps.GenerateProofStep)
 
-    const [identityItem, createIdentityError] = await tryCatch(
-      registration.createIdentity(tempEDoc, {
-        onRevocation: async identityItem => {
-          setIdentity(identityItem)
-          setCurrentStep(Steps.RevocationStep)
-        },
-      }),
+    const [identityItem, registrationError] = await tryCatch(
+      registrationStrategy.createIdentity(tempEDoc as EPassport, privateKey, publicKeyHash),
     )
-    if (createIdentityError) {
-      ErrorHandler.processWithoutFeedback(createIdentityError)
+    if (registrationError) {
+      ErrorHandler.processWithoutFeedback(registrationError)
 
-      if (createIdentityError instanceof PassportRegisteredWithAnotherPKError) {
+      if (registrationError instanceof PassportRegisteredWithAnotherPKError) {
+        setCurrentStep(Steps.RevocationStep)
         return
       }
 
+      ErrorHandler.process(
+        registrationError,
+        'Failed to create identity. Please check your NFC connection and try again.',
+      )
       setCurrentStep(Steps.DocumentPreviewStep)
       return
     }
@@ -141,7 +148,7 @@ export function ScanContextProvider({
     addIdentity(identityItem)
     setIdentity(identityItem)
     setCurrentStep(Steps.FinishStep)
-  }, [addIdentity, registration, tempEDoc])
+  }, [addIdentity, privateKey, publicKeyHash, tempEDoc])
 
   // ---------------------------------------------------------------------------------------------
 
@@ -180,9 +187,7 @@ export function ScanContextProvider({
         setTempEDoc: handleSetEDoc,
 
         createIdentity,
-        revokeIdentity,
-
-        circuitLoadingDetails: registration.circuitLoadingDetails,
+        revokeIdentity: revokeIdentity,
       }}
       children={children}
     />

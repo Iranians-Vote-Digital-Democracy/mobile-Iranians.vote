@@ -9,16 +9,13 @@ import { useCallback, useState } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { NoirEIDRegistration } from '@/api/modules/registration/variants/noir-eid'
 import AppContainer from '@/pages/app/components/AppContainer'
+import { walletStore } from '@/store/modules/wallet'
 import { useAppPaddings } from '@/theme'
-import { Registration__factory } from '@/types/contracts/factories/Registration__factory'
 import { UiButton, UiScreenScrollable } from '@/ui'
 import { EID } from '@/utils/e-document'
 import { ExtendedCertificate } from '@/utils/e-document/extended-cert'
-
-import { useRegistration } from '../document-scan/ScanProvider/hooks/registration'
-
-const registrationContractInterface = Registration__factory.createInterface()
 
 const downloadUrl =
   'https://www.googleapis.com/download/storage/v1/b/rarimo-temp/o/icaopkd-list.ldif?generation=1715355629405816&alt=media'
@@ -38,22 +35,17 @@ const getIcaoPkdLdifFile = async () => {
   return parseLdifString(icaoLdif)
 }
 
-function decToHex(d: string): string {
-  return '0x' + BigInt(d).toString(16)
-}
-
-function ensureHex(s: string): string {
-  return s.startsWith('0x') ? s : decToHex(s)
-}
+const eIDRegistration = new NoirEIDRegistration()
 
 export default function PassportTests() {
+  const privateKey = walletStore.useWalletStore(state => state.privateKey)
+  const publicKeyHash = walletStore.usePublicKeyHash()
+
   const insets = useSafeAreaInsets()
   const appPaddings = useAppPaddings()
   const bottomBarHeight = useBottomTabBarHeight()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const { createIdentity } = useRegistration()
 
   const testCert = useCallback(async () => {
     setIsSubmitting(true)
@@ -104,66 +96,13 @@ export default function PassportTests() {
 
       const eID = new EID(sigCertificate, authCertificate)
 
-      await createIdentity(eID, {
-        onRevocation: () => {},
-      })
+      await eIDRegistration.createIdentity(eID, privateKey, publicKeyHash)
     } catch (error) {
       console.error('Error in testCert:', error)
     } finally {
-      setIsSubmitting(true)
+      setIsSubmitting(false)
     }
-  }, [createIdentity])
-
-  // const testNoir = useCallback(async () => {
-  //   // TODO: Replace with the correct circuit after its release
-  //   const noirInstance = NoirCircuitParams.fromName('registerIdentity_26_512_3_3_336_248_NA')
-  //   const RAW_TEST_INPUTS = JSON.parse(Config.TEST_INPUTS) as {
-  //     dg1: string[]
-  //     dg15: string[]
-  //     ec: string[]
-  //     icao_root: string
-  //     inclusion_branches: string[]
-  //     pk: string[]
-  //     reduction_pk: string[]
-  //     sa: string[]
-  //     sig: string[]
-  //     sk_identity: string
-  //   }
-
-  //   /**
-  //    * IMPORTANT: All values in HEX_INPUTS must be hexadecimal strings
-  //    * and include the '0x' prefix.
-  //    */
-  //   const HEX_INPUTS = {
-  //     dg1: RAW_TEST_INPUTS.dg1.map(decToHex),
-  //     dg15: RAW_TEST_INPUTS.dg15.map(decToHex),
-  //     ec: RAW_TEST_INPUTS.ec.map(decToHex),
-  //     icao_root: ensureHex(RAW_TEST_INPUTS.icao_root),
-  //     inclusion_branches: RAW_TEST_INPUTS.inclusion_branches.map(decToHex),
-  //     pk: RAW_TEST_INPUTS.pk.map(ensureHex),
-  //     reduction_pk: RAW_TEST_INPUTS.reduction_pk.map(ensureHex),
-  //     sa: RAW_TEST_INPUTS.sa.map(decToHex),
-  //     sig: RAW_TEST_INPUTS.sig.map(ensureHex),
-  //     sk_identity: ensureHex(RAW_TEST_INPUTS.sk_identity),
-  //   }
-
-  //   await NoirCircuitParams.downloadTrustedSetup({
-  //     // TODO: Add download trusted setup UI progress if needed
-  //     // onDownloadingProgress: downloadProgress => {
-  //     //   console.log('progress:', downloadProgress)
-  //     // },
-  //   })
-
-  //   // TODO: replace test `@assets/noir_dl.json` with noirInstance.downloadByteCode()
-  //   // after its release
-  //   // const bytesCodeString = await noirInstance.downloadByteCode()
-  //   const bytesCodeString = JSON.stringify(require('@assets/noir_dl.json'))
-
-  //   const inputsJson = JSON.stringify(HEX_INPUTS)
-
-  //   const proof = await noirInstance.prove(inputsJson, bytesCodeString)
-  //   console.log('Proof:', proof)
-  // }, [])
+  }, [privateKey, publicKeyHash])
 
   return (
     <AppContainer>

@@ -171,7 +171,7 @@ const supportedNoirCircuits: NoirCircuitParams[] = [
   new NoirLocalCircuitParams(
     'registerIdentity_inid_ca',
     () => require('@assets/circuits/noir/register/inid/byte_code.json'),
-    6,
+    5,
   ),
   new NoirCircuitParams(
     'registerIdentity_26_512_3_3_336_248_NA',
