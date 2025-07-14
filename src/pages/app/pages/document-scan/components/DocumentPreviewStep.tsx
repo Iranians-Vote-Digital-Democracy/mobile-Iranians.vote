@@ -1,13 +1,15 @@
 import { Image } from 'expo-image'
 import { Text, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import AppContainer from '@/pages/app/components/AppContainer'
 import { useDocumentScanContext } from '@/pages/app/pages/document-scan/ScanProvider'
-import { UiButton, UiCard, UiHorizontalDivider } from '@/ui'
+import { UiButton, UiCard, UiHorizontalDivider, UiScreenScrollable } from '@/ui'
 import { EID, EPassport } from '@/utils/e-document'
 
 export default function DocumentPreviewStep() {
   const { tempEDoc, createIdentity } = useDocumentScanContext()
+
+  const insets = useSafeAreaInsets()
 
   if (tempEDoc instanceof EPassport) {
     if (!tempEDoc?.personDetails) return null
@@ -15,7 +17,13 @@ export default function DocumentPreviewStep() {
     const { firstName, lastName, gender, passportImageRaw, ...restDetails } = tempEDoc.personDetails
 
     return (
-      <AppContainer className='pb-20'>
+      <UiScreenScrollable
+        className='pb-20'
+        style={{
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        }}
+      >
         <View className='flex-1 flex-col gap-4 p-5'>
           <UiCard>
             <View className='flex flex-row'>
@@ -80,27 +88,44 @@ export default function DocumentPreviewStep() {
             <UiButton title='Generate Proof' onPress={createIdentity} />
           </View>
         </View>
-      </AppContainer>
+      </UiScreenScrollable>
     )
   }
 
   if (tempEDoc instanceof EID) {
     return (
-      <AppContainer className='flex-1 items-center justify-center'>
+      <UiScreenScrollable
+        className='flex-1 items-center justify-center'
+        style={{
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        }}
+      >
         <Text className='typography-title1 text-textPrimary'>EID Document Preview</Text>
         <Text className='typography-body2 mt-2 text-textPrimary'>
           EID document preview is not implemented yet.
         </Text>
-      </AppContainer>
+
+        <View className='mt-auto'>
+          <UiHorizontalDivider className='my-5' />
+          <UiButton title='Generate Proof' onPress={createIdentity} />
+        </View>
+      </UiScreenScrollable>
     )
   }
 
   return (
-    <AppContainer className='flex-1 items-center justify-center'>
+    <UiScreenScrollable
+      className='flex-1 items-center justify-center'
+      style={{
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+      }}
+    >
       <Text className='typography-title1 text-textPrimary'>Document Preview</Text>
       <Text className='typography-body2 mt-2 text-textPrimary'>
         Document preview is not available for this document type.
       </Text>
-    </AppContainer>
+    </UiScreenScrollable>
   )
 }

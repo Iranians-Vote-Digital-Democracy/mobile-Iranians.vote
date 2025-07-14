@@ -1,112 +1,77 @@
-import {
-  EDocumentModuleEvents,
-  EDocumentModuleListener,
-  EDocumentModuleRemoveAllListeners,
-  scanDocument,
-} from '@modules/e-document'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { AsnConvert } from '@peculiar/asn1-schema'
+import { Certificate } from '@peculiar/asn1-x509'
+import { useCallback, useEffect, useState } from 'react'
 import { Text, View } from 'react-native'
 
-import { ErrorHandler } from '@/core'
 import { useDocumentScanContext } from '@/pages/app/pages/document-scan/ScanProvider'
-import { walletStore } from '@/store'
 import { UiButton, UiIcon } from '@/ui'
+import { EID } from '@/utils/e-document'
+import { ExtendedCertificate } from '@/utils/e-document/extended-cert'
+import { initNfc, readSigningAndAuthCertificates } from '@/utils/e-document/inid-nfc-reader'
 
 export default function ScanNfcStep() {
-  const { tempMRZ, setTempEDoc } = useDocumentScanContext()
+  const { setTempEDoc } = useDocumentScanContext()
 
-  const pk = walletStore.useWalletStore(state => state.privateKey)
-  const registrationChallenge = walletStore.useRegistrationChallenge()
+  const [busy, setBusy] = useState(false)
 
-  const isScanning = useRef(false)
+  // start NFC once, right after mount
+  useEffect(() => {
+    initNfc().catch(e => console.warn('NFC init error', e))
+  }, [])
 
-  const [title, setTitle] = useState('Scan NFC')
-
-  const startScanListener = useCallback(async () => {
-    if (!tempMRZ) throw new TypeError('MRZ data is not available')
-
-    if (!tempMRZ.documentCode) throw new TypeError('Document code is not available in MRZ data')
-
-    if (!tempMRZ.birthDate) throw new TypeError('Birth date is not available in MRZ data')
-
-    if (!tempMRZ.expirationDate) throw new TypeError('Expiration date is not available in MRZ data')
-
-    if (!tempMRZ.documentNumber) throw new TypeError('Document number is not available in MRZ data')
-
-    if (!pk) return
-
+  const onReadPress = useCallback(async () => {
+    setBusy(true)
     try {
-      const eDocumentResponse = await scanDocument(
-        tempMRZ.documentCode,
-        {
-          dateOfBirth: tempMRZ.birthDate,
-          dateOfExpiry: tempMRZ.expirationDate,
-          documentNumber: tempMRZ.documentNumber,
-        },
-        registrationChallenge,
+      // const signingCertHex = await readSigningCertificate()
+
+      // if (!signingCertHex) throw new Error('Signing certificate not found')
+
+      // console.log(AsnConvert.parse(Buffer.from(signingCertHex, 'hex'), Certificate))
+
+      // await sleep(2_000)
+
+      // const authCertHex = await readAuthenticationCertificate()
+
+      // if (!authCertHex) throw new Error('Authentication certificate not found')
+
+      // console.log(AsnConvert.parse(Buffer.from(authCertHex, 'hex'), Certificate))
+
+      const { signingCert, authCert } = await readSigningAndAuthCertificates()
+
+      if (!signingCert) throw new Error('Signing certificate not found')
+
+      const extendedSigCert = new ExtendedCertificate(
+        AsnConvert.parse(Buffer.from(signingCert, 'hex'), Certificate),
       )
 
-      setTempEDoc(eDocumentResponse)
-    } catch (error) {
-      ErrorHandler.processWithoutFeedback(error)
+      if (!authCert) throw new Error('Authentication certificate not found')
+
+      const extendedAuthCert = new ExtendedCertificate(
+        AsnConvert.parse(Buffer.from(authCert, 'hex'), Certificate),
+      )
+
+      const eID = new EID(extendedSigCert, extendedAuthCert)
+
+      setTempEDoc(eID)
+    } catch (e) {
+      console.error({ e })
     }
-  }, [pk, registrationChallenge, setTempEDoc, tempMRZ])
 
-  useEffect(() => {
-    if (isScanning.current) return
+    setBusy(false)
+  }, [setTempEDoc])
 
-    isScanning.current = true
-
-    startScanListener()
-  }, [startScanListener])
-
-  useEffect(() => {
-    EDocumentModuleListener(EDocumentModuleEvents.ScanStarted, () => {
-      setTitle('ScanStarted')
-    })
-    EDocumentModuleListener(EDocumentModuleEvents.RequestPresentPassport, () => {
-      setTitle('RequestPresentPassport')
-    })
-    EDocumentModuleListener(EDocumentModuleEvents.AuthenticatingWithPassport, () => {
-      setTitle('AuthenticatingWithPassport')
-    })
-    EDocumentModuleListener(EDocumentModuleEvents.ReadingDataGroupProgress, () => {
-      setTitle('ReadingDataGroupProgress')
-    })
-    EDocumentModuleListener(EDocumentModuleEvents.ActiveAuthentication, () => {
-      setTitle('ActiveAuthentication')
-    })
-    EDocumentModuleListener(EDocumentModuleEvents.SuccessfulRead, () => {
-      setTitle('SuccessfulRead')
-    })
-    EDocumentModuleListener(EDocumentModuleEvents.ScanError, () => {
-      setTitle('ScanError')
-    })
-    EDocumentModuleListener(EDocumentModuleEvents.ScanStopped, () => {
-      setTitle('ScanStopped')
-    })
-
-    return () => {
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ScanStarted)
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.RequestPresentPassport)
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.AuthenticatingWithPassport)
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ReadingDataGroupProgress)
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ActiveAuthentication)
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.SuccessfulRead)
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ScanError)
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ScanStopped)
-    }
-  }, [])
+  // const pk = walletStore.useWalletStore(state => state.privateKey)
+  // const registrationChallenge = walletStore.useRegistrationChallenge()
 
   return (
     <View className='flex flex-1 flex-col justify-center'>
-      <Text className='typography-h5 text-center text-textPrimary'>{title}</Text>
-      {isScanning ? (
+      <Text className='typography-h5 text-center text-textPrimary'>Scan process</Text>
+      {busy ? (
         <View className='flex items-center'>
           <UiIcon customIcon='bellFillIcon' className='size-[120] text-textPrimary' />
         </View>
       ) : (
-        <UiButton onPress={startScanListener} title='Try Scan Again' />
+        <UiButton onPress={onReadPress} title='Try Scan Again' />
       )}
     </View>
   )
