@@ -21,7 +21,7 @@ export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>
 
   const submit = useCallback(async () => {
     if (!passcode) return
-
+    if (passcode.length !== 4) return
     try {
       setPasscodeStore(passcode)
 
@@ -72,7 +72,7 @@ export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>
           <UiButton
             title={translate('set-passcode.submit-btn')}
             onPress={submit}
-            disabled={!passcode}
+            disabled={passcode.length !== 4}
           />
         </View>
       </View>

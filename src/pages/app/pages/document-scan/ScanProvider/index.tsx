@@ -14,7 +14,7 @@ import { walletStore } from '@/store/modules/wallet'
 import { DocType, EDocument, EPassport } from '@/utils/e-document/e-document'
 
 export enum Steps {
-  SelectDocTypeStep,
+  // SelectDocTypeStep,
   ScanMrzStep,
   ScanNfcStep,
   DocumentPreviewStep,
@@ -49,7 +49,7 @@ type DocumentScanContext = {
 }
 
 const documentScanContext = createContext<DocumentScanContext>({
-  currentStep: Steps.SelectDocTypeStep,
+  currentStep: Steps.ScanNfcStep,
 
   setCurrentStep: () => {
     throw new Error('setCurrentStep not implemented')
@@ -156,7 +156,6 @@ export function ScanContextProvider({
     setSelectedDocType(value)
     setCurrentStep(Steps.ScanMrzStep)
   }, [])
-
   const handleSetMrz = useCallback((value: FieldRecords) => {
     setTempMRZ(value)
     setCurrentStep(Steps.ScanNfcStep)

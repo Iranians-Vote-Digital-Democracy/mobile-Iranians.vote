@@ -45,10 +45,9 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
   const biometricStatus = localAuthStore.useLocalAuthStore(state => state.biometricStatus)
   const attemptsLeft = localAuthStore.useLocalAuthStore(state => state.attemptsLeft)
   const lockDeadline = localAuthStore.useLocalAuthStore(state => state.lockDeadline)
-  const logout = authStore.useLogout()
-  const resetLocalAuthStore = localAuthStore.useLocalAuthStore(state => state.resetStore)
-  const checkLockDeadline = localAuthStore.useCheckLockDeadline()
 
+  const checkLockDeadline = localAuthStore.useCheckLockDeadline()
+  const { unlockWithBiometrics } = useUnlockWithBiometrics()
   const insets = useSafeAreaInsets()
 
   const [passcode, setPasscode] = useState('')
@@ -56,10 +55,6 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
   const tryUnlockWithPasscode = localAuthStore.useLocalAuthStore(
     state => state.tryUnlockWithPasscode,
   )
-
-  const { unlockWithBiometrics } = useUnlockWithBiometrics()
-
-  const navigation = useNavigation()
 
   const submit = useCallback(
     async (value: string) => {
@@ -73,7 +68,9 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
     },
     [tryUnlockWithPasscode],
   )
-
+  const logout = authStore.useLogout()
+  const navigation = useNavigation()
+  const resetLocalAuthStore = localAuthStore.useLocalAuthStore(state => state.resetStore)
   const tryLogout = useCallback(async () => {
     logout()
 
@@ -97,9 +94,12 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
     [submit],
   )
 
-  if (biometricStatus === BiometricStatuses.Enabled) {
-    return <BiometricsLockScreen />
-  }
+  useEffect(() => {
+    if (biometricStatus === BiometricStatuses.Enabled) {
+      unlockWithBiometrics()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <UiScreenScrollable className={cn('flex flex-1 items-center justify-center')}>
@@ -158,16 +158,21 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
           </View>
 
           <View className={cn('flex w-full gap-10 p-5')}>
-            <UiNumPad
-              value={passcode}
-              setValue={handleSetPasscode}
-              // TODO: is it necessary? The BiometricsLockScreen will handle it
-              extra={
-                <Pressable onPress={unlockWithBiometrics}>
-                  <BiometricsIcon size={32} />
-                </Pressable>
-              }
-            />
+            {biometricStatus === BiometricStatuses.Enabled ? (
+              <UiNumPad
+                value={passcode}
+                setValue={handleSetPasscode}
+                // TODO: is it necessary? The BiometricsLockScreen will handle it
+                extra={
+                  <Pressable onPress={unlockWithBiometrics}>
+                    <BiometricsIcon size={32} />
+                  </Pressable>
+                }
+              />
+            ) : (
+              <UiNumPad value={passcode} setValue={handleSetPasscode} />
+            )}
+
             <UiButton
               variant='outlined'
               color='error'
@@ -176,41 +181,6 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
             />
           </View>
         </View>
-      )}
-    </UiScreenScrollable>
-  )
-}
-
-function BiometricsLockScreen() {
-  const { isAttemptFailed, unlockWithBiometrics } = useUnlockWithBiometrics()
-
-  const insets = useSafeAreaInsets()
-
-  useEffect(() => {
-    unlockWithBiometrics()
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  return (
-    <UiScreenScrollable
-      className={cn('flex flex-1 items-center justify-center px-4')}
-      style={{
-        paddingTop: insets.top,
-        paddingBottom: insets.bottom,
-      }}
-    >
-      <View className={cn('my-auto flex w-full items-center gap-4 p-5')}>
-        <Text className={cn('typography-h4 text-center text-textPrimary')}>
-          Unlock with Biometrics
-        </Text>
-        <Pressable onPress={unlockWithBiometrics}>
-          <BiometricsIcon />
-        </Pressable>
-      </View>
-
-      {isAttemptFailed && (
-        <UiButton title='Try again' onPress={unlockWithBiometrics} className='mt-auto w-full' />
       )}
     </UiScreenScrollable>
   )
