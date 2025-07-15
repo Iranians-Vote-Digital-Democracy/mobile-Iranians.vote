@@ -1,5 +1,4 @@
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
-import { parsePemString } from '@lukachi/rn-csca'
 import { AsnConvert } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
 import { JsonRpcProvider, zeroPadValue } from 'ethers'
@@ -16,11 +15,9 @@ import { Config } from '@/config'
 import { createPoseidonSMTContract } from '@/helpers'
 import { tryCatch } from '@/helpers/try-catch'
 import { walletStore } from '@/store'
-import { IdentityItem } from '@/store/modules/identity/Identity'
 import { useAppTheme } from '@/theme'
 import { UiBottomSheet, UiButton, UiHorizontalDivider, useUiBottomSheet } from '@/ui'
 import { BottomSheetHeader } from '@/ui/UiBottomSheet'
-import { QueryIdentityCircuit } from '@/utils/circuits/query-identity-circuits'
 import { NoirEIDBasedRegistrationCircuit } from '@/utils/circuits/registration/noir-registration-circuit'
 import { EID, EPassport } from '@/utils/e-document'
 import { ExtendedCertificate } from '@/utils/e-document/extended-cert'
@@ -115,11 +112,11 @@ export default function ProofBottomSheet() {
         throw new TypeError('Failed to get identity registration proof', getRegProofError)
       }
 
-      const identity = new IdentityItem(eID, regProof)
+      // const identity = new IdentityItem(eID, regProof)
       console.log('✅ IdentityItem successfully created')
 
       return {
-        identity,
+        // identity,
         slaveCertSmtProof,
         targetCertificate,
         sigCert: eID.sigCertificate,
@@ -130,63 +127,63 @@ export default function ProofBottomSheet() {
     }
   }
 
-  const generateProof = async () => {
-    console.log('🔷 [generateProof] Started proof generation')
+  // const generateProof = async () => {
+  //   console.log('🔷 [generateProof] Started proof generation')
 
-    const circuitParams = new QueryIdentityCircuit()
-    console.log('✅ [circuit] QueryIdentityCircuit initialized')
+  //   const circuitParams = new QueryIdentityCircuit()
+  //   console.log('✅ [circuit] QueryIdentityCircuit initialized')
 
-    const { identity, slaveCertSmtProof, targetCertificate, sigCert } =
-      await getMinimalIdentityData()
-    console.log('✅ [identity] Minimal identity data received')
-    console.log('🧾 identity:', identity)
-    console.log('🌿 slaveCertSmtProof.root:', slaveCertSmtProof.root)
-    console.log('🌿 slaveCertSmtProof.siblings:', slaveCertSmtProof.siblings.length, 'siblings')
+  //   const { identity, slaveCertSmtProof, targetCertificate, sigCert } =
+  //     await getMinimalIdentityData()
+  //   console.log('✅ [identity] Minimal identity data received')
+  //   console.log('🧾 identity:', identity)
+  //   console.log('🌿 slaveCertSmtProof.root:', slaveCertSmtProof.root)
+  //   console.log('🌿 slaveCertSmtProof.siblings:', slaveCertSmtProof.siblings.length, 'siblings')
 
-    const [CSCAPemAsset] = await Asset.loadAsync(require('@assets/certificates/master_000316.pem'))
-    console.log('📦 [CSCA] Asset loaded')
+  //   const [CSCAPemAsset] = await Asset.loadAsync(require('@assets/certificates/master_000316.pem'))
+  //   console.log('📦 [CSCA] Asset loaded')
 
-    if (!CSCAPemAsset.localUri) throw new Error('❌ CSCA cert asset local URI is not available')
-    const CSCAPemFileInfo = await FileSystem.getInfoAsync(CSCAPemAsset.localUri)
-    const CSCAPemFileContent = await FileSystem.readAsStringAsync(CSCAPemFileInfo.uri, {
-      encoding: FileSystem.EncodingType.UTF8,
-    })
-    console.log('✅ [CSCA] File content read')
+  //   if (!CSCAPemAsset.localUri) throw new Error('❌ CSCA cert asset local URI is not available')
+  //   const CSCAPemFileInfo = await FileSystem.getInfoAsync(CSCAPemAsset.localUri)
+  //   const CSCAPemFileContent = await FileSystem.readAsStringAsync(CSCAPemFileInfo.uri, {
+  //     encoding: FileSystem.EncodingType.UTF8,
+  //   })
+  //   console.log('✅ [CSCA] File content read')
 
-    const CSCACertBytes = parsePemString(CSCAPemFileContent)
-    console.log('✅ [CSCA] PEM parsed into cert bytes')
+  //   const CSCACertBytes = parsePemString(CSCAPemFileContent)
+  //   console.log('✅ [CSCA] PEM parsed into cert bytes')
 
-    const [_, getSlaveMasterError] = await tryCatch(targetCertificate.getSlaveMaster(CSCACertBytes))
-    if (getSlaveMasterError) {
-      console.error('❌ [CSCA] Failed to get slave master certificate')
-      throw new TypeError('Failed to get slave master certificate', getSlaveMasterError)
-    } else {
-      console.log('✅ [CSCA] Slave master certificate verified')
-    }
+  //   const [_, getSlaveMasterError] = await tryCatch(targetCertificate.getSlaveMaster(CSCACertBytes))
+  //   if (getSlaveMasterError) {
+  //     console.error('❌ [CSCA] Failed to get slave master certificate')
+  //     throw new TypeError('Failed to get slave master certificate', getSlaveMasterError)
+  //   } else {
+  //     console.log('✅ [CSCA] Slave master certificate verified')
+  //   }
 
-    console.log('🔑 [PrivateKey] Pulled from walletStore', privateKey)
+  //   console.log('🔑 [PrivateKey] Pulled from walletStore', privateKey)
 
-    const dg1 = circuitParams.buildDg1FromTbs(sigCert.certificate.tbsCertificate)
+  //   // const dg1 = circuitParams.buildDg1FromTbs(sigCert.certificate.tbsCertificate)
 
-    console.log('dg1', dg1)
+  //   // console.log('dg1', dg1)
 
-    const inputs = circuitParams.buildInputs({
-      skIdentity: String(BigInt(`0x${privateKey}`)),
-      icaoRoot: String(BigInt(slaveCertSmtProof.root)),
-      pkPassportHash: identity?.passportHash as string,
-      dg1,
-      // inclusionBranches: slaveCertSmtProof.siblings,
-      inclusionBranches: slaveCertSmtProof.siblings.map(el => BigInt(el)).map(String),
-    })
+  //   // const inputs = circuitParams.buildInputs({
+  //   //   skIdentity: String(BigInt(`0x${privateKey}`)),
+  //   //   icaoRoot: String(BigInt(slaveCertSmtProof.root)),
+  //   //   pkPassportHash: identity?.passportHash as string,
+  //   //   dg1,
+  //   //   // inclusionBranches: slaveCertSmtProof.siblings,
+  //   //   inclusionBranches: slaveCertSmtProof.siblings.map(el => BigInt(el)).map(String),
+  //   // })
 
-    console.log('🛠️ [Inputs] Prepared inputs for circuit')
-    console.log(JSON.stringify(inputs, null, 2))
+  //   console.log('🛠️ [Inputs] Prepared inputs for circuit')
+  //   // console.log(JSON.stringify(inputs, null, 2))
 
-    const proof = await circuitParams.prove(JSON.stringify(inputs))
-    // const proof = await circuitParams.prove(JSON.stringify(QueryIdentityCircuit.TEST_DATA))
-    console.log('🎉 [Proof] Success! Proof generated')
-    console.log('🧾 Proof:', proof)
-  }
+  //   // const proof = await circuitParams.prove(JSON.stringify(inputs))
+  //   // const proof = await circuitParams.prove(JSON.stringify(QueryIdentityCircuit.TEST_DATA))
+  //   console.log('🎉 [Proof] Success! Proof generated')
+  //   // console.log('🧾 Proof:', proof)
+  // }
 
   useEffect(() => {
     const handleDeepLink = async () => {
@@ -234,7 +231,7 @@ export default function ProofBottomSheet() {
             className='flex-1'
             onPress={() => cardUiSettingsBottomSheet.dismiss()}
           />
-          <UiButton title='Generate proof' className='flex-1' onPress={generateProof} />
+          {/* <UiButton title='Generate proof' className='flex-1' onPress={generateProof} /> */}
         </View>
       )}
       headerComponent={

@@ -1,10 +1,19 @@
+/* eslint-disable unused-imports/no-unused-vars */
 import { NoirCircuitParams } from '@modules/noir'
 import NoirModule from '@modules/noir/src/NoirModule'
-import { Name, TBSCertificate } from '@peculiar/asn1-x509'
+import { Name } from '@peculiar/asn1-x509'
 
 const PRIME = BigInt(
   '21888242871839275222246405745257275088548364400416034343698204186575808495617',
 )
+
+type ParsedFields = {
+  country_name: Uint8Array
+  validity: [Uint8Array, Uint8Array]
+  given_name: Uint8Array
+  surname: Uint8Array
+  common_name: Uint8Array
+}
 
 export class QueryIdentityCircuit {
   public circuitParams: NoirCircuitParams
@@ -38,6 +47,101 @@ export class QueryIdentityCircuit {
     siblings: new Array(82).fill('0x00'),
   }
 
+  parseRawTbs(asn1: Uint8Array): ParsedFields {
+    let current_offset = 28
+
+    current_offset += asn1[current_offset]! + 1
+    current_offset += asn1[current_offset + 1]! + 2
+
+    const validity_len = asn1[current_offset + 3]!
+    const validity: [Uint8Array, Uint8Array] = [new Uint8Array(16), new Uint8Array(16)]
+
+    for (let i = 0; i < 16; i++) {
+      if (i < validity_len) {
+        validity[0][i] = asn1[current_offset + 4 + i]!
+        validity[1][i] = asn1[current_offset + 6 + validity_len + i]!
+      }
+    }
+
+    validity[0][15] = validity_len
+    validity[1][15] = validity_len
+
+    current_offset += asn1[current_offset + 1]! + 2
+
+    const country_name = new Uint8Array(2)
+    country_name[0] = asn1[current_offset + 13]!
+    country_name[1] = asn1[current_offset + 14]!
+
+    current_offset += asn1[current_offset + 3]! + 4
+    current_offset += asn1[current_offset + 1]! + 2
+    current_offset += 7 + asn1[current_offset + 5]!
+
+    const given_name = new Uint8Array(31)
+    const given_name_len = asn1[current_offset]!
+    for (let i = 0; i < 30; i++) {
+      if (i < given_name_len) {
+        given_name[i] = asn1[current_offset + 1 + i]!
+      }
+    }
+    given_name[30] = given_name_len
+    current_offset += given_name_len + 1
+
+    current_offset += 7 + asn1[current_offset + 5]!
+
+    const surname = new Uint8Array(31)
+    const surname_len = asn1[current_offset]!
+    for (let i = 0; i < 30; i++) {
+      if (i < surname_len) {
+        surname[i] = asn1[current_offset + 1 + i]!
+      }
+    }
+    surname[30] = surname_len
+    current_offset += surname_len + 1
+
+    current_offset += 7 + asn1[current_offset + 5]!
+
+    const common_name = new Uint8Array(31)
+    const common_name_len = asn1[current_offset]!
+    for (let i = 0; i < 30; i++) {
+      if (i < common_name_len) {
+        common_name[i] = asn1[current_offset + 1 + i]!
+      }
+    }
+    common_name[30] = common_name_len
+
+    return {
+      country_name,
+      validity,
+      given_name,
+      surname,
+      common_name,
+    }
+  }
+
+  getDg1(asn1: Uint8Array): Uint8Array {
+    const { country_name, validity, given_name, surname, common_name } = this.parseRawTbs(asn1)
+    const dg1 = new Uint8Array(108)
+
+    dg1[0] = country_name[0]
+    dg1[1] = country_name[1]
+
+    for (let j = 0; j < 13; j++) {
+      dg1[j + 2] = validity[0][j]
+      dg1[j + 15] = validity[1][j]
+    }
+
+    for (let j = 0; j < 31; j++) {
+      dg1[j + 28] = given_name[j]
+      dg1[j + 59] = surname[j]
+    }
+
+    for (let j = 0; j < 18; j++) {
+      dg1[j + 90] = common_name[j]
+    }
+
+    return dg1
+  }
+
   private _getAttributeValue(name: Name, oid: string): string | undefined {
     for (const rdn of name) {
       for (const attr of rdn) {
@@ -47,45 +151,6 @@ export class QueryIdentityCircuit {
       }
     }
     return undefined
-  }
-
-  buildDg1FromTbs(tbs: TBSCertificate): number[] {
-    const dg1 = new Uint8Array(108)
-    const encoder = new TextEncoder()
-
-    // (1) Country Code
-    const countryName = this._getAttributeValue(tbs.issuer, '2.5.4.6') ?? ''
-    const countryBytes = encoder.encode(countryName)
-    dg1[0] = countryBytes[0] || 0
-    dg1[1] = countryBytes[1] || 0
-
-    // (2) Validity
-    const encodeDate = (date: Date): Uint8Array => {
-      const str = date.toISOString().slice(2, 15).replace(/[-T:]/g, '') // YYMMDDhhmmssZ
-      return encoder.encode(str)
-    }
-
-    const notBefore = encodeDate(tbs.validity.notBefore.getTime())
-    const notAfter = encodeDate(tbs.validity.notAfter.getTime())
-
-    dg1.set(notBefore.slice(0, 13), 2)
-    dg1.set(notAfter.slice(0, 13), 15)
-
-    // (3) Given Name
-    const givenName = encoder.encode(this._getAttributeValue(tbs.subject, '2.5.4.42') ?? '')
-    dg1.set(givenName.slice(0, 30), 28)
-    dg1[58] = givenName.length
-
-    // (4) Surname
-    const surname = encoder.encode(this._getAttributeValue(tbs.subject, '2.5.4.4') ?? '')
-    dg1.set(surname.slice(0, 30), 59)
-    dg1[89] = surname.length
-
-    // (5) Common Name
-    const commonName = encoder.encode(this._getAttributeValue(tbs.subject, '2.5.4.3') ?? '')
-    dg1.set(commonName.slice(0, 18), 90)
-
-    return Array.from(dg1)
   }
 
   private _ensureHexPrefix(val: string) {
@@ -124,12 +189,16 @@ export class QueryIdentityCircuit {
     pkPassportHash,
     dg1,
     inclusionBranches,
+    timestamp,
+    identityCounter,
   }: {
     icaoRoot: string
     skIdentity: string
     pkPassportHash: string
     dg1: number[]
+    timestamp: string
     inclusionBranches: string[]
+    identityCounter: string
   }) {
     const now = Math.floor(Date.now() / 1_000)
     const oneDay = 24 * 60 * 60
@@ -139,15 +208,20 @@ export class QueryIdentityCircuit {
       event_data: this._getRandomDecimal(),
       id_state_root: icaoRoot,
       selector: '262143',
-      timestamp_lowerbound: (now - oneDay).toString(),
-      timestamp_upperbound: (now + oneDay).toString(),
-      timestamp: now.toString(),
-      identity_counter: '1',
+      timestamp_lowerbound: '0',
+      timestamp_upperbound:
+        '21888242871839275222246405745257275088548364400416034343698204186575808495616',
+      timestamp,
+      // timestamp_lowerbound: (now - oneDay).toString(),
+      // timestamp_upperbound: (now + oneDay).toString(),
+      // timestamp: now.toString(),
+      identity_counter: identityCounter,
       identity_count_lowerbound: '0',
       identity_count_upperbound:
         '21888242871839275222246405745257275088548364400416034343698204186575808495616',
       birth_date_lowerbound: '0',
-      birth_date_upperbound: '0',
+      birth_date_upperbound:
+        '21888242871839275222246405745257275088548364400416034343698204186575808495616',
       expiration_date_lowerbound: '0',
       expiration_date_upperbound:
         '21888242871839275222246405745257275088548364400416034343698204186575808495616',

@@ -1,3 +1,4 @@
+import { poseidon } from '@iden3/js-crypto'
 import { buildCertTreeAndGenProof, parsePemString } from '@lukachi/rn-csca'
 import {
   ECParameters,
@@ -84,9 +85,48 @@ export abstract class RegistrationStrategy {
     )
   }
 
+  public static get registrationPoseidonSMTContract() {
+    return createPoseidonSMTContract(
+      Config.REGISTRATION_POSEIDON_SMT_CONTRACT_ADDRESS,
+      RegistrationStrategy.rmoEvmJsonRpcProvider,
+    )
+  }
+
   public static getSlaveCertSmtProof = async (cert: ExtendedCertificate) => {
     return RegistrationStrategy.certPoseidonSMTContract.contractInstance.getProof(
       zeroPadValue(cert.slaveCertificateIndex, 32),
+    )
+  }
+
+  // https://github.com/rarimo/rarime-mobile-identity-sdk/blob/10e56474d1afeb7381b01ff4185fab0df1e24197/utils.go#L260
+  public static getPassportProofIndex = async (
+    identityKey: string,
+    pkIdentityHash: string,
+  ): Promise<string> => {
+    try {
+      const toDecimalString = (hexStr: string) => {
+        const normalized = hexStr.startsWith('0x') ? hexStr.slice(2) : hexStr
+        return BigInt('0x' + normalized).toString(10)
+      }
+
+      const passportKeyDecimal = toDecimalString(pkIdentityHash)
+      const identityKeyDecimal = toDecimalString(identityKey)
+
+      const passportKeyBigInt = BigInt(passportKeyDecimal)
+      const identityKeyBigInt = BigInt(identityKeyDecimal)
+
+      const hash = poseidon.hash([passportKeyBigInt, identityKeyBigInt])
+
+      return '0x' + hash.toString(16).padStart(64, '0')
+    } catch (error) {
+      console.error('getPassportProofIndexBytes error:', error)
+      throw error
+    }
+  }
+
+  public static getPassportRegistrationProof = async (proofIndex: string) => {
+    return RegistrationStrategy.registrationPoseidonSMTContract.contractInstance.getProof(
+      proofIndex,
     )
   }
 

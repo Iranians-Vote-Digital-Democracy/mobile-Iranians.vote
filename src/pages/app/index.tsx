@@ -14,6 +14,7 @@ import ProofBottomSheet from './components/ProofBottomSheet'
 import DocumentScanScreen from './pages/document-scan'
 import DocumentsScreen from './pages/documents'
 import HomeScreen from './pages/home'
+import InviteOthers from './pages/invite-others'
 import PassportTests from './pages/passport-tests'
 import ProfileScreen from './pages/profile'
 
@@ -87,6 +88,14 @@ export default function App({}: RootStackScreenProps<'App'>) {
           headerShown: false,
         }}
       >
+        <Stack.Screen name='Tabs' component={AppTabs} />
+        <Stack.Screen
+          name='InviteOthers'
+          component={InviteOthers}
+          options={{
+            animation: 'fade',
+          }}
+        />
         <Stack.Screen
           name='Scan'
           component={DocumentScanScreen}
