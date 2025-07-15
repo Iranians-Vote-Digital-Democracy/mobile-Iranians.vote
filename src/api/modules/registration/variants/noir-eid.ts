@@ -1,7 +1,6 @@
-import { hexlify, keccak256 } from 'ethers'
+import { keccak256 } from 'ethers'
 
 import { RegistrationStrategy } from '@/api/modules/registration/strategy'
-import { PassportRegisteredWithAnotherPKError } from '@/store/modules/identity/errors'
 import { IdentityItem, NoirEIDIdentity } from '@/store/modules/identity/Identity'
 import { SparseMerkleTree } from '@/types/contracts/PoseidonSMT'
 import { Registration2 } from '@/types/contracts/Registration'
@@ -42,25 +41,6 @@ export class NoirEIDRegistration extends RegistrationStrategy {
       ? identityItem.registrationProof.proof
       : `0x${identityItem.registrationProof.proof}`
 
-    // const voidSigner = new VoidSigner(
-    //   '0x52749da41B7196A7001D85Ce38fa794FE0F9044E',
-    //   new JsonRpcProvider(RARIMO_CHAINS[Config.RMO_CHAIN_ID].rpcEvm),
-    // )
-    // const preparedTx = await voidSigner.populateCall({
-    //   to: Config.REGISTRATION_CONTRACT_ADDRESS,
-    //   data: registrationContractInterface.encodeFunctionData('registerViaNoir', [
-    //     slaveCertSmtProof.root,
-    //     pkIdentityHash,
-    //     dg1Commitment,
-    //     passport,
-    //     proof,
-    //   ]),
-    // })
-
-    // console.log({ preparedTx })
-
-    // throw new Error('purpose')
-
     if (isRevoked) {
       return RegistrationStrategy.registrationContractInterface.encodeFunctionData(
         'reissueIdentityViaNoir',
@@ -77,7 +57,7 @@ export class NoirEIDRegistration extends RegistrationStrategy {
   createIdentity = async (
     _eDocument: EDocument,
     privateKey: string,
-    publicKeyHash: Uint8Array,
+    _: Uint8Array,
   ): Promise<IdentityItem> => {
     const eDocument = _eDocument as EID
 
@@ -107,31 +87,31 @@ export class NoirEIDRegistration extends RegistrationStrategy {
 
     const identityItem = new NoirEIDIdentity(eDocument, registrationProof)
 
-    const passportInfo = await identityItem.getPassportInfo()
+    // const passportInfo = await identityItem.getPassportInfo()
 
-    const currentIdentityKey = publicKeyHash
-    const currentIdentityKeyHex = hexlify(currentIdentityKey)
+    // const currentIdentityKey = publicKeyHash
+    // const currentIdentityKeyHex = hexlify(currentIdentityKey)
 
-    const isPassportNotRegistered =
-      !passportInfo ||
-      passportInfo.passportInfo_.activeIdentity === RegistrationStrategy.ZERO_BYTES32_HEX
+    // const isPassportNotRegistered =
+    //   !passportInfo ||
+    //   passportInfo.passportInfo_.activeIdentity === RegistrationStrategy.ZERO_BYTES32_HEX
 
-    const isPassportRegisteredWithCurrentPK =
-      passportInfo?.passportInfo_.activeIdentity === currentIdentityKeyHex
+    // const isPassportRegisteredWithCurrentPK =
+    //   passportInfo?.passportInfo_.activeIdentity === currentIdentityKeyHex
 
-    if (isPassportNotRegistered) {
-      const registerCallData = await this.buildRegisterCallData(
-        identityItem,
-        slaveCertSmtProof,
-        false,
-      )
+    // if (isPassportNotRegistered) {
+    const registerCallData = await this.buildRegisterCallData(
+      identityItem,
+      slaveCertSmtProof,
+      false,
+    )
 
-      await RegistrationStrategy.requestRelayerRegisterMethod(registerCallData)
-    }
+    await RegistrationStrategy.requestRelayerRegisterMethod(registerCallData)
+    // }
 
-    if (!isPassportRegisteredWithCurrentPK) {
-      throw new PassportRegisteredWithAnotherPKError()
-    }
+    // if (!isPassportRegisteredWithCurrentPK) {
+    //   throw new PassportRegisteredWithAnotherPKError()
+    // }
 
     return identityItem
   }
