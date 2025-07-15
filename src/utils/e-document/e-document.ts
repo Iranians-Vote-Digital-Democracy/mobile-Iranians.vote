@@ -253,10 +253,15 @@ export class EPassport implements EDocument {
     throw new TypeError('Unsupported DG15 public key algorithm for AA public key extraction')
   }
 }
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export class EID implements EDocument {
   docCode = 'EID'
 
+  dg1Bytes: any
+  dg11Bytes: any
+  dg15Bytes: any
+  aaSignature: any
+  /* eslint-enable @typescript-eslint/no-explicit-any */
   constructor(
     public sigCertificate: ExtendedCertificate,
     public authCertificate: ExtendedCertificate,

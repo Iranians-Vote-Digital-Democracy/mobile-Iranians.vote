@@ -11,7 +11,7 @@ export default function DocumentPreviewStep() {
 
   const insets = useSafeAreaInsets()
 
-  if (tempEDoc instanceof EPassport) {
+  if (tempEDoc instanceof EID) {
     if (!tempEDoc?.personDetails) return null
 
     const { firstName, lastName, passportImageRaw, ...restDetails } = tempEDoc.personDetails
@@ -57,29 +57,29 @@ export default function DocumentPreviewStep() {
               })}
             {/* Only for Testing*/}
             {/* <View className='flex flex-row items-center justify-between gap-2'>
-              <Text className='capitalize text-textPrimary typography-body3'>dg1</Text>
-              <Text className='text-textPrimary typography-subtitle4'>
+              <Text className='typography-body3 capitalize text-textPrimary'>dg1</Text>
+              <Text className='typography-subtitle4 text-textPrimary'>
                 {tempEDoc.dg1Bytes.length} length
               </Text>
             </View>
 
             <View className='flex flex-row items-center justify-between gap-2'>
-              <Text className='capitalize text-textPrimary typography-body3'>dg11</Text>
-              <Text className='text-textPrimary typography-subtitle4'>
+              <Text className='typography-body3 capitalize text-textPrimary'>dg11</Text>
+              <Text className='typography-subtitle4 text-textPrimary'>
                 {tempEDoc.dg11Bytes?.length} length
               </Text>
             </View>
 
             <View className='flex flex-row items-center justify-between gap-2'>
-              <Text className='capitalize text-textPrimary typography-body3'>dg15</Text>
-              <Text className='text-textPrimary typography-subtitle4'>
+              <Text className='typography-body3 capitalize text-textPrimary'>dg15</Text>
+              <Text className='typography-subtitle4 text-textPrimary'>
                 {tempEDoc.dg15Bytes?.length ?? 0} length
               </Text>
             </View>
 
             <View className='flex flex-row items-center justify-between gap-2'>
-              <Text className='capitalize text-textPrimary typography-body3'>signature</Text>
-              <Text className='text-textPrimary typography-subtitle4'>
+              <Text className='typography-body3 capitalize text-textPrimary'>signature</Text>
+              <Text className='typography-subtitle4 text-textPrimary'>
                 {tempEDoc?.aaSignature?.length ?? 0} length
               </Text>
             </View>*/}
@@ -94,7 +94,7 @@ export default function DocumentPreviewStep() {
     )
   }
 
-  if (tempEDoc instanceof EID) {
+  if (tempEDoc instanceof EPassport) {
     return (
       <UiScreenScrollable
         className='flex-1 items-center justify-center'

@@ -109,13 +109,32 @@ export default function DocumentCard({ identity }: Props) {
             />
 
             <View className='flex gap-2'>
-              <Text {...documentCardUi.foregroundValues} className='typography-h6'>
+              <Text {...documentCardUi.foregroundValues} className='typography-h6 text-textPrimary'>
                 {fullName}
               </Text>
-              <Text {...documentCardUi.foregroundLabels} className='typography-body2'>
-                {age} Years old
+              <Text
+                {...documentCardUi.foregroundLabels}
+                className='typography-body3 text-textSecondary'
+              >
+                Years old {age}
               </Text>
             </View>
+          </View>
+          <View className='absolute right-5 top-5 z-20 flex flex-row items-center gap-4'>
+            <CardActionIconButton
+              iconComponentNameProps={{ customIcon: 'eyeIcon' }}
+              pressableProps={{
+                onPress: toggleIsBlurred,
+              }}
+            />
+            <CardActionIconButton
+              iconComponentNameProps={{ customIcon: 'dotsThreeOutlineIcon' }}
+              pressableProps={{
+                onPress: () => {
+                  cardUiSettingsBottomSheet.present()
+                },
+              }}
+            />
           </View>
         </View>
         <UiHorizontalDivider className='mb-6 mt-8' />
@@ -158,23 +177,6 @@ export default function DocumentCard({ identity }: Props) {
             />
           </Pressable>
         )}
-
-        <View className='absolute right-5 top-5 z-20 flex flex-row items-center gap-4'>
-          <CardActionIconButton
-            iconComponentNameProps={{ customIcon: 'passwordIcon' }}
-            pressableProps={{
-              onPress: toggleIsBlurred,
-            }}
-          />
-          <CardActionIconButton
-            iconComponentNameProps={{ customIcon: 'dotsThreeOutlineIcon' }}
-            pressableProps={{
-              onPress: () => {
-                cardUiSettingsBottomSheet.present()
-              },
-            }}
-          />
-        </View>
       </Container>
 
       <UiBottomSheet
@@ -195,7 +197,7 @@ export default function DocumentCard({ identity }: Props) {
         <BottomSheetScrollView style={{ paddingBottom: insets.bottom }}>
           <View className={cn('flex flex-col gap-4 p-5 pb-10')}>
             <View className={cn('flex flex-col gap-4')}>
-              <Text className='typography-overline3 text-textSecondary'>CARD VISUAL</Text>
+              <Text className='typography-subtitle4 text-textPrimary'>Card visual</Text>
 
               <ScrollView horizontal={true}>
                 <View className='flex flex-row gap-6'>
@@ -207,7 +209,7 @@ export default function DocumentCard({ identity }: Props) {
                         <View
                           className={cn(
                             'items-center gap-2 rounded-lg border border-solid border-componentPrimary px-[24] py-[16]',
-                            isActive && 'bg-componentPrimary',
+                            isActive && 'bg-componentHovered',
                           )}
                         >
                           <Container
@@ -257,9 +259,9 @@ export default function DocumentCard({ identity }: Props) {
                               />
                             ))}
                           </Container>
-                          <Text className='typography-buttonMedium text-textPrimary'>
+                          {/* <Text className='typography-buttonMedium text-textPrimary'>
                             {el.title}
-                          </Text>
+                          </Text> */}
                         </View>
                       </Pressable>
                     )
@@ -272,7 +274,7 @@ export default function DocumentCard({ identity }: Props) {
 
             <View className={cn('flex flex-col gap-4')}>
               <View className={cn('flex flex-col gap-2')}>
-                <Text className='typography-overline3 text-textSecondary'>DATA</Text>
+                <Text className='typography-subtitle4 text-textPrimary'>DATA</Text>
                 <Text className='typography-body4 text-textSecondary'>
                   Shows two identifiers on the card
                 </Text>
@@ -310,8 +312,14 @@ function DocumentCardRow({
 } & ViewProps) {
   return (
     <View {...rest} className={cn('flex w-full flex-row items-center justify-between', className)}>
-      <Text {...labelProps} className={cn('typography-body3', labelProps.className)} />
-      <Text {...valueProps} className={cn('typography-subtitle4', valueProps.className)} />
+      <Text
+        {...labelProps}
+        className={cn('typography-body3 text-textSecondary', labelProps.className)}
+      />
+      <Text
+        {...valueProps}
+        className={cn('typography-subtitle4 text-textPrimary', valueProps.className)}
+      />
     </View>
   )
 }
