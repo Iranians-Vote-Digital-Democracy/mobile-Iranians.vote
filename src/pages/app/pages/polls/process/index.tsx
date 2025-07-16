@@ -162,7 +162,6 @@ function Footer({ onPress, selectedAnswerId, hasVoted }: FooterProps) {
         }}
         onPress={onPress}
         disabled={!selectedAnswerId || hasVoted}
-        className={selectedAnswerId && !hasVoted ? '' : 'opacity-50'}
       />
     </View>
   )
