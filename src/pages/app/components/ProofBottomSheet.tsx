@@ -1,225 +1,190 @@
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { AsnConvert } from '@peculiar/asn1-schema'
-import { Certificate } from '@peculiar/asn1-x509'
-import { JsonRpcProvider, zeroPadValue } from 'ethers'
-import { Asset, useAssets } from 'expo-asset'
-import * as FileSystem from 'expo-file-system'
-import { QueryParams } from 'expo-linking'
 import * as Linking from 'expo-linking'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { RARIMO_CHAINS } from '@/api/modules/rarimo'
-import { Config } from '@/config'
-import { createPoseidonSMTContract } from '@/helpers'
-import { tryCatch } from '@/helpers/try-catch'
-import { walletStore } from '@/store'
+import { RegistrationStrategy } from '@/api/modules/registration/strategy'
+import { bus, DefaultBusEvents, ErrorHandler } from '@/core'
+import { identityStore, walletStore } from '@/store'
+import { NoirEIDIdentity } from '@/store/modules/identity/Identity'
 import { useAppTheme } from '@/theme'
 import { UiBottomSheet, UiButton, UiHorizontalDivider, useUiBottomSheet } from '@/ui'
 import { BottomSheetHeader } from '@/ui/UiBottomSheet'
-import { NoirEIDBasedRegistrationCircuit } from '@/utils/circuits/registration/noir-registration-circuit'
-import { EID, EPassport } from '@/utils/e-document'
-import { ExtendedCertificate } from '@/utils/e-document/extended-cert'
+import { QueryIdentityCircuit } from '@/utils/circuits/query-identity-circuits'
+import { UrlQueryProofParams } from '@/utils/circuits/types/QueryIdentity'
 
 export default function ProofBottomSheet() {
-  const [authAssets] = useAssets([require('@assets/certificates/AuthCert_0897A6C3.cer')])
-  const [modalParams, setModalParams] = useState<QueryParams | null>(null)
-  const cardUiSettingsBottomSheet = useUiBottomSheet()
-  const privateKey = walletStore.useWalletStore.getState().privateKey
+  const [modalParams, setModalParams] = useState<Partial<UrlQueryProofParams> | null>(null)
+  const { dismiss, present, ref } = useUiBottomSheet()
   const { palette } = useAppTheme()
   const insets = useSafeAreaInsets()
+  const [isGenerating, setIsGenerating] = useState(false)
+  const identities = identityStore.useIdentityStore(state => state.identities)
+  const privateKey = walletStore.useWalletStore(state => state.privateKey)
 
-  const rmoEvmJsonRpcProvider = useMemo(() => {
-    const evmRpcUrl = RARIMO_CHAINS[Config.RMO_CHAIN_ID].rpcEvm
-    return new JsonRpcProvider(evmRpcUrl)
-  }, [])
-
-  const certPoseidonSMTContract = useMemo(() => {
-    return createPoseidonSMTContract(
-      Config.CERT_POSEIDON_SMT_CONTRACT_ADDRESS,
-      rmoEvmJsonRpcProvider,
-    )
-  }, [rmoEvmJsonRpcProvider])
-
-  const getSlaveCertSmtProof = useCallback(
-    async (cert: ExtendedCertificate) => {
-      return certPoseidonSMTContract.contractInstance.getProof(
-        zeroPadValue(cert.slaveCertificateIndex, 32),
-      )
-    },
-    [certPoseidonSMTContract.contractInstance],
-  )
-
-  const getMinimalIdentityData = async () => {
+  const generateProof = async () => {
     try {
-      console.log('📦 Loading AuthCert...')
-      const [authAsset] = await Asset.loadAsync(
-        require('@assets/certificates/AuthCert_0897A6C3.cer'),
-      )
-      console.log('✅ AuthCert loaded:', authAsset.localUri)
+      setIsGenerating(true)
 
-      const authBase64 = await FileSystem.readAsStringAsync(authAsset.localUri!, {
-        encoding: FileSystem.EncodingType.Base64,
+      const circuitParams = new QueryIdentityCircuit()
+
+      if (!identities.length) {
+        // TODO: Implement registration in this case
+        throw new Error("Your identity hasn't registered yet!")
+      }
+
+      // last registered identity
+      const currentIdentity = identities[identities.length - 1]
+
+      if (!(currentIdentity instanceof NoirEIDIdentity))
+        throw new Error('Identity is not NoirEIDIdentity')
+
+      if (!currentIdentity) throw new Error("Identity doesn't exist")
+
+      const rawTbsCertBytes = new Uint8Array(
+        AsnConvert.serialize(currentIdentity.document.sigCertificate.certificate.tbsCertificate),
+      )
+
+      const passportProofIndexHex = await RegistrationStrategy.getPassportProofIndex(
+        currentIdentity.identityKey, // passport hash  (passportKey)
+        currentIdentity.pkIdentityHash, // registrationProof.pub_signals[3] (IdentityKey)
+      )
+
+      const [passportInfo_, identityInfo_] = await currentIdentity.getPassportInfo()
+      const identityReissueCounter = passportInfo_.identityReissueCounter.toString()
+      const issueTimestamp = identityInfo_.issueTimestamp.toString()
+
+      const passportRegistrationProof =
+        await RegistrationStrategy.getPassportRegistrationProof(passportProofIndexHex)
+
+      const dg1 = Array.from(circuitParams.getDg1(rawTbsCertBytes)).map(String)
+
+      const inputs = circuitParams.buildQueryProofParams({
+        ...modalParams,
+        skIdentity: `0x${privateKey}`,
+        idStateRoot: passportRegistrationProof.root,
+        pkPassportHash: `0x${currentIdentity.passportHash}`,
+        dg1,
+        siblings: passportRegistrationProof.siblings,
+        identityCounter: identityReissueCounter,
+        timestamp: issueTimestamp,
       })
-      const authBytes = Buffer.from(authBase64, 'base64')
-      const authCertificate = new ExtendedCertificate(AsnConvert.parse(authBytes, Certificate))
-      console.log('🔍 AuthCert parsed successfully')
 
-      console.log('📦 Loading SigningCert...')
-      const [signingAsset] = await Asset.loadAsync(
-        require('@assets/certificates/SigningCert_084384FC.cer'),
-      )
-      console.log('✅ SigningCert loaded:', signingAsset.localUri)
-
-      const signingBase64 = await FileSystem.readAsStringAsync(signingAsset.localUri!, {
-        encoding: FileSystem.EncodingType.Base64,
+      await circuitParams.prove(JSON.stringify(inputs))
+      // TODO: Implement verifying query proof with contract
+      bus.emit(DefaultBusEvents.success, {
+        message: 'Proof generated successfully!',
       })
-      const signingBytes = Buffer.from(signingBase64, 'base64')
-      const signingCertificate = new ExtendedCertificate(
-        AsnConvert.parse(signingBytes, Certificate),
-      )
-      console.log('🔍 SigningCert parsed successfully')
-
-      const eID = new EID(signingCertificate, authCertificate)
-
-      console.log('🧬 EID created')
-
-      const targetCertificate =
-        eID instanceof EPassport ? eID.sod.slaveCertificate : eID.authCertificate
-      console.log('🎯 Target cert selected:', eID instanceof EPassport ? 'EPassport' : 'EID')
-
-      const [slaveCertSmtProof, getProofErr] = await tryCatch(
-        getSlaveCertSmtProof(targetCertificate),
-      )
-      if (getProofErr) {
-        console.error('❌ SMT proof fetch failed:', getProofErr)
-        throw new Error('SMT proof fetch failed')
-      }
-
-      console.log('✅ SMT proof fetched')
-
-      const circuit = new NoirEIDBasedRegistrationCircuit(eID)
-      const [regProof, getRegProofError] = await tryCatch(
-        circuit.prove({
-          skIdentity: BigInt(`0x${privateKey}`),
-          icaoRoot: BigInt(slaveCertSmtProof.root),
-          inclusionBranches: slaveCertSmtProof.siblings.map(el => BigInt(el)),
-        }),
-      )
-
-      if (getRegProofError) {
-        throw new TypeError('Failed to get identity registration proof', getRegProofError)
-      }
-
-      // const identity = new IdentityItem(eID, regProof)
-      console.log('✅ IdentityItem successfully created')
-
-      return {
-        // identity,
-        slaveCertSmtProof,
-        targetCertificate,
-        sigCert: eID.sigCertificate,
-      }
-    } catch (err) {
-      console.error('🔥 Error in getMinimalIdentityData:', err)
-      throw err
+      dismiss()
+    } catch (error) {
+      ErrorHandler.process(error)
+    } finally {
+      setIsGenerating(false)
     }
   }
 
-  // const generateProof = async () => {
-  //   console.log('🔷 [generateProof] Started proof generation')
-
-  //   const circuitParams = new QueryIdentityCircuit()
-  //   console.log('✅ [circuit] QueryIdentityCircuit initialized')
-
-  //   const { identity, slaveCertSmtProof, targetCertificate, sigCert } =
-  //     await getMinimalIdentityData()
-  //   console.log('✅ [identity] Minimal identity data received')
-  //   console.log('🧾 identity:', identity)
-  //   console.log('🌿 slaveCertSmtProof.root:', slaveCertSmtProof.root)
-  //   console.log('🌿 slaveCertSmtProof.siblings:', slaveCertSmtProof.siblings.length, 'siblings')
-
-  //   const [CSCAPemAsset] = await Asset.loadAsync(require('@assets/certificates/master_000316.pem'))
-  //   console.log('📦 [CSCA] Asset loaded')
-
-  //   if (!CSCAPemAsset.localUri) throw new Error('❌ CSCA cert asset local URI is not available')
-  //   const CSCAPemFileInfo = await FileSystem.getInfoAsync(CSCAPemAsset.localUri)
-  //   const CSCAPemFileContent = await FileSystem.readAsStringAsync(CSCAPemFileInfo.uri, {
-  //     encoding: FileSystem.EncodingType.UTF8,
-  //   })
-  //   console.log('✅ [CSCA] File content read')
-
-  //   const CSCACertBytes = parsePemString(CSCAPemFileContent)
-  //   console.log('✅ [CSCA] PEM parsed into cert bytes')
-
-  //   const [_, getSlaveMasterError] = await tryCatch(targetCertificate.getSlaveMaster(CSCACertBytes))
-  //   if (getSlaveMasterError) {
-  //     console.error('❌ [CSCA] Failed to get slave master certificate')
-  //     throw new TypeError('Failed to get slave master certificate', getSlaveMasterError)
-  //   } else {
-  //     console.log('✅ [CSCA] Slave master certificate verified')
-  //   }
-
-  //   console.log('🔑 [PrivateKey] Pulled from walletStore', privateKey)
-
-  //   // const dg1 = circuitParams.buildDg1FromTbs(sigCert.certificate.tbsCertificate)
-
-  //   // console.log('dg1', dg1)
-
-  //   // const inputs = circuitParams.buildInputs({
-  //   //   skIdentity: String(BigInt(`0x${privateKey}`)),
-  //   //   icaoRoot: String(BigInt(slaveCertSmtProof.root)),
-  //   //   pkPassportHash: identity?.passportHash as string,
-  //   //   dg1,
-  //   //   // inclusionBranches: slaveCertSmtProof.siblings,
-  //   //   inclusionBranches: slaveCertSmtProof.siblings.map(el => BigInt(el)).map(String),
-  //   // })
-
-  //   console.log('🛠️ [Inputs] Prepared inputs for circuit')
-  //   // console.log(JSON.stringify(inputs, null, 2))
-
-  //   // const proof = await circuitParams.prove(JSON.stringify(inputs))
-  //   // const proof = await circuitParams.prove(JSON.stringify(QueryIdentityCircuit.TEST_DATA))
-  //   console.log('🎉 [Proof] Success! Proof generated')
-  //   // console.log('🧾 Proof:', proof)
-  // }
-
-  useEffect(() => {
-    const handleDeepLink = async () => {
-      const url = await Linking.getInitialURL()
-      if (!url) return
-
-      const parsed = Linking.parse(url)
-      const params = parsed.queryParams
-
-      if (params && Object.keys(params).length > 0) {
-        setModalParams(params)
-        cardUiSettingsBottomSheet.present()
-      }
-    }
-
-    handleDeepLink()
-  }, [])
+  const params = useMemo(
+    () =>
+      [
+        {
+          title: 'Selector',
+          value: modalParams?.selector,
+          visible: Boolean(modalParams?.selector),
+        },
+        {
+          title: 'Event data',
+          value: modalParams?.eventData,
+          visible: Boolean(modalParams?.eventData),
+        },
+        {
+          title: 'Event id',
+          value: modalParams?.eventId,
+          visible: Boolean(modalParams?.eventId),
+        },
+        {
+          title: 'Citizenship mask',
+          value: modalParams?.citizenshipMask,
+          visible: Boolean(modalParams?.citizenshipMask),
+        },
+        {
+          title: 'Timestamp lower',
+          value: modalParams?.timestampLower,
+          visible: Boolean(modalParams?.timestampLower),
+        },
+        {
+          title: 'Timestamp upper',
+          value: modalParams?.timestampUpper,
+          visible: Boolean(modalParams?.timestampUpper),
+        },
+        {
+          title: 'Timestamp',
+          value: modalParams?.timestamp,
+          visible: Boolean(modalParams?.timestamp),
+        },
+        {
+          title: 'Identity counter',
+          value: modalParams?.identityCounter,
+          visible: Boolean(modalParams?.identityCounter),
+        },
+        {
+          title: 'Identity count lower',
+          value: modalParams?.identityCountLower,
+          visible: Boolean(modalParams?.identityCountLower),
+        },
+        {
+          title: 'Identity count upper',
+          value: modalParams?.identityCountUpper,
+          visible: Boolean(modalParams?.identityCountUpper),
+        },
+        {
+          title: 'Birth date lower',
+          value: modalParams?.birthDateLower,
+          visible: Boolean(modalParams?.birthDateLower),
+        },
+        {
+          title: 'Birth date upper',
+          value: modalParams?.birthDateUpper,
+          visible: Boolean(modalParams?.birthDateUpper),
+        },
+        {
+          title: 'Expiration date lower',
+          value: modalParams?.expirationDateLower,
+          visible: Boolean(modalParams?.expirationDateLower),
+        },
+        {
+          title: 'Expiration date upper',
+          value: modalParams?.expirationDateUpper,
+          visible: Boolean(modalParams?.expirationDateUpper),
+        },
+      ].filter(item => item.visible),
+    [modalParams],
+  )
 
   useEffect(() => {
     const subscription = Linking.addEventListener('url', ({ url }) => {
       const parsed = Linking.parse(url)
       const params = parsed.queryParams
+      if (!params) {
+        setModalParams(null)
+        return
+      }
+      const extractedParams = QueryIdentityCircuit.extractQueryProofParams(params)
 
-      if (params && Object.keys(params).length > 0) {
-        setModalParams(params)
-        cardUiSettingsBottomSheet.present()
+      if (extractedParams && Object.keys(extractedParams).length > 0) {
+        setModalParams(extractedParams)
+        present()
       }
     })
 
     return () => subscription.remove()
-  }, [])
+  }, [present])
 
   return (
     <UiBottomSheet
       enableDynamicSizing
-      ref={cardUiSettingsBottomSheet.ref}
+      ref={ref}
       footerComponent={() => (
         <View
           className='flex w-full flex-row gap-2'
@@ -229,17 +194,19 @@ export default function ProofBottomSheet() {
             title='Cancel'
             variant='outlined'
             className='flex-1'
-            onPress={() => cardUiSettingsBottomSheet.dismiss()}
+            disabled={isGenerating}
+            onPress={dismiss}
           />
-          {/* <UiButton title='Generate proof' className='flex-1' onPress={generateProof} /> */}
+          <UiButton
+            title='Generate proof'
+            className='flex-1'
+            disabled={isGenerating}
+            onPress={generateProof}
+          />
         </View>
       )}
       headerComponent={
-        <BottomSheetHeader
-          title='Settings'
-          dismiss={cardUiSettingsBottomSheet.dismiss}
-          className='px-5'
-        />
+        <BottomSheetHeader title='Query proof params' className='mb-5 px-5' dismiss={dismiss} />
       }
       backgroundStyle={{ backgroundColor: palette.backgroundContainer }}
       snapPoints={['50%']}
@@ -247,8 +214,18 @@ export default function ProofBottomSheet() {
       <UiHorizontalDivider />
       <BottomSheetScrollView>
         <View style={{ padding: 16 }}>
-          <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>Deep link params:</Text>
-          <Text selectable>{modalParams ? JSON.stringify(modalParams, null, 2) : 'No params'}</Text>
+          {params.length > 0 ? (
+            params.map(({ title, value }) => (
+              <View key={title} className='my-2 flex-row justify-between'>
+                <Text>{title}</Text>
+                <Text selectable className='flex-shrink text-right font-semibold'>
+                  {Array.isArray(value) ? value.join(', ') : value}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text className='text-center'>No params</Text>
+          )}
         </View>
       </BottomSheetScrollView>
     </UiBottomSheet>

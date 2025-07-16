@@ -82,3 +82,67 @@ export type CalldataQueryIdentityGroth16 = {
     NumericString,
   ]
 }
+
+/**
+ * Proof input parameters for QueryIdentityCircuit.
+ */
+export interface QueryProofParams {
+  eventId?: string
+  eventData?: string
+  idStateRoot?: string
+  selector?: string
+  timestampLower?: string
+  timestampUpper?: string
+  timestamp?: string
+  identityCounter?: string
+  identityCountLower?: string
+  identityCountUpper?: string
+  birthDateLower?: string
+  birthDateUpper?: string
+  expirationDateLower?: string
+  expirationDateUpper?: string
+  citizenshipMask?: string
+  skIdentity?: string
+  pkPassportHash?: string
+  dg1?: string[] // array of byte values as strings
+  siblings?: string[] // array of branch nodes
+}
+
+export type QueryKeysFromUrl =
+  | 'eventId'
+  | 'eventData'
+  | 'selector'
+  | 'citizenshipMask'
+  | 'timestampLower'
+  | 'timestampUpper'
+  | 'timestamp'
+  | 'identityCounter'
+  | 'identityCountLower'
+  | 'identityCountUpper'
+  | 'birthDateLower'
+  | 'birthDateUpper'
+  | 'expirationDateLower'
+  | 'expirationDateUpper'
+
+// Mapping from camelCase to possible variants of query params from url
+export const QUERY_PARAMS_ALIASES: Record<QueryKeysFromUrl, string[]> = {
+  eventId: ['eventId', 'event_id'],
+  eventData: ['eventData', 'event_data'],
+  selector: ['selector'],
+  citizenshipMask: ['citizenshipMask', 'citizenship_mask'],
+  timestampLower: ['timestampLower', 'timestamp_lower'],
+  timestampUpper: ['timestampUpper', 'timestamp_upper'],
+  timestamp: ['timestamp'],
+  identityCounter: ['identityCounter', 'identity_counter'],
+  identityCountLower: ['identityCountLower', 'identity_count_lower'],
+  identityCountUpper: ['identityCountUpper', 'identity_count_upper'],
+  birthDateLower: ['birthDateLower', 'birth_date_lower'],
+  birthDateUpper: ['birthDateUpper', 'birth_date_upper'],
+  expirationDateLower: ['expirationDateLower', 'expiration_date_lower'],
+  expirationDateUpper: ['expirationDateUpper', 'expiration_date_upper'],
+}
+
+/**
+ * Subset of QueryProofParams allowed to be supplied via URL
+ */
+export type UrlQueryProofParams = Pick<QueryProofParams, QueryKeysFromUrl>

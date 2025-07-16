@@ -37,6 +37,7 @@ import { FieldRecords } from 'mrz'
 import { RARIMO_CHAINS } from '@/api/modules/rarimo/constants'
 import { relayerRegister } from '@/api/modules/registration/relayer'
 import { Config } from '@/config'
+import { ErrorHandler } from '@/core'
 import { createPoseidonSMTContract } from '@/helpers/contracts'
 import { CertificateAlreadyRegisteredError } from '@/store/modules/identity/errors'
 import { IdentityItem } from '@/store/modules/identity/Identity'
@@ -103,22 +104,15 @@ export abstract class RegistrationStrategy {
     pkIdentityHash: string,
   ): Promise<string> => {
     try {
-      const toDecimalString = (hexStr: string) => {
-        const normalized = hexStr.startsWith('0x') ? hexStr.slice(2) : hexStr
-        return BigInt('0x' + normalized).toString(10)
-      }
-
-      const passportKeyDecimal = toDecimalString(pkIdentityHash)
-      const identityKeyDecimal = toDecimalString(identityKey)
-
-      const passportKeyBigInt = BigInt(passportKeyDecimal)
-      const identityKeyBigInt = BigInt(identityKeyDecimal)
+      const passportKeyBigInt = BigInt(`0x${identityKey}`)
+      const identityKeyBigInt = BigInt(`0x${pkIdentityHash}`)
 
       const hash = poseidon.hash([passportKeyBigInt, identityKeyBigInt])
+      const hex = hash.toString(16).padStart(64, '0')
 
-      return '0x' + hash.toString(16).padStart(64, '0')
+      return '0x' + hex
     } catch (error) {
-      console.error('getPassportProofIndexBytes error:', error)
+      ErrorHandler.process(error)
       throw error
     }
   }

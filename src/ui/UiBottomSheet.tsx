@@ -44,13 +44,13 @@ type UiBottomSheetProps = BottomSheetModalProps & {
 export const useUiBottomSheet = () => {
   const ref = useRef<BottomSheetModal>(null)
 
-  const present = () => {
+  const present = useCallback(() => {
     ref.current?.present()
-  }
+  }, [])
 
-  const dismiss = () => {
+  const dismiss = useCallback(() => {
     ref.current?.dismiss()
-  }
+  }, [])
 
   return { ref, present, dismiss }
 }
