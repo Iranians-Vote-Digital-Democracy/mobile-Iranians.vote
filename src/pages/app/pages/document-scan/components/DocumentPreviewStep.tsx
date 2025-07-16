@@ -11,7 +11,7 @@ export default function DocumentPreviewStep() {
 
   const insets = useSafeAreaInsets()
 
-  if (tempEDoc instanceof EID) {
+  if (tempEDoc instanceof EPassport) {
     if (!tempEDoc?.personDetails) return null
 
     const { firstName, lastName, passportImageRaw, ...restDetails } = tempEDoc.personDetails
@@ -94,23 +94,45 @@ export default function DocumentPreviewStep() {
     )
   }
 
-  if (tempEDoc instanceof EPassport) {
+  if (tempEDoc instanceof EID) {
+    if (!tempEDoc?.personDetails) {
+      return null
+    }
+    const { firstName, lastName, ...restDetails } = tempEDoc.personDetails
+
     return (
       <UiScreenScrollable
-        className='flex-1 items-center justify-center'
+        className='pb-20'
         style={{
           paddingTop: insets.top,
           paddingBottom: insets.bottom,
         }}
       >
-        <Text className='typography-title1 text-textPrimary'>EID Document Preview</Text>
-        <Text className='typography-body2 mt-2 text-textPrimary'>
-          EID document preview is not implemented yet.
-        </Text>
-
-        <View className='mt-auto'>
-          <UiHorizontalDivider className='my-5' />
-          <UiButton title='Generate Proof' onPress={createIdentity} />
+        <View className='flex-1 flex-col gap-4 p-5'>
+          <UiCard>
+            <View className='flex flex-row items-center'>
+              <View className='flex flex-1 flex-col gap-2'>
+                <Text className='typography-h6 text-textPrimary'>{`${firstName} ${lastName}`}</Text>
+              </View>
+            </View>
+          </UiCard>
+          <View className='mt-6 flex flex-col gap-4'>
+            {restDetails &&
+              Object.keys(restDetails).map(key => {
+                return (
+                  <View key={key} className='flex flex-row items-center justify-between gap-2'>
+                    <Text className='typography-body3 capitalize text-textSecondary'>{key}</Text>
+                    <Text className='typography-subtitle4 text-textPrimary'>
+                      {restDetails?.[key as keyof typeof tempEDoc.personDetails]}
+                    </Text>
+                  </View>
+                )
+              })}
+          </View>
+          <View className='mt-auto'>
+            <UiHorizontalDivider className='my-5' />
+            <UiButton title='Generate Proof' onPress={createIdentity} />
+          </View>
         </View>
       </UiScreenScrollable>
     )
