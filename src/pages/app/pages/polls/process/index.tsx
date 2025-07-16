@@ -57,7 +57,7 @@ export default function PollsVoteScreen() {
         />
       </UiScreenScrollable>
 
-      <View style={{ paddingBottom: offset }}>
+      <View>
         <Footer onPress={handleVote} selectedAnswerId={selectedAnswerId} hasVoted={hasVoted} />
       </View>
     </View>
