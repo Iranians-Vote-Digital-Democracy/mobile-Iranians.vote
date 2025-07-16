@@ -95,7 +95,6 @@ export default function PassportTests() {
       // ------------------------------------------------------------------------------------------------------------------------------
 
       const eID = new EID(sigCertificate, authCertificate)
-
       await eIDRegistration.createIdentity(eID, privateKey, publicKeyHash)
     } catch (error) {
       console.error('Error in testCert:', error)
