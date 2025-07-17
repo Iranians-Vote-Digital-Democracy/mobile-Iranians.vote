@@ -36,14 +36,12 @@ export default function DocumentCard({ identity }: Props) {
   const {
     uiVariants,
     personalDetailsShownVariants,
-
     documentCardUi,
-
     setDocumentCardUi,
     togglePersonalDetailsVisibility,
     toggleIsBlurred,
   } = uiPreferencesStore.useDocumentCardUiPreference(
-    identity.document.personDetails.documentNumber ?? '',
+    identity.document.personDetails?.documentNumber ?? '',
   )
 
   const cardUiSettingsBottomSheet = useUiBottomSheet()
@@ -51,18 +49,18 @@ export default function DocumentCard({ identity }: Props) {
   const insets = useSafeAreaInsets()
 
   const fullName = useMemo(() => {
-    return `${identity.document.personDetails?.firstName} ${identity.document.personDetails?.lastName}`
+    const firstName = identity.document.personDetails?.firstName ?? ''
+    const lastName = identity.document.personDetails?.lastName ?? ''
+    return `${firstName} ${lastName}`.trim()
   }, [identity.document.personDetails?.firstName, identity.document.personDetails?.lastName])
 
   const formattedBirthDate = useMemo(() => {
     if (!identity.document.personDetails?.birthDate) return time()
-
     return time(identity.document.personDetails?.birthDate, 'YYMMDD')
   }, [identity.document.personDetails?.birthDate])
 
   const age = useMemo(() => {
     if (!identity.document.personDetails?.birthDate) return 0
-
     return time().diff(formattedBirthDate, 'years')
   }, [formattedBirthDate, identity.document.personDetails?.birthDate])
 
@@ -101,27 +99,57 @@ export default function DocumentCard({ identity }: Props) {
       <Container className='relative overflow-hidden rounded-3xl p-6' docCardUI={documentCardUi}>
         <View className='flex flex-row'>
           <View className='flex gap-6'>
-            <Image
-              style={{ width: 56, height: 56, borderRadius: 9999 }}
-              source={{
-                uri: `data:image/png;base64,${identity.document.personDetails?.passportImageRaw}`,
-              }}
-            />
+            {identity.document.personDetails?.passportImageRaw ? (
+              <Image
+                style={{ width: 56, height: 56, borderRadius: 9999 }}
+                source={{
+                  uri: `data:image/png;base64,${identity.document.personDetails.passportImageRaw}`,
+                }}
+              />
+            ) : (
+              <UiIcon style={{ width: 56, height: 56, borderRadius: 9999 }} customIcon='userIcon' />
+            )}
 
             <View className='flex gap-2'>
-              <Text {...documentCardUi.foregroundValues} className='typography-h6'>
+              <Text {...documentCardUi.foregroundValues} className='typography-h6 text-textPrimary'>
                 {fullName}
               </Text>
-              <Text {...documentCardUi.foregroundLabels} className='typography-body2'>
-                {age} Years old
-              </Text>
+              {identity.document.personDetails?.birthDate && (
+                <Text
+                  {...documentCardUi.foregroundLabels}
+                  className='typography-body3 text-textSecondary'
+                >
+                  Years old {age}
+                </Text>
+              )}
             </View>
+          </View>
+          <View className='absolute right-5 top-5 z-20 flex flex-row items-center gap-4'>
+            <CardActionIconButton
+              iconComponentNameProps={{ customIcon: 'eyeIcon' }}
+              pressableProps={{
+                onPress: toggleIsBlurred,
+              }}
+            />
+            <CardActionIconButton
+              iconComponentNameProps={{ customIcon: 'dotsThreeOutlineIcon' }}
+              pressableProps={{
+                onPress: () => {
+                  cardUiSettingsBottomSheet.present()
+                },
+              }}
+            />
           </View>
         </View>
         <UiHorizontalDivider className='mb-6 mt-8' />
 
         <View className='flex w-full gap-4'>
           {documentCardUi.personalDetailsShown?.map((el, idx) => {
+            const detailValue =
+              identity.document.personDetails?.[el as keyof typeof identity.document.personDetails]
+            if (detailValue === undefined || detailValue === null || detailValue === '') {
+              return null
+            }
             return (
               <DocumentCardRow
                 key={idx}
@@ -131,7 +159,7 @@ export default function DocumentCard({ identity }: Props) {
                 }}
                 valueProps={{
                   ...documentCardUi.foregroundValues,
-                  children: identity.document.personDetails?.[el],
+                  children: detailValue,
                 }}
               />
             )
@@ -158,23 +186,6 @@ export default function DocumentCard({ identity }: Props) {
             />
           </Pressable>
         )}
-
-        <View className='absolute right-5 top-5 z-20 flex flex-row items-center gap-4'>
-          <CardActionIconButton
-            iconComponentNameProps={{ customIcon: 'passwordIcon' }}
-            pressableProps={{
-              onPress: toggleIsBlurred,
-            }}
-          />
-          <CardActionIconButton
-            iconComponentNameProps={{ customIcon: 'dotsThreeOutlineIcon' }}
-            pressableProps={{
-              onPress: () => {
-                cardUiSettingsBottomSheet.present()
-              },
-            }}
-          />
-        </View>
       </Container>
 
       <UiBottomSheet
@@ -195,7 +206,7 @@ export default function DocumentCard({ identity }: Props) {
         <BottomSheetScrollView style={{ paddingBottom: insets.bottom }}>
           <View className={cn('flex flex-col gap-4 p-5 pb-10')}>
             <View className={cn('flex flex-col gap-4')}>
-              <Text className='typography-overline3 text-textSecondary'>CARD VISUAL</Text>
+              <Text className='typography-subtitle4 text-textPrimary'>Card visual</Text>
 
               <ScrollView horizontal={true}>
                 <View className='flex flex-row gap-6'>
@@ -207,7 +218,7 @@ export default function DocumentCard({ identity }: Props) {
                         <View
                           className={cn(
                             'items-center gap-2 rounded-lg border border-solid border-componentPrimary px-[24] py-[16]',
-                            isActive && 'bg-componentPrimary',
+                            isActive && 'bg-componentHovered',
                           )}
                         >
                           <Container
@@ -257,9 +268,9 @@ export default function DocumentCard({ identity }: Props) {
                               />
                             ))}
                           </Container>
-                          <Text className='typography-buttonMedium text-textPrimary'>
+                          {/* <Text className='typography-buttonMedium text-textPrimary'>
                             {el.title}
-                          </Text>
+                          </Text> */}
                         </View>
                       </Pressable>
                     )
@@ -272,7 +283,7 @@ export default function DocumentCard({ identity }: Props) {
 
             <View className={cn('flex flex-col gap-4')}>
               <View className={cn('flex flex-col gap-2')}>
-                <Text className='typography-overline3 text-textSecondary'>DATA</Text>
+                <Text className='typography-subtitle4 text-textPrimary'>DATA</Text>
                 <Text className='typography-body4 text-textSecondary'>
                   Shows two identifiers on the card
                 </Text>
@@ -300,18 +311,22 @@ export default function DocumentCard({ identity }: Props) {
 function DocumentCardRow({
   labelProps,
   valueProps,
-
   className,
   ...rest
 }: {
   labelProps: TextProps
-
   valueProps: TextProps
 } & ViewProps) {
   return (
     <View {...rest} className={cn('flex w-full flex-row items-center justify-between', className)}>
-      <Text {...labelProps} className={cn('typography-body3', labelProps.className)} />
-      <Text {...valueProps} className={cn('typography-subtitle4', valueProps.className)} />
+      <Text
+        {...labelProps}
+        className={cn('typography-body3 text-textSecondary', labelProps.className)}
+      />
+      <Text
+        {...valueProps}
+        className={cn('typography-subtitle4 text-textPrimary', valueProps.className)}
+      />
     </View>
   )
 }

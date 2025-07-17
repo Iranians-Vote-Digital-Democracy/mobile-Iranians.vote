@@ -1,3 +1,4 @@
+import { Text } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import AppContainer from '@/pages/app/components/AppContainer'
@@ -25,6 +26,7 @@ export default function DocumentsWithDocs() {
         }}
         className='px-5'
       >
+        <Text className='typography-h4 mb-5 text-textPrimary'>Welcome</Text>
         <DocumentCard identity={identities[0]} />
       </UiScreenScrollable>
     </AppContainer>

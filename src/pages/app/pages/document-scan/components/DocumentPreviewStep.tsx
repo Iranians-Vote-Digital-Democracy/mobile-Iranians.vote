@@ -1,9 +1,10 @@
 import { Image } from 'expo-image'
+import { startCase } from 'lodash'
 import { Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useDocumentScanContext } from '@/pages/app/pages/document-scan/ScanProvider'
-import { UiButton, UiCard, UiHorizontalDivider, UiScreenScrollable } from '@/ui'
+import { UiButton, UiCard, UiHorizontalDivider, UiIcon, UiScreenScrollable } from '@/ui'
 import { EID, EPassport } from '@/utils/e-document'
 
 export default function DocumentPreviewStep() {
@@ -57,29 +58,29 @@ export default function DocumentPreviewStep() {
               })}
             {/* Only for Testing*/}
             {/* <View className='flex flex-row items-center justify-between gap-2'>
-              <Text className='capitalize text-textPrimary typography-body3'>dg1</Text>
-              <Text className='text-textPrimary typography-subtitle4'>
+              <Text className='typography-body3 capitalize text-textPrimary'>dg1</Text>
+              <Text className='typography-subtitle4 text-textPrimary'>
                 {tempEDoc.dg1Bytes.length} length
               </Text>
             </View>
 
             <View className='flex flex-row items-center justify-between gap-2'>
-              <Text className='capitalize text-textPrimary typography-body3'>dg11</Text>
-              <Text className='text-textPrimary typography-subtitle4'>
+              <Text className='typography-body3 capitalize text-textPrimary'>dg11</Text>
+              <Text className='typography-subtitle4 text-textPrimary'>
                 {tempEDoc.dg11Bytes?.length} length
               </Text>
             </View>
 
             <View className='flex flex-row items-center justify-between gap-2'>
-              <Text className='capitalize text-textPrimary typography-body3'>dg15</Text>
-              <Text className='text-textPrimary typography-subtitle4'>
+              <Text className='typography-body3 capitalize text-textPrimary'>dg15</Text>
+              <Text className='typography-subtitle4 text-textPrimary'>
                 {tempEDoc.dg15Bytes?.length ?? 0} length
               </Text>
             </View>
 
             <View className='flex flex-row items-center justify-between gap-2'>
-              <Text className='capitalize text-textPrimary typography-body3'>signature</Text>
-              <Text className='text-textPrimary typography-subtitle4'>
+              <Text className='typography-body3 capitalize text-textPrimary'>signature</Text>
+              <Text className='typography-subtitle4 text-textPrimary'>
                 {tempEDoc?.aaSignature?.length ?? 0} length
               </Text>
             </View>*/}
@@ -95,22 +96,48 @@ export default function DocumentPreviewStep() {
   }
 
   if (tempEDoc instanceof EID) {
+    if (!tempEDoc?.personDetails) {
+      return null
+    }
+    const { firstName, lastName, ...restDetails } = tempEDoc.personDetails
+
     return (
       <UiScreenScrollable
-        className='flex-1 items-center justify-center'
+        className='pb-20'
         style={{
           paddingTop: insets.top,
           paddingBottom: insets.bottom,
         }}
       >
-        <Text className='typography-title1 text-textPrimary'>EID Document Preview</Text>
-        <Text className='typography-body2 mt-2 text-textPrimary'>
-          EID document preview is not implemented yet.
-        </Text>
-
-        <View className='mt-auto'>
-          <UiHorizontalDivider className='my-5' />
-          <UiButton title='Generate Proof' onPress={createIdentity} />
+        <View className='flex-1 flex-col gap-4 p-5'>
+          <UiCard>
+            <View className='flex flex-row items-center'>
+              <View className='flex flex-1 flex-row items-center gap-5'>
+                <UiIcon
+                  className='color-textPrimary'
+                  size={56}
+                  customIcon='userIcon'
+                  color='textPrimary'
+                />
+                <Text className='typography-h6 text-textPrimary'>{`${firstName} ${lastName}`}</Text>
+              </View>
+            </View>
+          </UiCard>
+          <View className='mt-6 flex flex-col gap-4'>
+            {restDetails &&
+              Object.entries(restDetails).map(([key, value]) => {
+                return (
+                  <View key={key} className='flex flex-row items-center justify-between gap-2'>
+                    <Text className='typography-body3 text-textSecondary'>{startCase(key)}</Text>
+                    <Text className='typography-subtitle4 text-textPrimary'>{value}</Text>
+                  </View>
+                )
+              })}
+          </View>
+          <View className='mt-auto'>
+            <UiHorizontalDivider className='my-5' />
+            <UiButton title='Generate Proof' onPress={createIdentity} />
+          </View>
         </View>
       </UiScreenScrollable>
     )
