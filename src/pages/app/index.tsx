@@ -10,7 +10,7 @@ import type {
 import { UiIcon } from '@/ui'
 
 import BottomTabBar from './components/BottomTabBarTabBar'
-import ProofBottomSheet from './components/ProofBottomSheet'
+import QueryProofBottomSheet from './components/QueryProofBottomSheet'
 import DocumentScanScreen from './pages/document-scan'
 import DocumentsScreen from './pages/documents'
 import HomeScreen from './pages/home'
@@ -105,7 +105,7 @@ export default function App({}: RootStackScreenProps<'App'>) {
         />
       </Stack.Navigator>
 
-      <ProofBottomSheet />
+      <QueryProofBottomSheet />
     </>
   )
 }
