@@ -1,6 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
+import InviteOthers from '@/pages/app/pages/invite-others'
 import type {
   AppStackParamsList,
   AppStackScreenProps,
@@ -10,13 +11,12 @@ import type {
 import { UiIcon } from '@/ui'
 
 import BottomTabBar from './components/BottomTabBarTabBar'
-import QueryProofBottomSheet from './components/QueryProofBottomSheet'
 import DocumentScanScreen from './pages/document-scan'
 import DocumentsScreen from './pages/documents'
 import HomeScreen from './pages/home'
-import InviteOthers from './pages/invite-others'
 import PassportTests from './pages/passport-tests'
 import ProfileScreen from './pages/profile'
+import QueryProofSCreen from './pages/query-proof'
 
 const Stack = createNativeStackNavigator<AppStackParamsList>()
 const Tab = createBottomTabNavigator<AppTabParamsList>()
@@ -79,33 +79,32 @@ function AppTabs({}: AppStackScreenProps<'Tabs'>) {
   )
 }
 
-// eslint-disable-next-line no-empty-pattern
-export default function App({}: RootStackScreenProps<'App'>) {
+/* eslint-disable-next-line unused-imports/no-unused-vars */
+export default function App(props: RootStackScreenProps<'App'>) {
   return (
-    <>
-      <Stack.Navigator
-        screenOptions={{
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name='Tabs' component={AppTabs} />
+      <Stack.Screen
+        name='InviteOthers'
+        component={InviteOthers}
+        options={{
+          animation: 'fade',
+        }}
+      />
+
+      <Stack.Screen
+        name='Scan'
+        component={DocumentScanScreen}
+        options={{
           headerShown: false,
         }}
-      >
-        <Stack.Screen name='Tabs' component={AppTabs} />
-        <Stack.Screen
-          name='InviteOthers'
-          component={InviteOthers}
-          options={{
-            animation: 'fade',
-          }}
-        />
-        <Stack.Screen
-          name='Scan'
-          component={DocumentScanScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-      </Stack.Navigator>
+      />
 
-      <QueryProofBottomSheet />
-    </>
+      <Stack.Screen name='QueryProof' component={QueryProofSCreen} />
+    </Stack.Navigator>
   )
 }

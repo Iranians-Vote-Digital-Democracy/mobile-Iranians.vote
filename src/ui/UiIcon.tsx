@@ -100,6 +100,7 @@ const CUSTOM_ICONS = {
   walletIcon: require('@assets/icons/wallet-icon.svg').default,
   warningIcon: require('@assets/icons/warning-icon.svg').default,
   xCircleIcon: require('@assets/icons/x-circle-icon.svg').default,
+  eyeIcon: require('@assets/icons/eye-icon.svg').default,
 }
 
 const ICON_LIBRARIES = {

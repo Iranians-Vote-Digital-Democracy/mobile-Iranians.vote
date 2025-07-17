@@ -42,11 +42,14 @@ export type AppStackParamsList = {
     tag?: string
   }
 
-  Scan:
-    | {
-        documentType?: DocType
-      }
-    | undefined
+  QueryProof: {
+    qwerty?: string
+    asdf?: string
+  }
+
+  Scan?: {
+    documentType?: DocType
+  }
 }
 
 export type AppStackScreenProps<T extends keyof AppStackParamsList> = NativeStackScreenProps<

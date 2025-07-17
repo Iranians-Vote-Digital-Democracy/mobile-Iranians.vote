@@ -37,14 +37,16 @@ export default function DocumentsWithoutDocs() {
           paddingRight: appPaddings.right,
           paddingBottom: offset,
         }}
-        className='gap-3'
+        className='justify-center gap-5'
       >
         <UiCard>
-          <UiIcon customIcon='starFillIcon' className='m-auto mb-5 size-[110]' />
+          <UiIcon customIcon='starFillIcon' className='m-auto mb-5 size-[110] color-primaryMain' />
           <View className='flex flex-col gap-2'>
-            <Text className='typography-h6 text-center text-textPrimary'>Join Rewards Program</Text>
-            <Text className='typography-body2 text-center text-textPrimary'>
-              Check your eligibility
+            <Text className='typography-h6 text-center text-textPrimary'>
+              Create your digital identity
+            </Text>
+            <Text className='typography-body3 text-center text-textPrimary'>
+              This profile is anonymous and secure
             </Text>
           </View>
 
@@ -70,13 +72,13 @@ export default function DocumentsWithoutDocs() {
             },
           }}
           title='The App'
-          subtitle='Learn more about the app'
+          subtitle='Learn how this works'
           leadingContent={<UiIcon customIcon='infoIcon' className='size-[40] text-primaryMain' />}
           trailingContent={
             <UiIcon customIcon='arrowRightIcon' className='size-[24] text-textPrimary' />
           }
         />
-
+        {/*  TODO:Change text */}
         <UiBottomSheet
           ref={aboutAppBottomSheet.ref}
           backgroundStyle={{
@@ -118,7 +120,7 @@ export default function DocumentsWithoutDocs() {
             </View>
           </BottomSheetView>
         </UiBottomSheet>
-
+        {/*  TODO:Change text */}
         <UiBottomSheet
           ref={startScanBottomSheet.ref}
           backgroundStyle={{
