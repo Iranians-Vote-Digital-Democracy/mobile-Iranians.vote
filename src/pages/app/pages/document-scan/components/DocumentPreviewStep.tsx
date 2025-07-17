@@ -118,13 +118,11 @@ export default function DocumentPreviewStep() {
           </UiCard>
           <View className='mt-6 flex flex-col gap-4'>
             {restDetails &&
-              Object.keys(restDetails).map(key => {
+              Object.entries(restDetails).map(([key, value]) => {
                 return (
                   <View key={key} className='flex flex-row items-center justify-between gap-2'>
                     <Text className='typography-body3 capitalize text-textSecondary'>{key}</Text>
-                    <Text className='typography-subtitle4 text-textPrimary'>
-                      {restDetails?.[key as keyof typeof tempEDoc.personDetails]}
-                    </Text>
+                    <Text className='typography-subtitle4 text-textPrimary'>{value}</Text>
                   </View>
                 )
               })}
