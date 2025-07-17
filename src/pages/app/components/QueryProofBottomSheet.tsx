@@ -187,18 +187,14 @@ export default function ProofBottomSheet() {
       <UiHorizontalDivider />
       <BottomSheetScrollView>
         <View style={{ padding: 16 }}>
-          {params.length > 0 ? (
-            params.map(({ title, value }) => (
-              <View key={title} className='my-2 flex-row justify-between'>
-                <Text>{title}</Text>
-                <Text selectable className='flex-shrink text-right font-semibold'>
-                  {Array.isArray(value) ? value.join(', ') : value}
-                </Text>
-              </View>
-            ))
-          ) : (
-            <Text className='text-center'>No params</Text>
-          )}
+          {params.map(({ title, value }) => (
+            <View key={title} className='my-2 flex-row justify-between'>
+              <Text>{title}</Text>
+              <Text selectable className='flex-shrink text-right font-semibold'>
+                {Array.isArray(value) ? value.join(', ') : value}
+              </Text>
+            </View>
+          ))}
         </View>
       </BottomSheetScrollView>
     </UiBottomSheet>
