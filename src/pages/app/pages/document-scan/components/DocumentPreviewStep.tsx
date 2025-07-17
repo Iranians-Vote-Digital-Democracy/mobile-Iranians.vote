@@ -1,9 +1,10 @@
 import { Image } from 'expo-image'
+import { startCase } from 'lodash'
 import { Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useDocumentScanContext } from '@/pages/app/pages/document-scan/ScanProvider'
-import { UiButton, UiCard, UiHorizontalDivider, UiScreenScrollable } from '@/ui'
+import { UiButton, UiCard, UiHorizontalDivider, UiIcon, UiScreenScrollable } from '@/ui'
 import { EID, EPassport } from '@/utils/e-document'
 
 export default function DocumentPreviewStep() {
@@ -111,7 +112,13 @@ export default function DocumentPreviewStep() {
         <View className='flex-1 flex-col gap-4 p-5'>
           <UiCard>
             <View className='flex flex-row items-center'>
-              <View className='flex flex-1 flex-col gap-2'>
+              <View className='flex flex-1 flex-row items-center gap-5'>
+                <UiIcon
+                  className='color-textPrimary'
+                  size={56}
+                  customIcon='userIcon'
+                  color='textPrimary'
+                />
                 <Text className='typography-h6 text-textPrimary'>{`${firstName} ${lastName}`}</Text>
               </View>
             </View>
@@ -121,7 +128,7 @@ export default function DocumentPreviewStep() {
               Object.entries(restDetails).map(([key, value]) => {
                 return (
                   <View key={key} className='flex flex-row items-center justify-between gap-2'>
-                    <Text className='typography-body3 capitalize text-textSecondary'>{key}</Text>
+                    <Text className='typography-body3 text-textSecondary'>{startCase(key)}</Text>
                     <Text className='typography-subtitle4 text-textPrimary'>{value}</Text>
                   </View>
                 )
