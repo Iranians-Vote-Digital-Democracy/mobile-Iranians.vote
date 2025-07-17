@@ -1,10 +1,12 @@
 import { AsnConvert } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
+import { Image } from 'expo-image'
 import { useCallback, useEffect, useState } from 'react'
-import { Text, View } from 'react-native'
+import { ActivityIndicator, Text, View } from 'react-native'
 
+import { translate } from '@/core'
 import { useDocumentScanContext } from '@/pages/app/pages/document-scan/ScanProvider'
-import { UiButton, UiIcon } from '@/ui'
+import { UiButton } from '@/ui'
 import { EID } from '@/utils/e-document'
 import { ExtendedCertificate } from '@/utils/e-document/extended-cert'
 import { initNfc, readSigningAndAuthCertificates } from '@/utils/e-document/inid-nfc-reader'
@@ -64,15 +66,30 @@ export default function ScanNfcStep() {
   // const registrationChallenge = walletStore.useRegistrationChallenge()
 
   return (
-    <View className='flex flex-1 flex-col justify-center'>
-      <Text className='typography-h5 text-center text-textPrimary'>Scan process</Text>
-      {busy ? (
-        <View className='flex items-center'>
-          <UiIcon customIcon='bellFillIcon' className='size-[120] text-textPrimary' />
-        </View>
-      ) : (
-        <UiButton onPress={onReadPress} title='Try Scan Again' />
-      )}
+    <View className='mb-19 mt-10 flex-1 justify-center p-6'>
+      <Text className='typography-h5 mb-2 text-textPrimary'>NFC Reader</Text>
+      <Text className='typography-body3 mb-6 text-textSecondary'>Reading personal data</Text>
+      <Image
+        source={require('@assets/images/passport-scan-example.png')}
+        style={{
+          width: 300,
+          height: 300,
+          alignSelf: 'center',
+          marginBottom: 24,
+          marginTop: 24,
+        }}
+      />
+      <Text className='typography-body3 mb-6 text-textSecondary'>
+        {translate('tabs.scan-nfc.tip')}
+      </Text>
+      {busy && <ActivityIndicator className='my-4' />}
+      {/* {error && <Text className='mt-4 text-errorMain typography-body2'>{error}</Text>} */}
+      <UiButton
+        onPress={onReadPress}
+        title={busy ? 'Read Signing Certificate' : 'Start NFC Scan'}
+        className='mt-auto w-full'
+        disabled={busy}
+      />
     </View>
   )
 }
