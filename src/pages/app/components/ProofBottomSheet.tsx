@@ -1,18 +1,16 @@
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
-import { AsnConvert } from '@peculiar/asn1-schema'
 import * as Linking from 'expo-linking'
 import { useEffect, useMemo, useState } from 'react'
 import { Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { RegistrationStrategy } from '@/api/modules/registration/strategy'
 import { bus, DefaultBusEvents, ErrorHandler } from '@/core'
 import { identityStore, walletStore } from '@/store'
 import { NoirEIDIdentity } from '@/store/modules/identity/Identity'
 import { useAppTheme } from '@/theme'
 import { UiBottomSheet, UiButton, UiHorizontalDivider, useUiBottomSheet } from '@/ui'
 import { BottomSheetHeader } from '@/ui/UiBottomSheet'
-import { QueryIdentityCircuit } from '@/utils/circuits/query-identity-circuits'
+import { EIDBasedQueryIdentityCircuit } from '@/utils/circuits/eid-based-query-identity-circuit'
 import { UrlQueryProofParams } from '@/utils/circuits/types/QueryIdentity'
 
 export default function ProofBottomSheet() {
@@ -28,8 +26,6 @@ export default function ProofBottomSheet() {
     try {
       setIsGenerating(true)
 
-      const circuitParams = new QueryIdentityCircuit()
-
       if (!identities.length) {
         // TODO: Implement registration in this case
         throw new Error("Your identity hasn't registered yet!")
@@ -37,42 +33,19 @@ export default function ProofBottomSheet() {
 
       // last registered identity
       const currentIdentity = identities[identities.length - 1]
+      if (!currentIdentity) throw new Error("Identity doesn't exist")
 
       if (!(currentIdentity instanceof NoirEIDIdentity))
         throw new Error('Identity is not NoirEIDIdentity')
 
-      if (!currentIdentity) throw new Error("Identity doesn't exist")
+      const circuitParams = new EIDBasedQueryIdentityCircuit(currentIdentity)
 
-      const rawTbsCertBytes = new Uint8Array(
-        AsnConvert.serialize(currentIdentity.document.sigCertificate.certificate.tbsCertificate),
-      )
-
-      const passportProofIndexHex = await RegistrationStrategy.getPassportProofIndex(
-        currentIdentity.identityKey, // passport hash  (passportKey)
-        currentIdentity.pkIdentityHash, // registrationProof.pub_signals[3] (IdentityKey)
-      )
-
-      const [passportInfo_, identityInfo_] = await currentIdentity.getPassportInfo()
-      const identityReissueCounter = passportInfo_.identityReissueCounter.toString()
-      const issueTimestamp = identityInfo_.issueTimestamp.toString()
-
-      const passportRegistrationProof =
-        await RegistrationStrategy.getPassportRegistrationProof(passportProofIndexHex)
-
-      const dg1 = Array.from(circuitParams.getDg1(rawTbsCertBytes)).map(String)
-
-      const inputs = circuitParams.buildQueryProofParams({
+      const inputs = {
         ...modalParams,
         skIdentity: `0x${privateKey}`,
-        idStateRoot: passportRegistrationProof.root,
-        pkPassportHash: `0x${currentIdentity.passportHash}`,
-        dg1,
-        siblings: passportRegistrationProof.siblings,
-        identityCounter: identityReissueCounter,
-        timestamp: issueTimestamp,
-      })
+      }
 
-      await circuitParams.prove(JSON.stringify(inputs))
+      await circuitParams.prove(inputs)
       // TODO: Implement verifying query proof with contract
       bus.emit(DefaultBusEvents.success, {
         message: 'Proof generated successfully!',
@@ -170,7 +143,7 @@ export default function ProofBottomSheet() {
         setModalParams(null)
         return
       }
-      const extractedParams = QueryIdentityCircuit.extractQueryProofParams(params)
+      const extractedParams = EIDBasedQueryIdentityCircuit.extractQueryProofParams(params)
 
       if (extractedParams && Object.keys(extractedParams).length > 0) {
         setModalParams(extractedParams)

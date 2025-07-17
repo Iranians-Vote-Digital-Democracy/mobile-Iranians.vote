@@ -1,7 +1,10 @@
 import { NoirCircuitParams } from '@modules/noir'
 import NoirModule from '@modules/noir/src/NoirModule'
+import { AsnConvert } from '@peculiar/asn1-schema'
 import { QueryParams } from 'expo-linking'
 import { Platform } from 'react-native'
+
+import { NoirEIDIdentity } from '@/store/modules/identity/Identity'
 
 import { QUERY_PARAMS_ALIASES, QueryProofParams } from './types/QueryIdentity'
 
@@ -11,17 +14,19 @@ const DEFAULT_MASK_HEX = '0x20000000000000000000000000' // Iran mask
 /**
  * Builds and proves the Query Identity circuit.
  */
-export class QueryIdentityCircuit {
+export class EIDBasedQueryIdentityCircuit {
   public circuitParams: NoirCircuitParams
+  public currentIdentity: NoirEIDIdentity
 
-  constructor() {
+  constructor(identity: NoirEIDIdentity) {
+    this.currentIdentity = identity
     this.circuitParams = NoirCircuitParams.fromName('queryIdentity_inid_ca')
   }
 
   /**
    * Generates a ZK proof given serialized inputs.
    */
-  async prove(serializedInputs: string) {
+  async prove(params: Partial<QueryProofParams>) {
     const [byteCode, setupUri] = await Promise.all([
       this.circuitParams.downloadByteCode(),
       NoirCircuitParams.getTrustedSetupUri(),
@@ -29,7 +34,42 @@ export class QueryIdentityCircuit {
     if (!setupUri) {
       throw new Error('Trusted setup URI missing')
     }
-    const proof = await NoirModule.provePlonk(setupUri, serializedInputs, byteCode)
+
+    const currentIdentity = this.currentIdentity
+
+    if (!(currentIdentity instanceof NoirEIDIdentity))
+      throw new Error('Identity is not NoirEIDIdentity')
+
+    const rawTbsCertBytes = new Uint8Array(
+      AsnConvert.serialize(currentIdentity.document.sigCertificate.certificate.tbsCertificate),
+    )
+
+    const passportProofIndexHex = await currentIdentity.getPassportProofIndex(
+      currentIdentity.identityKey, // passport hash  (passportKey)
+      currentIdentity.pkIdentityHash, // registrationProof.pub_signals[3] (IdentityKey)
+    )
+
+    const [passportInfo_, identityInfo_] = await currentIdentity.getPassportInfo()
+    const identityReissueCounter = passportInfo_.identityReissueCounter.toString()
+    const issueTimestamp = identityInfo_.issueTimestamp.toString()
+
+    const passportRegistrationProof =
+      await currentIdentity.getPassportRegistrationProof(passportProofIndexHex)
+
+    const dg1 = Array.from(this.getDg1(rawTbsCertBytes)).map(String)
+
+    const inputs = this._buildQueryProofParams({
+      idStateRoot: passportRegistrationProof.root,
+      dg1,
+      pkPassportHash: `0x${currentIdentity.passportHash}`,
+      siblings: passportRegistrationProof.siblings,
+      identityCounter: identityReissueCounter,
+      timestamp: issueTimestamp,
+      ...params,
+    })
+
+    const proof = await NoirModule.provePlonk(setupUri, JSON.stringify(inputs), byteCode)
+
     if (!proof) {
       throw new Error(`Proof generation failed for circuit ${this.circuitParams.name}`)
     }
@@ -39,20 +79,20 @@ export class QueryIdentityCircuit {
   /**
    * Constructs circuit inputs in the correct format for the current platform.
    */
-  buildQueryProofParams(params: QueryProofParams = {}) {
+  private _buildQueryProofParams(params: QueryProofParams = {}) {
     const useHex = Platform.OS === 'android'
-    const toHex = (v: string) => this.ensureHexPrefix(BigInt(v).toString(16))
+    const toHex = (v: string) => this._ensureHexPrefix(BigInt(v).toString(16))
     const toDec = (v: string) => BigInt(v).toString(10)
     const fmt = (v: string | undefined, def: string) => (useHex ? toHex(v ?? def) : toDec(v ?? def))
 
     const formatArray = (arr: string[] = []) =>
       arr.map(item =>
-        useHex ? this.ensureHexPrefix(BigInt(item).toString(16)) : BigInt(item).toString(10),
+        useHex ? this._ensureHexPrefix(BigInt(item).toString(16)) : BigInt(item).toString(10),
       )
 
     return {
-      event_id: fmt(params.eventId, this.getRandomHex()),
-      event_data: fmt(params.eventData, this.getRandomDecimal()),
+      event_id: fmt(params.eventId, this._getRandomHex()),
+      event_data: fmt(params.eventData, this._getRandomDecimal()),
       id_state_root: fmt(params.idStateRoot, '0'),
       selector: fmt(params.selector, '262143'),
       timestamp_lowerbound: fmt(params.timestampLower, '0'),
@@ -93,21 +133,21 @@ export class QueryIdentityCircuit {
     return result
   }
 
-  private ensureHexPrefix(val: string): string {
+  private _ensureHexPrefix(val: string): string {
     return val.startsWith('0x') ? val : `0x${val}`
   }
 
-  private getRandomDecimal(bits = 250): string {
-    const rand = this.randomBigInt(bits)
+  private _getRandomDecimal(bits = 250): string {
+    const rand = this._randomBigInt(bits)
     return (rand % BigInt(PRIME)).toString(10)
   }
 
-  private getRandomHex(bits = 250): string {
-    const rand = this.randomBigInt(bits)
-    return this.ensureHexPrefix((rand % BigInt(PRIME)).toString(16))
+  private _getRandomHex(bits = 250): string {
+    const rand = this._randomBigInt(bits)
+    return this._ensureHexPrefix((rand % BigInt(PRIME)).toString(16))
   }
 
-  private randomBigInt(bits: number): bigint {
+  private _randomBigInt(bits: number): bigint {
     const bytes = Math.ceil(bits / 8)
     const arr = new Uint8Array(bytes)
     crypto.getRandomValues(arr)

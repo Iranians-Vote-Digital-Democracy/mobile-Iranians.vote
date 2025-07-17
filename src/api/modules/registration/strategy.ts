@@ -1,4 +1,3 @@
-import { poseidon } from '@iden3/js-crypto'
 import { buildCertTreeAndGenProof, parsePemString } from '@lukachi/rn-csca'
 import {
   ECParameters,
@@ -37,7 +36,6 @@ import { FieldRecords } from 'mrz'
 import { RARIMO_CHAINS } from '@/api/modules/rarimo/constants'
 import { relayerRegister } from '@/api/modules/registration/relayer'
 import { Config } from '@/config'
-import { ErrorHandler } from '@/core'
 import { createPoseidonSMTContract } from '@/helpers/contracts'
 import { CertificateAlreadyRegisteredError } from '@/store/modules/identity/errors'
 import { IdentityItem } from '@/store/modules/identity/Identity'
@@ -85,41 +83,9 @@ export abstract class RegistrationStrategy {
     )
   }
 
-  public static get registrationPoseidonSMTContract() {
-    return createPoseidonSMTContract(
-      Config.REGISTRATION_POSEIDON_SMT_CONTRACT_ADDRESS,
-      RegistrationStrategy.rmoEvmJsonRpcProvider,
-    )
-  }
-
   public static getSlaveCertSmtProof = async (cert: ExtendedCertificate) => {
     return RegistrationStrategy.certPoseidonSMTContract.contractInstance.getProof(
       zeroPadValue(cert.slaveCertificateIndex, 32),
-    )
-  }
-
-  // https://github.com/rarimo/rarime-mobile-identity-sdk/blob/10e56474d1afeb7381b01ff4185fab0df1e24197/utils.go#L260
-  public static getPassportProofIndex = async (
-    identityKey: string,
-    pkIdentityHash: string,
-  ): Promise<string> => {
-    try {
-      const passportKeyBigInt = BigInt(`0x${identityKey}`)
-      const identityKeyBigInt = BigInt(`0x${pkIdentityHash}`)
-
-      const hash = poseidon.hash([passportKeyBigInt, identityKeyBigInt])
-      const hex = hash.toString(16).padStart(64, '0')
-
-      return '0x' + hex
-    } catch (error) {
-      ErrorHandler.process(error)
-      throw error
-    }
-  }
-
-  public static getPassportRegistrationProof = async (proofIndex: string) => {
-    return RegistrationStrategy.registrationPoseidonSMTContract.contractInstance.getProof(
-      proofIndex,
     )
   }
 

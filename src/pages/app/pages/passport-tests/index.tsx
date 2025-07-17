@@ -10,7 +10,6 @@ import { useCallback, useState } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { RegistrationStrategy } from '@/api/modules/registration/strategy'
 import { NoirEIDRegistration } from '@/api/modules/registration/variants/noir-eid'
 import AppContainer from '@/pages/app/components/AppContainer'
 import { identityStore } from '@/store'
@@ -18,7 +17,7 @@ import { NoirEIDIdentity } from '@/store/modules/identity/Identity'
 import { walletStore } from '@/store/modules/wallet'
 import { useAppPaddings } from '@/theme'
 import { UiButton, UiScreenScrollable } from '@/ui'
-import { QueryIdentityCircuit } from '@/utils/circuits/query-identity-circuits'
+import { EIDBasedQueryIdentityCircuit } from '@/utils/circuits/eid-based-query-identity-circuit'
 import { EID } from '@/utils/e-document'
 import { ExtendedCertificate } from '@/utils/e-document/extended-cert'
 
@@ -117,7 +116,6 @@ export default function PassportTests() {
   const generateProof = async () => {
     console.log('🔷 [generateProof] Started proof generation')
 
-    const circuitParams = new QueryIdentityCircuit()
     console.log('✅ [circuit] QueryIdentityCircuit initialized')
 
     console.log('✅ [identity] Minimal identity data received')
@@ -129,49 +127,13 @@ export default function PassportTests() {
 
     if (!currentIdentity) throw new Error("Identity doesn't exist")
 
-    const rawTbsCertBytes = new Uint8Array(
-      AsnConvert.serialize(currentIdentity.document.sigCertificate.certificate.tbsCertificate),
-    )
+    const circuitParams = new EIDBasedQueryIdentityCircuit(currentIdentity)
 
-    const passportProofIndexHex = await RegistrationStrategy.getPassportProofIndex(
-      currentIdentity.identityKey, // passport hash  (passportKey)
-      currentIdentity.pkIdentityHash, // registrationProof.pub_signals[3] (IdentityKey)
-    )
-
-    const [passportInfo_, identityInfo_] = await currentIdentity.getPassportInfo()
-    const identityReissueCounter = passportInfo_.identityReissueCounter.toString()
-    const issueTimestamp = identityInfo_.issueTimestamp.toString()
-
-    console.log('passportProofIndexHex', passportProofIndexHex)
-
-    const passportRegistrationProof =
-      await RegistrationStrategy.getPassportRegistrationProof(passportProofIndexHex)
-
-    console.log('passportRegistrationProof', passportRegistrationProof)
-
-    console.log('identity?.passportHash', currentIdentity.passportHash)
-    console.log('biging passporthas', BigInt('0x' + currentIdentity.passportHash).toString())
-
-    console.log('identity.passportHash getting...')
-    console.log('identity.passportHash', JSON.stringify(currentIdentity.passportHash, null, 2))
-    const dg1 = Array.from(circuitParams.getDg1(rawTbsCertBytes)).map(String)
-
-    const inputs = circuitParams.buildQueryProofParams({
+    const inputs = {
       skIdentity: `0x${privateKey}`,
-      idStateRoot: passportRegistrationProof.root,
-      pkPassportHash: `0x${currentIdentity.passportHash}`,
-      dg1,
-      siblings: passportRegistrationProof.siblings,
-      identityCounter: identityReissueCounter,
-      timestamp: issueTimestamp,
-    })
+    }
 
-    console.log('inputs', inputs)
-
-    console.log('🛠️ [Inputs] Prepared inputs for circuit')
-    console.log(JSON.stringify(inputs, null, 2))
-
-    const proof = await circuitParams.prove(JSON.stringify(inputs))
+    const proof = await circuitParams.prove(inputs)
     console.log('🎉 [Proof] Success! Proof generated')
     console.log('🧾 Proof:', proof)
   }

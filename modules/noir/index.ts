@@ -165,8 +165,8 @@ export class NoirLocalCircuitParams extends NoirCircuitParams {
 const supportedNoirCircuits: NoirCircuitParams[] = [
   new NoirLocalCircuitParams(
     'queryIdentity_inid_ca',
-    () => require('@assets/circuits/noir/query_circuit.json'),
-    6,
+    () => require('@assets/circuits/noir/query-identity/inid/byte_code.json'),
+    24,
   ),
   new NoirLocalCircuitParams(
     'registerIdentity_inid_ca',
