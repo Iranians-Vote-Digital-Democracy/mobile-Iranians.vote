@@ -2,6 +2,7 @@ import { time } from '@distributedlab/tools'
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { BlurView } from 'expo-blur'
 import { Image } from 'expo-image'
+import { startCase } from 'lodash'
 import get from 'lodash/get'
 import isEqual from 'lodash/isEqual'
 import { type ComponentProps, useCallback, useMemo, useState } from 'react'
@@ -107,7 +108,12 @@ export default function DocumentCard({ identity }: Props) {
                 }}
               />
             ) : (
-              <UiIcon style={{ width: 56, height: 56, borderRadius: 9999 }} customIcon='userIcon' />
+              <UiIcon
+                className='color-textPrimary'
+                size={56}
+                customIcon='userIcon'
+                color='textPrimary'
+              />
             )}
 
             <View className='flex gap-2'>
@@ -155,11 +161,18 @@ export default function DocumentCard({ identity }: Props) {
                 key={idx}
                 labelProps={{
                   ...documentCardUi.foregroundLabels,
-                  children: el,
+                  children: startCase(el),
                 }}
                 valueProps={{
                   ...documentCardUi.foregroundValues,
-                  children: detailValue,
+                  children:
+                    el === 'expiryDate'
+                      ? new Date(detailValue).toLocaleDateString('en-US', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })
+                      : detailValue,
                 }}
               />
             )
