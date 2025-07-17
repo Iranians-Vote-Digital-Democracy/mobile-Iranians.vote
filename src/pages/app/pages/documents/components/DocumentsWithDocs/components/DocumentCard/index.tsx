@@ -1,4 +1,4 @@
-import { time } from '@distributedlab/tools'
+import { Time, time } from '@distributedlab/tools'
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { BlurView } from 'expo-blur'
 import { Image } from 'expo-image'
@@ -16,6 +16,7 @@ import type { ViewStyle } from 'react-native/Libraries/StyleSheet/StyleSheetType
 import { ScrollView } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { formatDateDMY } from '@/helpers'
 import type { DocumentCardUi } from '@/store'
 import { uiPreferencesStore } from '@/store'
 import { IdentityItem } from '@/store/modules/identity/Identity'
@@ -166,13 +167,7 @@ export default function DocumentCard({ identity }: Props) {
                 valueProps={{
                   ...documentCardUi.foregroundValues,
                   children:
-                    el === 'expiryDate'
-                      ? new Date(detailValue).toLocaleDateString('en-US', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })
-                      : detailValue,
+                    el === 'expiryDate' ? formatDateDMY(new Time(detailValue)) : detailValue,
                 }}
               />
             )

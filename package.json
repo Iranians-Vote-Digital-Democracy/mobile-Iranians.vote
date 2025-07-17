@@ -64,6 +64,7 @@
   "dependencies": {
     "@dev-plugins/react-navigation": "^0.2.0",
     "@dev-plugins/react-query": "^0.2.0",
+    "@discordjs/formatters": "^0.6.1",
     "@distributedlab/tools": "^1.0.0-rc.17",
     "@gorhom/bottom-sheet": "^5.0.6",
     "@hookform/resolvers": "^3.9.0",
