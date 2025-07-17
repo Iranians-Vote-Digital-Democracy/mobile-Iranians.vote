@@ -41,11 +41,14 @@ export type AppStackParamsList = {
     tag?: string
   }
 
-  Scan:
-    | {
-        documentType?: DocType
-      }
-    | undefined
+  QueryProof: {
+    qwerty?: string
+    asdf?: string
+  }
+
+  Scan?: {
+    documentType?: DocType
+  }
 }
 
 export type AppStackScreenProps<T extends keyof AppStackParamsList> = NativeStackScreenProps<
@@ -68,6 +71,6 @@ export type AppTabScreenProps<T extends keyof AppTabParamsList> = CompositeScree
 declare global {
   namespace ReactNavigation {
     /*eslint-disable-next-line @typescript-eslint/no-empty-object-type*/
-    interface RootParamList extends RootStackParamList {}
+    interface RootParamList extends RootStackParamList { }
   }
 }

@@ -16,6 +16,7 @@ import DocumentsScreen from './pages/documents'
 import HomeScreen from './pages/home'
 import PassportTests from './pages/passport-tests'
 import ProfileScreen from './pages/profile'
+import QueryProofSCreen from './pages/query-proof'
 
 const Stack = createNativeStackNavigator<AppStackParamsList>()
 const Tab = createBottomTabNavigator<AppTabParamsList>()
@@ -78,8 +79,8 @@ function AppTabs({}: AppStackScreenProps<'Tabs'>) {
   )
 }
 
-// eslint-disable-next-line no-empty-pattern
-export default function App({}: RootStackScreenProps<'App'>) {
+export default function App(props: RootStackScreenProps<'App'>) {
+  console.log({ props })
   return (
     <Stack.Navigator
       screenOptions={{
@@ -102,6 +103,8 @@ export default function App({}: RootStackScreenProps<'App'>) {
           headerShown: false,
         }}
       />
+
+      <Stack.Screen name='QueryProof' component={QueryProofSCreen} />
     </Stack.Navigator>
   )
 }

@@ -22,7 +22,11 @@ const linking: LinkingOptions<RootStackParamList> = {
   config: {
     /* configuration for matching screens with paths */
     screens: {
-      App: 'external',
+      App: {
+        screens: {
+          QueryProof: 'query-proof',
+        },
+      },
     },
   },
 }
