@@ -1,76 +1,95 @@
 import { useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { useAppPaddings, useBottomBarOffset } from '@/theme'
-import { UiButton, UiCard, UiHorizontalDivider, UiIcon, UiScreenScrollable } from '@/ui'
+import {
+  UiBottomSheet,
+  UiButton,
+  UiCard,
+  UiHorizontalDivider,
+  UiIcon,
+  UiScreenScrollable,
+  useUiBottomSheet,
+} from '@/ui'
 
-// Mock data for preview
-const mockQuestion = 'What makes a good manager?'
-const mockAnswers = [
-  { id: '1', text: 'Clear communication', votes: 0 },
-  { id: '2', text: 'Delegation skills', votes: 0 },
-  { id: '3', text: 'Empathy and understanding', votes: 0 },
-  { id: '4', text: 'Decision-making abilities', votes: 0 },
-]
+import PollSendScreen from './sendVoteContent'
 
-export default function PollsVoteScreen() {
-  const insets = useSafeAreaInsets()
-  const appPaddings = useAppPaddings()
-  const offset = useBottomBarOffset()
+interface AnswerOption {
+  id: string
+  text: string
+}
 
+interface Question {
+  question: string
+  answers: AnswerOption[]
+}
+
+interface PollsVoteScreenProps {
+  questions: Question[]
+  currentQuestionIndex: number
+  onVoteSubmit: (selectedAnswerId: string, questionIndex: number) => void
+}
+
+export default function PollsVoteScreen({
+  questions,
+  currentQuestionIndex,
+  onVoteSubmit,
+}: PollsVoteScreenProps) {
   const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null)
   const [hasVoted, setHasVoted] = useState(false)
+
+  const sendVotesBottomSheet = useUiBottomSheet()
+
+  const currentQuestion = questions[currentQuestionIndex]
+  const isLastQuestion = currentQuestionIndex === questions.length - 1
 
   const handleVote = () => {
     if (selectedAnswerId) {
       setHasVoted(true)
+
+      if (isLastQuestion) {
+        sendVotesBottomSheet.present()
+      } else {
+        onVoteSubmit(selectedAnswerId, currentQuestionIndex)
+      }
     }
   }
 
   return (
-    <View
-      style={{
-        flex: 1,
-        paddingTop: insets.top,
-        paddingLeft: appPaddings.left,
-        paddingRight: appPaddings.right,
-        paddingBottom: offset,
-      }}
-      className='gap-3'
-    >
-      <View>
-        <Header />
-      </View>
-      <UiScreenScrollable
-        style={{
-          flex: 1,
-        }}
-        className='gap-3'
-      >
+    <View style={{ flex: 1 }} className='gap-3'>
+      <Header current={currentQuestionIndex} max={questions.length} />
+      <UiScreenScrollable style={{ flex: 1 }} className='gap-3'>
         <Body
-          question={mockQuestion}
-          answers={mockAnswers}
+          question={currentQuestion.question}
+          answers={currentQuestion.answers}
           selectedAnswerId={selectedAnswerId}
           onSelectAnswer={setSelectedAnswerId}
           hasVoted={hasVoted}
         />
       </UiScreenScrollable>
-
-      <View>
-        <Footer onPress={handleVote} selectedAnswerId={selectedAnswerId} hasVoted={hasVoted} />
-      </View>
+      <Footer
+        onPress={handleVote}
+        selectedAnswerId={selectedAnswerId}
+        hasVoted={hasVoted}
+        isLastQuestion={isLastQuestion}
+      />
+      <UiBottomSheet
+        ref={sendVotesBottomSheet.ref}
+        backgroundStyle={{
+          backgroundColor: 'backgroundContainer',
+        }}
+        enableDynamicSizing={true}
+      >
+        <PollSendScreen />
+      </UiBottomSheet>
     </View>
   )
 }
 
-function Header() {
-  const currentQuestion = 0 // mock for now
-  const maxQuestion = 5 // TODO: Change for props
+function Header({ current, max }: { current: number; max: number }) {
   return (
     <View className='flex-row items-center justify-between'>
       <Text className='typography-subtitle4 text-textSecondary'>
-        Question: {currentQuestion + 1}/{maxQuestion}
+        Question: {current + 1}/{max}
       </Text>
       <Pressable onPress={() => {}}>
         <View className='h-10 w-10 items-center justify-center rounded-full bg-componentPrimary'>
@@ -79,12 +98,6 @@ function Header() {
       </Pressable>
     </View>
   )
-}
-
-interface AnswerOption {
-  id: string
-  text: string
-  votes?: number
 }
 
 function Body({
@@ -150,15 +163,16 @@ interface FooterProps {
   onPress: () => void
   selectedAnswerId: string | null
   hasVoted: boolean
+  isLastQuestion: boolean
 }
 
-function Footer({ onPress, selectedAnswerId, hasVoted }: FooterProps) {
+function Footer({ onPress, selectedAnswerId, hasVoted, isLastQuestion }: FooterProps) {
   return (
     <View className='w-full flex-row'>
       <UiButton
-        title={hasVoted ? 'Next Question' : 'Vote'}
+        title={hasVoted ? (isLastQuestion ? 'Finish' : 'Next Question') : 'Vote'}
         trailingIconProps={{
-          customIcon: hasVoted ? 'arrowRightIcon' : 'arrowRightIcon', //Change icon but to what
+          customIcon: 'arrowRightIcon',
         }}
         onPress={onPress}
         disabled={!selectedAnswerId || hasVoted}
