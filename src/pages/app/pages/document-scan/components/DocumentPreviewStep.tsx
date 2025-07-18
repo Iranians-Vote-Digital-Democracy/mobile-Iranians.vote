@@ -1,8 +1,10 @@
+import { Time } from '@distributedlab/tools'
 import { Image } from 'expo-image'
 import { startCase } from 'lodash'
 import { Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { formatDateDMY } from '@/helpers'
 import { useDocumentScanContext } from '@/pages/app/pages/document-scan/ScanProvider'
 import { UiButton, UiCard, UiHorizontalDivider, UiIcon, UiScreenScrollable } from '@/ui'
 import { EID, EPassport } from '@/utils/e-document'
@@ -99,7 +101,7 @@ export default function DocumentPreviewStep() {
     if (!tempEDoc?.personDetails) {
       return null
     }
-    const { firstName, lastName, ...restDetails } = tempEDoc.personDetails
+    const { firstName, lastName, expiryDate, ...restDetails } = tempEDoc.personDetails
 
     return (
       <UiScreenScrollable
@@ -124,12 +126,20 @@ export default function DocumentPreviewStep() {
             </View>
           </UiCard>
           <View className='mt-6 flex flex-col gap-4'>
+            <View className='flex flex-row items-center justify-between gap-2'>
+              <Text className='typography-body3 text-textSecondary'>Expiry Date</Text>
+              <Text className='typography-subtitle4 text-textPrimary'>
+                {formatDateDMY(new Time(expiryDate))}
+              </Text>
+            </View>
             {restDetails &&
               Object.entries(restDetails).map(([key, value]) => {
                 return (
                   <View key={key} className='flex flex-row items-center justify-between gap-2'>
                     <Text className='typography-body3 text-textSecondary'>{startCase(key)}</Text>
-                    <Text className='typography-subtitle4 text-textPrimary'>{value}</Text>
+                    <Text className='typography-subtitle4 text-textPrimary'>
+                      {key === 'expiryDate' ? formatDateDMY(new Time(value)) : value}
+                    </Text>
                   </View>
                 )
               })}

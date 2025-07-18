@@ -2,7 +2,7 @@ import type { ConfigContext, ExpoConfig } from '@expo/config'
 
 import { ClientEnv, Env } from './env'
 
-export default ({config}: ConfigContext): ExpoConfig => ({
+export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   newArchEnabled: true,
   name: Env.NAME,
@@ -23,6 +23,10 @@ export default ({config}: ConfigContext): ExpoConfig => ({
   },
   ios: {
     bundleIdentifier: Env.BUNDLE_ID,
+    entitlements: {
+      'com.apple.developer.kernel.increased-memory-limit': true,
+      'com.apple.developer.kernel.extended-virtual-addressing': true
+    },
   },
   android: {
     adaptiveIcon: {
@@ -146,7 +150,7 @@ export default ({config}: ConfigContext): ExpoConfig => ({
         "faceIDPermission": "Allow $(PRODUCT_NAME) to use Face ID."
       }
     ],
-    [ "react-native-vision-camera", {
+    ["react-native-vision-camera", {
       "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera.",
     }],
     ['./plugins/withNfc.plugin/build/index.js'],
