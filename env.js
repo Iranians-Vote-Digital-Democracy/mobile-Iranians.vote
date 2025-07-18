@@ -40,7 +40,7 @@ const NAME = 'Inid App' // app name
 const SLUG = 'inid-app' // app name
 const EXPO_ACCOUNT_OWNER = 'dl-expo' // expo account owner
 const EAS_PROJECT_ID = '96af8807-05d4-41a3-9d2c-aa5940892f89' // eas project id
-const SCHEME = 'inidApp' // app scheme
+const SCHEME = 'inidapp' // app scheme
 
 /**
  * We declare a function withEnvSuffix that will add a suffix to the variable name based on the APP_ENV
