@@ -90,15 +90,13 @@ export default function AppRoutes() {
                   }}
                 />
               ) : (
-                <>
-                  <Stack.Screen
-                    name='App'
-                    component={AppScreen}
-                    options={{
-                      headerShown: false,
-                    }}
-                  />
-                </>
+                <Stack.Screen
+                  name='App'
+                  component={AppScreen}
+                  options={{
+                    headerShown: false,
+                  }}
+                />
               )}
             </>
           ) : (
