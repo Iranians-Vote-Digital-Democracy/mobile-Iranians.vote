@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable unused-imports/no-unused-vars */
 import { parseLdifString } from '@lukachi/rn-csca'
 import { AsnConvert } from '@peculiar/asn1-schema'
@@ -11,9 +12,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { NoirEIDRegistration } from '@/api/modules/registration/variants/noir-eid'
 import AppContainer from '@/pages/app/components/AppContainer'
+import { identityStore } from '@/store'
+import { NoirEIDIdentity } from '@/store/modules/identity/Identity'
 import { walletStore } from '@/store/modules/wallet'
 import { useAppPaddings } from '@/theme'
 import { UiButton, UiScreenScrollable } from '@/ui'
+import { EIDBasedQueryIdentityCircuit } from '@/utils/circuits/eid-based-query-identity-circuit'
 import { EID } from '@/utils/e-document'
 import { ExtendedCertificate } from '@/utils/e-document/extended-cert'
 
@@ -40,7 +44,8 @@ const eIDRegistration = new NoirEIDRegistration()
 export default function PassportTests() {
   const privateKey = walletStore.useWalletStore(state => state.privateKey)
   const publicKeyHash = walletStore.usePublicKeyHash()
-
+  const addIdentity = identityStore.useIdentityStore(state => state.addIdentity)
+  const identities = identityStore.useIdentityStore(state => state.identities)
   const insets = useSafeAreaInsets()
   const appPaddings = useAppPaddings()
   const bottomBarHeight = useBottomTabBarHeight()
@@ -95,13 +100,43 @@ export default function PassportTests() {
       // ------------------------------------------------------------------------------------------------------------------------------
 
       const eID = new EID(sigCertificate, authCertificate)
-      await eIDRegistration.createIdentity(eID, privateKey, publicKeyHash)
+
+      const newIdentity = await eIDRegistration.createIdentity(eID, privateKey, publicKeyHash)
+
+      console.log('created new identity')
+      // setIdentity(newIdentity as NoirEIDIdentity)
+      addIdentity(newIdentity)
     } catch (error) {
       console.error('Error in testCert:', error)
     } finally {
       setIsSubmitting(false)
     }
-  }, [privateKey, publicKeyHash])
+  }, [addIdentity, privateKey, publicKeyHash])
+
+  const generateProof = async () => {
+    console.log('🔷 [generateProof] Started proof generation')
+
+    console.log('✅ [circuit] QueryIdentityCircuit initialized')
+
+    console.log('✅ [identity] Minimal identity data received')
+
+    const currentIdentity = identities[identities.length - 1] // last registered identity
+
+    if (!(currentIdentity instanceof NoirEIDIdentity))
+      throw new Error('Identity is not NoirEIDIdentity')
+
+    if (!currentIdentity) throw new Error("Identity doesn't exist")
+
+    const circuitParams = new EIDBasedQueryIdentityCircuit(currentIdentity)
+
+    const inputs = {
+      skIdentity: `0x${privateKey}`,
+    }
+
+    const proof = await circuitParams.prove(inputs)
+    console.log('🎉 [Proof] Success! Proof generated')
+    console.log('🧾 Proof:', proof)
+  }
 
   return (
     <AppContainer>
@@ -116,6 +151,7 @@ export default function PassportTests() {
       >
         <View className='flex gap-4'>
           <UiButton disabled={isSubmitting} onPress={testCert} title='Test Cert' />
+          <UiButton disabled={isSubmitting} onPress={generateProof} title='Test query proof' />
         </View>
       </UiScreenScrollable>
     </AppContainer>
