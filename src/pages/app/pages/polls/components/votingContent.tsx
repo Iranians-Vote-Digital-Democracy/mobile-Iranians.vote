@@ -13,14 +13,9 @@ import {
 
 import PollSendScreen from './sendVoteContent'
 
-interface AnswerOption {
-  id: string
-  text: string
-}
-
 interface Question {
-  question: string
-  answers: AnswerOption[]
+  title: string
+  variants: string[]
 }
 
 interface PollsVoteScreenProps {
@@ -59,8 +54,8 @@ export default function PollsVoteScreen({
       <Header current={currentQuestionIndex} max={questions.length} />
       <UiScreenScrollable style={{ flex: 1 }} className='gap-3'>
         <Body
-          question={currentQuestion.question}
-          answers={currentQuestion.answers}
+          question={currentQuestion.title}
+          answers={currentQuestion.variants}
           selectedAnswerId={selectedAnswerId}
           onSelectAnswer={setSelectedAnswerId}
           hasVoted={hasVoted}
@@ -108,7 +103,7 @@ function Body({
   hasVoted,
 }: {
   question: string
-  answers: AnswerOption[]
+  answers: string[]
   selectedAnswerId: string | null
   onSelectAnswer: (id: string) => void
   hasVoted: boolean
@@ -120,12 +115,12 @@ function Body({
       <Text className='typography-overline2 text-textSecondary'>PICK YOUR ANSWER</Text>
 
       <View className='gap-3'>
-        {answers.map(answer => (
+        {answers.map((answer, index) => (
           <AnswerButton
-            key={answer.id}
+            key={index}
             answer={answer}
-            isSelected={selectedAnswerId === answer.id}
-            onPress={() => onSelectAnswer(answer.id)}
+            isSelected={selectedAnswerId === String(index)}
+            onPress={() => onSelectAnswer(String(index))}
             hasVoted={hasVoted}
           />
         ))}
@@ -140,7 +135,7 @@ function AnswerButton({
   onPress,
   hasVoted,
 }: {
-  answer: AnswerOption
+  answer: string
   isSelected: boolean
   onPress: () => void
   hasVoted: boolean
@@ -154,7 +149,7 @@ function AnswerButton({
         (isSelected ? 'border-textPrimary bg-componentPrimary' : 'border-componentPrimary')
       }
     >
-      <Text className='typography-subtitle4 text-center text-textPrimary'>{answer.text}</Text>
+      <Text className='typography-subtitle4 text-center text-textPrimary'>{answer}</Text>
     </Pressable>
   )
 }

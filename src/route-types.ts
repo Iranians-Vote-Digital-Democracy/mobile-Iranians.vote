@@ -42,7 +42,7 @@ export type AppStackParamsList = {
     tag?: string
   }
   QueryProof?: { proposalId?: string }
-
+  Polls?: { proposalId?: string }
   Scan?: {
     documentType?: DocType
   }

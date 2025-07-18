@@ -1,9 +1,15 @@
-import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { JsonRpcProvider } from 'ethers'
+import { useMemo, useState } from 'react'
 import { Text, View } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { RARIMO_CHAINS } from '@/api/modules/rarimo'
+import { Config } from '@/config'
+import { AppStackScreenProps } from '@/route-types'
 import { useAppPaddings, useBottomBarOffset } from '@/theme/utils'
+import { ProposalState__factory } from '@/types'
 import {
   UiBottomSheet,
   UiButton,
@@ -17,22 +23,12 @@ import {
 import PollsVoteScreen from './components/votingContent'
 const mockQuestions = [
   {
-    question: 'What is your favorite language?',
-    answers: [
-      { id: '1', text: 'Rust' },
-      { id: '2', text: 'Go' },
-      { id: '3', text: 'TypeScript' },
-      { id: '4', text: 'Python' },
-    ],
+    title: 'What is your favorite language?',
+    variants: ['Rust', 'Go', 'TypeScript', 'Python'],
   },
   {
-    question: 'Which mobile platform do you prefer?',
-    answers: [
-      { id: '5', text: 'React Native' },
-      { id: '6', text: 'Flutter' },
-      { id: '7', text: 'SwiftUI' },
-      { id: '8', text: 'Jetpack Compose' },
-    ],
+    title: 'What is your favorite language?',
+    variants: ['Rust', 'Go', 'TypeScript', 'Python'],
   },
 ]
 export enum Steps {
@@ -45,13 +41,34 @@ export enum Steps {
   AlredyVote,
 }
 
-export default function PollsScreen() {
+export default function PollsScreen(props: AppStackScreenProps<'Polls'>) {
   // {}: AppTabScreenProps<'Polls'>
   const insets = useSafeAreaInsets()
-
+  //props.route.params?.proposalId
   const appPaddings = useAppPaddings()
 
   const offset = useBottomBarOffset()
+  const contract = useMemo(() => {
+    const provider = new JsonRpcProvider(RARIMO_CHAINS[Config.RMO_CHAIN_ID].rpcEvm)
+
+    return ProposalState__factory.connect('0xa356d29fC1d46a13A3845Affe16dFE772f377396', provider)
+  }, [])
+
+  const { data } = useQuery({
+    queryKey: ['qwer'],
+    queryFn: async () => {
+      if (!props.route.params?.proposalId) {
+        return null
+      }
+      const res = await contract.getProposalInfo(props.route.params?.proposalId)
+
+      return res
+    },
+  })
+
+  if (!data) {
+    return null
+  }
 
   return (
     <UiScreenScrollable

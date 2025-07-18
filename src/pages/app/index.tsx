@@ -15,6 +15,7 @@ import DocumentScanScreen from './pages/document-scan'
 import DocumentsScreen from './pages/documents'
 import HomeScreen from './pages/home'
 import PassportTests from './pages/passport-tests'
+import PollsScreen from './pages/polls'
 import ProfileScreen from './pages/profile'
 import QueryProofScreen from './pages/query-proof'
 
@@ -110,6 +111,14 @@ export default function App(props: RootStackScreenProps<'App'>) {
           headerShown: false,
         }}
         component={QueryProofScreen}
+      />
+
+      <Stack.Screen
+        name='Polls'
+        options={{
+          headerShown: false,
+        }}
+        component={PollsScreen}
       />
     </Stack.Navigator>
   )

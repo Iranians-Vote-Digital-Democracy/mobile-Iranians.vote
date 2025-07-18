@@ -23,6 +23,7 @@ const linking: LinkingOptions<RootStackParamList> = {
       App: {
         screens: {
           QueryProof: 'query-proof/:proposalId',
+          Polls: 'polls/:proposalId',
         },
       },
     },
