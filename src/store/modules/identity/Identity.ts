@@ -127,10 +127,12 @@ export class NoirEIDIdentity extends IdentityItem {
     pkIdentityHash: string,
   ): Promise<string> => {
     try {
-      const passportKeyBigInt = BigInt(`0x${identityKey}`)
-      const identityKeyBigInt = BigInt(`0x${pkIdentityHash}`)
+      const sanitizedIdentityKey = identityKey.startsWith('0x') ? identityKey : `0x${identityKey}`
+      const sanitizedPkIdentityHash = identityKey.startsWith('0x')
+        ? pkIdentityHash
+        : `0x${pkIdentityHash}`
 
-      const hash = poseidon.hash([passportKeyBigInt, identityKeyBigInt])
+      const hash = poseidon.hash([BigInt(sanitizedIdentityKey), BigInt(sanitizedPkIdentityHash)])
       const hex = hash.toString(16).padStart(64, '0')
 
       return '0x' + hex

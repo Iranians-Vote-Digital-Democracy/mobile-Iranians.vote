@@ -22,16 +22,6 @@ const linking: LinkingOptions<RootStackParamList> = {
       LocalAuth: 'local-auth',
       App: {
         screens: {
-          Tabs: {
-            screens: {
-              Home: 'home',
-              Documents: 'documents',
-              Profile: 'profile',
-              PassportTests: 'passport-tests',
-            },
-          },
-          InviteOthers: 'invite-others',
-          Scan: 'scan',
           QueryProof: 'query-proof/:proposalId',
         },
       },

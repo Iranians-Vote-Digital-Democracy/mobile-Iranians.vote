@@ -40,7 +40,7 @@ export default function QueryProofScreen(props: AppStackScreenProps<'QueryProof'
       bus.emit(DefaultBusEvents.success, {
         message: 'Proof generated successfully!',
       })
-      cancel()
+      hideScreen()
     } catch (error) {
       ErrorHandler.process(error)
     } finally {
@@ -48,15 +48,7 @@ export default function QueryProofScreen(props: AppStackScreenProps<'QueryProof'
     }
   }
 
-  const cancel = () => {
-    if (!navigation.canGoBack()) {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'App', params: { screen: 'Tabs' } }],
-      })
-      return
-    }
-
+  const hideScreen = () => {
     navigation.reset({
       index: 0,
       routes: [{ name: 'App', params: { screen: 'Tabs' } }],
@@ -94,7 +86,7 @@ export default function QueryProofScreen(props: AppStackScreenProps<'QueryProof'
           variant='outlined'
           className='flex-1'
           disabled={isGenerating}
-          onPress={cancel}
+          onPress={hideScreen}
         />
         <UiButton
           title='Generate proof'
