@@ -1,7 +1,8 @@
-import { time } from '@distributedlab/tools'
+import { Time, time } from '@distributedlab/tools'
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { BlurView } from 'expo-blur'
 import { Image } from 'expo-image'
+import { startCase } from 'lodash'
 import get from 'lodash/get'
 import isEqual from 'lodash/isEqual'
 import { type ComponentProps, useCallback, useMemo, useState } from 'react'
@@ -15,6 +16,7 @@ import type { ViewStyle } from 'react-native/Libraries/StyleSheet/StyleSheetType
 import { ScrollView } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { formatDateDMY } from '@/helpers'
 import type { DocumentCardUi } from '@/store'
 import { uiPreferencesStore } from '@/store'
 import { IdentityItem } from '@/store/modules/identity/Identity'
@@ -107,7 +109,12 @@ export default function DocumentCard({ identity }: Props) {
                 }}
               />
             ) : (
-              <UiIcon style={{ width: 56, height: 56, borderRadius: 9999 }} customIcon='userIcon' />
+              <UiIcon
+                className='color-textPrimary'
+                size={56}
+                customIcon='userIcon'
+                color='textPrimary'
+              />
             )}
 
             <View className='flex gap-2'>
@@ -150,12 +157,27 @@ export default function DocumentCard({ identity }: Props) {
             if (detailValue === undefined || detailValue === null || detailValue === '') {
               return null
             }
+            if (el === 'expiryDate') {
+              return (
+                <DocumentCardRow
+                  key={idx}
+                  labelProps={{
+                    ...documentCardUi.foregroundLabels,
+                    children: startCase(el),
+                  }}
+                  valueProps={{
+                    ...documentCardUi.foregroundValues,
+                    children: formatDateDMY(new Time(detailValue)),
+                  }}
+                />
+              )
+            }
             return (
               <DocumentCardRow
                 key={idx}
                 labelProps={{
                   ...documentCardUi.foregroundLabels,
-                  children: el,
+                  children: startCase(el),
                 }}
                 valueProps={{
                   ...documentCardUi.foregroundValues,
