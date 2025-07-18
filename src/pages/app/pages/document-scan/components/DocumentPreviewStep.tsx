@@ -101,7 +101,7 @@ export default function DocumentPreviewStep() {
     if (!tempEDoc?.personDetails) {
       return null
     }
-    const { firstName, lastName, ...restDetails } = tempEDoc.personDetails
+    const { firstName, lastName, expiryDate, ...restDetails } = tempEDoc.personDetails
 
     return (
       <UiScreenScrollable
@@ -126,6 +126,12 @@ export default function DocumentPreviewStep() {
             </View>
           </UiCard>
           <View className='mt-6 flex flex-col gap-4'>
+            <View className='flex flex-row items-center justify-between gap-2'>
+              <Text className='typography-body3 text-textSecondary'>Expiry Date</Text>
+              <Text className='typography-subtitle4 text-textPrimary'>
+                {formatDateDMY(new Time(expiryDate))}
+              </Text>
+            </View>
             {restDetails &&
               Object.entries(restDetails).map(([key, value]) => {
                 return (

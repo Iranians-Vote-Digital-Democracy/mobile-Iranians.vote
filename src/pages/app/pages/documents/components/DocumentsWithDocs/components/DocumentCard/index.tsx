@@ -157,6 +157,21 @@ export default function DocumentCard({ identity }: Props) {
             if (detailValue === undefined || detailValue === null || detailValue === '') {
               return null
             }
+            if (el === 'expiryDate') {
+              return (
+                <DocumentCardRow
+                  key={idx}
+                  labelProps={{
+                    ...documentCardUi.foregroundLabels,
+                    children: startCase(el),
+                  }}
+                  valueProps={{
+                    ...documentCardUi.foregroundValues,
+                    children: formatDateDMY(new Time(detailValue)),
+                  }}
+                />
+              )
+            }
             return (
               <DocumentCardRow
                 key={idx}
@@ -166,8 +181,7 @@ export default function DocumentCard({ identity }: Props) {
                 }}
                 valueProps={{
                   ...documentCardUi.foregroundValues,
-                  children:
-                    el === 'expiryDate' ? formatDateDMY(new Time(detailValue)) : detailValue,
+                  children: detailValue,
                 }}
               />
             )

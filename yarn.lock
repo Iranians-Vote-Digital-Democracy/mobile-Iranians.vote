@@ -1792,15 +1792,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@discordjs/formatters@npm:^0.6.1":
-  version: 0.6.1
-  resolution: "@discordjs/formatters@npm:0.6.1"
-  dependencies:
-    discord-api-types: "npm:^0.38.1"
-  checksum: 10/131375d851f027381c3386664b7fcbd04eb3af34419fcb7702241f992226db153357fde5a342c0c1ada31b4f068f6c108bbb65c1c8cc70f17a9c7d44f79452c4
-  languageName: node
-  linkType: hard
-
 "@distributedlab/tools@npm:^1.0.0-rc.17":
   version: 1.0.0-rc.17
   resolution: "@distributedlab/tools@npm:1.0.0-rc.17"
@@ -8839,13 +8830,6 @@ __metadata:
   dependencies:
     path-type: "npm:^4.0.0"
   checksum: 10/fa05e18324510d7283f55862f3161c6759a3f2f8dbce491a2fc14c8324c498286c54282c1f0e933cb930da8419b30679389499b919122952a4f8592362ef4615
-  languageName: node
-  linkType: hard
-
-"discord-api-types@npm:^0.38.1":
-  version: 0.38.16
-  resolution: "discord-api-types@npm:0.38.16"
-  checksum: 10/86fdc4125a640ec67a08b1076b7b152af63fd997b40f2025f88a25d5ab90c6d10a7bc6fa26c14f43842fb3d28e2e9de58278311f492369d9ffd49db9f511c650
   languageName: node
   linkType: hard
 
@@ -19747,7 +19731,6 @@ __metadata:
     "@babel/core": "npm:^7.24.6"
     "@dev-plugins/react-navigation": "npm:^0.2.0"
     "@dev-plugins/react-query": "npm:^0.2.0"
-    "@discordjs/formatters": "npm:^0.6.1"
     "@distributedlab/tools": "npm:^1.0.0-rc.17"
     "@eslint/compat": "npm:^1.2.6"
     "@eslint/js": "npm:^9.19.0"
