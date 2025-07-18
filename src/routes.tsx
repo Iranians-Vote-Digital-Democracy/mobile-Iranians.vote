@@ -15,14 +15,16 @@ import { cssVars, darkPalette, lightPalette } from '@/theme/config'
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: [
-    /* your linking prefixes */
-    Linking.createURL('/'),
-  ],
+  prefixes: [Linking.createURL('/')],
   config: {
-    /* configuration for matching screens with paths */
     screens: {
-      App: 'external',
+      Auth: 'auth',
+      LocalAuth: 'local-auth',
+      App: {
+        screens: {
+          QueryProof: 'query-proof/:proposalId',
+        },
+      },
     },
   },
 }

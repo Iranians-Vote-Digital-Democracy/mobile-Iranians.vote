@@ -10,6 +10,7 @@ export type RootStackParamList = {
   App: NavigatorScreenParams<AppStackParamsList>
 }
 
+// FIXME: Inherits wrong `params` interface
 export type RootStackScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<
   RootStackParamList,
   T
@@ -40,12 +41,11 @@ export type AppStackParamsList = {
   InviteOthers?: {
     tag?: string
   }
+  QueryProof?: { proposalId?: string }
 
-  Scan:
-    | {
-        documentType?: DocType
-      }
-    | undefined
+  Scan?: {
+    documentType?: DocType
+  }
 }
 
 export type AppStackScreenProps<T extends keyof AppStackParamsList> = NativeStackScreenProps<
