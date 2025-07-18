@@ -15,16 +15,24 @@ import { cssVars, darkPalette, lightPalette } from '@/theme/config'
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: [
-    /* your linking prefixes */
-    Linking.createURL('/'),
-  ],
+  prefixes: [Linking.createURL('/')],
   config: {
-    /* configuration for matching screens with paths */
     screens: {
+      Auth: 'auth',
+      LocalAuth: 'local-auth',
       App: {
         screens: {
-          QueryProof: 'query-proof',
+          Tabs: {
+            screens: {
+              Home: 'home',
+              Documents: 'documents',
+              Profile: 'profile',
+              PassportTests: 'passport-tests',
+            },
+          },
+          InviteOthers: 'invite-others',
+          Scan: 'scan',
+          QueryProof: 'query-proof/:proposalId',
         },
       },
     },
@@ -82,13 +90,15 @@ export default function AppRoutes() {
                   }}
                 />
               ) : (
-                <Stack.Screen
-                  name='App'
-                  component={AppScreen}
-                  options={{
-                    headerShown: false,
-                  }}
-                />
+                <>
+                  <Stack.Screen
+                    name='App'
+                    component={AppScreen}
+                    options={{
+                      headerShown: false,
+                    }}
+                  />
+                </>
               )}
             </>
           ) : (

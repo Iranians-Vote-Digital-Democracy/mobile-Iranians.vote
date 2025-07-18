@@ -41,11 +41,7 @@ export type AppStackParamsList = {
   InviteOthers?: {
     tag?: string
   }
-
-  QueryProof: {
-    qwerty?: string
-    asdf?: string
-  }
+  QueryProof?: { proposalId?: string }
 
   Scan?: {
     documentType?: DocType

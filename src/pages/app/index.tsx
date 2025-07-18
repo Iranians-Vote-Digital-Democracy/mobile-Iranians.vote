@@ -16,7 +16,7 @@ import DocumentsScreen from './pages/documents'
 import HomeScreen from './pages/home'
 import PassportTests from './pages/passport-tests'
 import ProfileScreen from './pages/profile'
-import QueryProofSCreen from './pages/query-proof'
+import QueryProofScreen from './pages/query-proof'
 
 const Stack = createNativeStackNavigator<AppStackParamsList>()
 const Tab = createBottomTabNavigator<AppTabParamsList>()
@@ -95,7 +95,6 @@ export default function App(props: RootStackScreenProps<'App'>) {
           animation: 'fade',
         }}
       />
-
       <Stack.Screen
         name='Scan'
         component={DocumentScanScreen}
@@ -104,7 +103,14 @@ export default function App(props: RootStackScreenProps<'App'>) {
         }}
       />
 
-      <Stack.Screen name='QueryProof' component={QueryProofSCreen} />
+      <Stack.Screen
+        name='QueryProof'
+        options={{
+          presentation: 'card',
+          headerShown: false,
+        }}
+        component={QueryProofScreen}
+      />
     </Stack.Navigator>
   )
 }

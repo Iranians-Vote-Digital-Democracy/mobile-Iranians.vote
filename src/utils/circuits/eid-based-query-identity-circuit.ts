@@ -1,12 +1,11 @@
 import { NoirCircuitParams } from '@modules/noir'
 import NoirModule from '@modules/noir/src/NoirModule'
 import { AsnConvert } from '@peculiar/asn1-schema'
-import { QueryParams } from 'expo-linking'
 import { Platform } from 'react-native'
 
 import { NoirEIDIdentity } from '@/store/modules/identity/Identity'
 
-import { QUERY_PARAMS_ALIASES, QueryProofParams } from './types/QueryIdentity'
+import { QueryProofParams } from './types/QueryIdentity'
 
 const PRIME = '21888242871839275222246405745257275088548364400416034343698204186575808495617'
 const DEFAULT_MASK_HEX = '0x20000000000000000000000000' // Iran mask
@@ -111,26 +110,6 @@ export class EIDBasedQueryIdentityCircuit {
       dg1: formatArray(params.dg1),
       siblings: formatArray(params.siblings),
     }
-  }
-
-  /**
-   * Extracts and normalizes query parameters from the provided URL parameters.
-   * For each camelCase key defined in QUERY_PARAMS_ALIASES, this method:
-   * 1. Checks its list of possible aliases (snake_case or camelCase) against the incoming params.
-   * 2. Finds the first alias that exists in paramsFromUrl.
-   * 3. Converts the found value to a string and assigns it under the camelCase key.
-   *
-   * Returns a Partial<QueryProofParams> containing only the parameters present in the URL.
-   */
-  public static extractQueryProofParams(paramsFromUrl: QueryParams): Partial<QueryProofParams> {
-    const result: Partial<QueryProofParams> = {}
-
-    Object.entries(QUERY_PARAMS_ALIASES).forEach(([camelKey, aliases]) => {
-      const foundedKey = aliases.find(alias => paramsFromUrl[alias])
-      if (foundedKey) result[camelKey] = String(paramsFromUrl[foundedKey])
-    })
-
-    return result
   }
 
   private _ensureHexPrefix(val: string): string {

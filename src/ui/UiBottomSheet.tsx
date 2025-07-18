@@ -52,7 +52,9 @@ export const useUiBottomSheet = () => {
     ref.current?.dismiss()
   }, [])
 
-  return { ref, present, dismiss }
+  const bottomSheet = useMemo(() => ({ ref, present, dismiss }), [present, dismiss])
+
+  return bottomSheet
 }
 
 /**
