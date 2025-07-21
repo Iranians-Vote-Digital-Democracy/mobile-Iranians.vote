@@ -38,7 +38,7 @@ export const RARIMO_L2_CHAINS: Record<string, ChainInfo> = {
     chainSymbolImageUrl:
       'https://raw.githubusercontent.com/rarimo/js-sdk/2.0.0-rc.14/assets/logos/ra-dark-logo.png',
     rpcEvm: 'https://l2.testnet.rarimo.com',
-    explorerUrl: 'https://evmscan.rarimo.com',
+    explorerUrl: 'https://scan.testnet.rarimo.com',
   },
   [RarimoL2Chains.Mainnet]: {
     chainId: '7368',

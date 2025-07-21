@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 
+import { cn } from '@/theme/utils'
 import {
   UiBottomSheet,
   UiButton,
@@ -10,7 +11,7 @@ import {
   useUiBottomSheet,
 } from '@/ui'
 
-import PollSendScreen from './sendVoteContent'
+import SendVoteScreen from './SendVoteContent'
 
 interface Question {
   title: string
@@ -24,7 +25,7 @@ interface PollsVoteScreenProps {
   onCloseBottomSheet: () => void
 }
 
-export default function PollsVoteScreen({
+export default function VoteScreenContent({
   questions,
   currentQuestionIndex,
   onVoteSubmit,
@@ -88,7 +89,7 @@ export default function PollsVoteScreen({
         detached={false}
         headerComponent={<></>}
       >
-        <PollSendScreen />
+        <SendVoteScreen />
       </UiBottomSheet>
     </>
   )
@@ -158,10 +159,10 @@ function AnswerButton({
     <Pressable
       onPress={onPress}
       disabled={hasVoted}
-      className={
-        'rounded-lg border px-5 py-4 ' +
-        (isSelected ? 'border-textPrimary bg-componentPrimary' : 'border-componentPrimary')
-      }
+      className={cn(
+        'rounded-lg border px-5 py-4',
+        isSelected ? 'border-textPrimary bg-componentPrimary' : 'border-componentPrimary',
+      )}
     >
       <Text className='typography-subtitle4 text-center text-textPrimary'>{answer}</Text>
     </Pressable>

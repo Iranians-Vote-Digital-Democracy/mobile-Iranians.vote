@@ -1,6 +1,10 @@
 import type { Provider, Signer } from 'ethers'
 
-import { PoseidonSMT__factory, Registration__factory, StateKeeper__factory } from '@/types'
+import {
+  PoseidonSMT__factory,
+  Registration__factory,
+  StateKeeper__factory,
+} from '@/types/contracts'
 
 type AbstractFactoryClass = {
   connect: (address: string, signerOrProvider: Signer | Provider) => unknown

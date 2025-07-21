@@ -9,10 +9,17 @@ enum Step {
   Finish,
 }
 
-export default function PollSendScreen() {
+export default function SendVoteScreen() {
   const insets = useSafeAreaInsets()
-  const [step] = useState<Step>(Step.SendProof)
-  const [progress] = useState(0)
+  const [step, setStep] = useState<Step>(Step.SendProof)
+  const [progress, setProgreess] = useState(0)
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  const generateProof = () => {
+    //TODO : Implement claim calldata proof
+    //TODO generation logic contract call
+    setProgreess(100)
+    setStep(Step.Finish)
+  }
 
   const renderContent = () => {
     switch (step) {

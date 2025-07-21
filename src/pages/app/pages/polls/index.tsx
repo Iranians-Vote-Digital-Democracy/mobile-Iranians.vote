@@ -9,7 +9,7 @@ import { apiClient } from '@/api/client'
 import { RARIMO_L2_CHAINS, RarimoL2Chains } from '@/api/modules/rarimo'
 import { AppStackScreenProps } from '@/route-types'
 import { useAppPaddings } from '@/theme/utils'
-import { ProposalState__factory } from '@/types'
+import { ProposalState__factory } from '@/types/contracts'
 import {
   UiBottomSheet,
   UiButton,
@@ -20,23 +20,8 @@ import {
   useUiBottomSheet,
 } from '@/ui'
 
-import PollsVoteScreen from './components/votingContent'
+import VoteScreenContent from './components/VoteScreenContent'
 import { ProposalMetadata } from './utils/utils'
-
-const mockQuestions = [
-  {
-    title: 'What is your favorite programming language?',
-    variants: ['Rust', 'Go', 'TypeScript', 'Python'],
-  },
-  {
-    title: 'Which operating system do you prefer for development?',
-    variants: ['macOS', 'Linux', 'Windows', 'BSD'],
-  },
-  {
-    title: 'Favorite framework for mobile development?',
-    variants: ['React Native', 'Flutter', 'SwiftUI', 'Jetpack Compose'],
-  },
-]
 
 export enum Steps {
   NeedVerification,
@@ -45,7 +30,7 @@ export enum Steps {
   AlredyVote,
 }
 
-export default function PollsScreen(props: AppStackScreenProps<'Polls'>) {
+export default function PollScreen(props: AppStackScreenProps<'Polls'>) {
   const insets = useSafeAreaInsets()
   const appPaddings = useAppPaddings()
   const votingBottomSheet = useUiBottomSheet()
@@ -72,7 +57,11 @@ export default function PollsScreen(props: AppStackScreenProps<'Polls'>) {
     enabled: Boolean(props.route.params?.proposalId),
   })
 
-  const ipfsData = useQuery({
+  const {
+    data: ipfsMetaData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['ipfsData'],
 
     queryFn: async () => {
@@ -83,9 +72,9 @@ export default function PollsScreen(props: AppStackScreenProps<'Polls'>) {
     },
     enabled: Boolean(proposalFromContract),
   })
-
   const handleVoteSubmit = (selectedAnswerId: string, questionIndex: number) => {
-    if (questionIndex < mockQuestions.length - 1) {
+    if (!ipfsMetaData) return
+    if (questionIndex < ipfsMetaData?.data.acceptedOptions.length - 1) {
       setCurrentQuestionIndex(questionIndex + 1)
     } else {
       votingBottomSheet.dismiss()
@@ -98,6 +87,8 @@ export default function PollsScreen(props: AppStackScreenProps<'Polls'>) {
     votingBottomSheet.dismiss()
     setCurrentQuestionIndex(0)
   }
+  if (error) return <Text>Error</Text> //TODO
+  if (isLoading || !ipfsMetaData) return <Text>Loading ...</Text> //TODO
 
   return (
     <>
@@ -122,8 +113,8 @@ export default function PollsScreen(props: AppStackScreenProps<'Polls'>) {
           </Pressable>
 
           <PollsHeader
-            title={ipfsData.data?.data.title || 'Polls'}
-            subtitle={ipfsData.data?.data.description || 'Polls description'}
+            title={ipfsMetaData.data.title}
+            subtitle={ipfsMetaData.data.description}
             date='15 Jul' //TODO
           />
         </View>
@@ -148,8 +139,8 @@ export default function PollsScreen(props: AppStackScreenProps<'Polls'>) {
         detached={false}
         headerComponent={<></>}
       >
-        <PollsVoteScreen
-          questions={ipfsData.data?.data.acceptedOptions || mockQuestions}
+        <VoteScreenContent
+          questions={ipfsMetaData.data.acceptedOptions}
           currentQuestionIndex={currentQuestionIndex}
           onVoteSubmit={handleVoteSubmit}
           onCloseBottomSheet={handleCloseBottomSheet}
