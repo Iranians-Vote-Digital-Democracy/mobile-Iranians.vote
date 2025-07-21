@@ -2,6 +2,8 @@ import { AbiCoder, toBeHex } from 'ethers'
 
 import { ProposalsState } from '@/types/contracts/ProposalState'
 
+import { ParsedContractProposal, Sex } from './types'
+
 export const parseProposalFromContract = (
   proposal: ProposalsState.ProposalInfoStructOutput,
 ): ParsedContractProposal => {
@@ -59,48 +61,4 @@ export const hexToAscii = (hex: string) => {
     result += String.fromCharCode(parseInt(str.slice(i, i + 2), 16))
   }
   return result
-}
-export interface ParsedContractProposal {
-  cid: string
-  status: ProposalStatus
-  startTimestamp: number
-  duration: number
-  voteResults: number[][]
-  votingWhitelistData: DecodedWhitelistData
-  rawProposal: ProposalsState.ProposalInfoStructOutput
-}
-export const WHITELIST_DATA_ABI_TYPE = {
-  type: 'tuple',
-  components: [
-    { name: 'selector', type: 'uint256' }, // 0x1A21 -> 6689
-    { name: 'nationalities', type: 'uint256[]' }, // ["IR" -> hex -> decimal]
-    { name: 'identityCreationTimestampUpperBound', type: 'uint256' },
-    { name: 'identityCounterUpperBound', type: 'uint256' },
-    { name: 'sex', type: 'uint256' }, // 0
-    { name: 'birthDateLowerbound', type: 'uint256' }, // zero date 0x303030303030
-    { name: 'birthDateUpperbound', type: 'uint256' }, // zero date 0x303030303030
-    { name: 'expirationDateLowerBound', type: 'uint256' }, // encoded current date 250718
-  ],
-} as const
-export interface ProposalMetadata {
-  title: string
-  description: string
-  imageCid?: string
-  acceptedOptions: QuestionIpfs[]
-}
-export interface QuestionIpfs {
-  title: string
-  variants: string[]
-}
-export enum Sex {
-  Male = 'M',
-  Female = 'F',
-  Any = '',
-}
-export enum ProposalStatus {
-  None,
-  Waiting,
-  Started,
-  Ended,
-  DoNotShow,
 }

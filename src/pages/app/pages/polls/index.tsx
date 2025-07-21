@@ -1,12 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 import { JsonRpcProvider } from 'ethers'
-import { useMemo, useState } from 'react'
+import { ReactNode, useMemo, useState } from 'react'
 import { Text, View } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { apiClient } from '@/api/client'
-import { RARIMO_L2_CHAINS, RarimoL2Chains } from '@/api/modules/rarimo'
+import { RARIMO_L2_CHAINS } from '@/api/modules/rarimo'
+import { Config } from '@/config'
+import { formatDateDMY } from '@/helpers/formatters'
 import { AppStackScreenProps } from '@/route-types'
 import { useAppPaddings } from '@/theme/utils'
 import { ProposalState__factory } from '@/types/contracts'
@@ -21,7 +23,8 @@ import {
 } from '@/ui'
 
 import VoteScreenContent from './components/VoteScreenContent'
-import { ProposalMetadata } from './utils/utils'
+import { ProposalMetadata } from './utils/types'
+import { parseProposalFromContract } from './utils/utils'
 
 export enum Steps {
   NeedVerification,
@@ -38,43 +41,44 @@ export default function PollScreen(props: AppStackScreenProps<'Polls'>) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
 
   const contract = useMemo(() => {
-    const provider = new JsonRpcProvider(RARIMO_L2_CHAINS[RarimoL2Chains.Testnet].rpcEvm)
+    const provider = new JsonRpcProvider(RARIMO_L2_CHAINS[Config.RMO_L2_CHAIN_ID].rpcEvm)
 
-    return ProposalState__factory.connect('0xa356d29fC1d46a13A3845Affe16dFE772f377396', provider)
+    return ProposalState__factory.connect(Config.PROPOSAL_STATE_CONTRACT_ADDRESS, provider)
   }, [])
 
-  const { data: proposalFromContract } = useQuery({
-    queryKey: ['qwer'],
+  const { data: parsedProposalFromContract } = useQuery({
+    queryKey: ['contractProposal'],
 
     queryFn: async () => {
       if (!props.route.params?.proposalId) {
         return null
       }
 
-      const res = await contract.getProposalInfo(BigInt(props.route.params?.proposalId))
-      return res
+      const rawProposal = await contract.getProposalInfo(BigInt(props.route.params?.proposalId))
+
+      return parseProposalFromContract(rawProposal)
     },
     enabled: Boolean(props.route.params?.proposalId),
   })
 
   const {
-    data: ipfsMetaData,
+    data: ipfsProposalMetadata,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['ipfsData'],
+    queryKey: ['ipfsProposalMetadata'],
 
     queryFn: async () => {
       const res = await apiClient.get<ProposalMetadata>(
-        `https://ipfs.rarimo.com/ipfs/${proposalFromContract?.[2][4]}`,
+        `${Config.IPFS_NODE_URL}${parsedProposalFromContract?.cid}`,
       )
       return res
     },
-    enabled: Boolean(proposalFromContract),
+    enabled: Boolean(parsedProposalFromContract),
   })
   const handleVoteSubmit = (selectedAnswerId: string, questionIndex: number) => {
-    if (!ipfsMetaData) return
-    if (questionIndex < ipfsMetaData?.data.acceptedOptions.length - 1) {
+    if (!ipfsProposalMetadata) return
+    if (questionIndex < ipfsProposalMetadata?.data.acceptedOptions.length - 1) {
       setCurrentQuestionIndex(questionIndex + 1)
     } else {
       votingBottomSheet.dismiss()
@@ -88,7 +92,7 @@ export default function PollScreen(props: AppStackScreenProps<'Polls'>) {
     setCurrentQuestionIndex(0)
   }
   if (error) return <Text>Error</Text> //TODO
-  if (isLoading || !ipfsMetaData) return <Text>Loading ...</Text> //TODO
+  if (isLoading || !ipfsProposalMetadata) return <Text>Loading ...</Text> //TODO
 
   return (
     <>
@@ -113,9 +117,9 @@ export default function PollScreen(props: AppStackScreenProps<'Polls'>) {
           </Pressable>
 
           <PollsHeader
-            title={ipfsMetaData.data.title}
-            subtitle={ipfsMetaData.data.description}
-            date='15 Jul' //TODO
+            title={ipfsProposalMetadata.data.title}
+            subtitle={ipfsProposalMetadata.data.description}
+            date={formatDateDMY(parsedProposalFromContract?.startTimestamp)}
           />
         </View>
 
@@ -140,7 +144,7 @@ export default function PollScreen(props: AppStackScreenProps<'Polls'>) {
         headerComponent={<></>}
       >
         <VoteScreenContent
-          questions={ipfsMetaData.data.acceptedOptions}
+          questions={ipfsProposalMetadata.data.acceptedOptions}
           currentQuestionIndex={currentQuestionIndex}
           onVoteSubmit={handleVoteSubmit}
           onCloseBottomSheet={handleCloseBottomSheet}
@@ -272,28 +276,34 @@ function PollsContent({
 
 export type CriteriaStatus = 'approved' | 'needVerification' | 'notVerified'
 
-function CriteriaRow({ title, status }: { title: string; status: CriteriaStatus }) {
-  switch (status) {
-    case 'approved':
-      return (
-        <View className='flex-row items-center gap-2'>
-          <UiIcon customIcon='checkIcon' size={20} className='color-successMain' />
-          <Text className='typography-subtitle4 text-textPrimary'>{title}</Text>
-        </View>
-      )
-    case 'needVerification':
-      return (
-        <View className='flex-row items-center gap-2'>
-          <UiIcon customIcon='questionIcon' size={20} className='color-warningMain' />
-          <Text className='typography-subtitle4 text-textPrimary'>{title}</Text>
-        </View>
-      )
-    case 'notVerified':
-      return (
-        <View className='flex-row items-center gap-2'>
-          <UiIcon customIcon='closeIcon' size={20} className='color-errorMain' />
-          <Text className='typography-subtitle4 text-errorMain'>{title}</Text>
-        </View>
-      )
+const statusMeta: Record<
+  CriteriaStatus,
+  {
+    icon: ReactNode
+    textColor: string
   }
+> = {
+  approved: {
+    icon: <UiIcon customIcon='checkIcon' size={20} className='color-successMain' />,
+    textColor: 'text-textPrimary',
+  },
+  needVerification: {
+    icon: <UiIcon customIcon='questionIcon' size={20} className='color-warningMain' />,
+    textColor: 'text-textPrimary',
+  },
+  notVerified: {
+    icon: <UiIcon customIcon='closeIcon' size={20} className='color-errorMain' />,
+    textColor: 'text-errorMain',
+  },
+}
+
+function CriteriaRow({ title, status }: { title: string; status: CriteriaStatus }) {
+  const { icon, textColor } = statusMeta[status]
+
+  return (
+    <View className='flex-row items-center gap-2'>
+      {icon}
+      <Text className={`typography-subtitle4 ${textColor}`}>{title}</Text>
+    </View>
+  )
 }

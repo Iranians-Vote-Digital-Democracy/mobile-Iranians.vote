@@ -53,14 +53,14 @@ export default function VoteScreenContent({
     }
   }
 
-  const handleClose = () => {
-    onCloseBottomSheet()
-  }
-
   return (
     <>
       <View className='h-full gap-3 bg-backgroundPrimary p-4'>
-        <Header current={currentQuestionIndex} max={questions.length} onClose={handleClose} />
+        <Header
+          current={currentQuestionIndex}
+          max={questions.length}
+          onClose={onCloseBottomSheet}
+        />
 
         <View style={{ flex: 1 }} className='gap-3'>
           <Body
