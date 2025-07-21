@@ -3,6 +3,7 @@ import { Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { bus, DefaultBusEvents } from '@/core'
+import { sleep } from '@/helpers'
 import { identityStore, walletStore } from '@/store'
 import { NoirEIDIdentity } from '@/store/modules/identity/Identity'
 import { UiButton, UiHorizontalDivider, UiIcon } from '@/ui'
@@ -19,11 +20,18 @@ enum Step {
 interface SubmitVoteScreenProps {
   answers: Map<number, string>
   parsedProposal: ParsedContractProposal
+  onStart: () => void
+  onFinish: () => void
 }
 
 // TODO: Use `answers` somehow
-// eslint-disable-next-line unused-imports/no-unused-vars
-export default function SubmitVoteScreen({ answers, parsedProposal }: SubmitVoteScreenProps) {
+export default function SubmitVoteScreen({
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  answers,
+  parsedProposal,
+  onFinish,
+  onStart,
+}: SubmitVoteScreenProps) {
   const insets = useSafeAreaInsets()
   const [step, setStep] = useState<Step>(Step.SendProof)
   const [progress, setProgress] = useState(0)
@@ -31,6 +39,7 @@ export default function SubmitVoteScreen({ answers, parsedProposal }: SubmitVote
   const privateKey = walletStore.useWalletStore(state => state.privateKey)
 
   useEffect(() => {
+    onStart()
     const generateProof = async () => {
       try {
         if (!identities.length) throw new Error("Your identity hasn't registered yet!")
@@ -60,6 +69,8 @@ export default function SubmitVoteScreen({ answers, parsedProposal }: SubmitVote
 
         setProgress(100)
         setStep(Step.Finish)
+        await sleep(5_000)
+        onFinish()
       } catch (error) {
         console.error('Proof generation failed:', error)
         bus.emit(DefaultBusEvents.error, {
@@ -69,7 +80,7 @@ export default function SubmitVoteScreen({ answers, parsedProposal }: SubmitVote
     }
 
     generateProof()
-  }, [identities, parsedProposal, privateKey])
+  }, [identities, onFinish, onStart, parsedProposal, privateKey])
 
   return (
     <View

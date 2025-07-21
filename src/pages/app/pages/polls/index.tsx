@@ -34,6 +34,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
   const navigation = useNavigation()
   const [answers, setAnswers] = useState<Map<number, string>>(new Map())
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [isCloseDisabled, setIsCloseDisabled] = useState(false)
 
   const contract = useMemo(() => {
     const provider = new JsonRpcProvider(RARIMO_L2_CHAINS[Config.RMO_L2_CHAIN_ID].rpcEvm)
@@ -134,13 +135,19 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
 
       <UiBottomSheet
         ref={bottomSheet.ref}
+        isCloseDisabled={isCloseDisabled}
         snapPoints={['100%']}
         enableDynamicSizing={false}
         backgroundStyle={{ backgroundColor: 'backgroundContainer' }}
         headerComponent={<></>}
       >
         {hasAnsweredAll ? (
-          <SendVoteScreen answers={answers} parsedProposal={parsedProposal} />
+          <SendVoteScreen
+            answers={answers}
+            parsedProposal={parsedProposal}
+            onStart={() => setIsCloseDisabled(true)}
+            onFinish={() => setIsCloseDisabled(false)}
+          />
         ) : (
           <QuestionScreen
             questions={questions}
