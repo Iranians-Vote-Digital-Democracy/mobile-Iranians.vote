@@ -5,6 +5,11 @@ enum RarimoChains {
   MainnetBeta = '201411',
 }
 
+export enum RarimoL2Chains {
+  Mainnet = '7368',
+  Testnet = '7369',
+}
+
 export const RARIMO_CHAINS: Record<string, ChainInfo> = {
   [RarimoChains.MainnetBeta]: {
     chainId: '201411',
@@ -15,6 +20,27 @@ export const RARIMO_CHAINS: Record<string, ChainInfo> = {
     explorerUrl: 'https://evmscan.rarimo.com',
   },
   [RarimoChains.Mainnet]: {
+    chainId: '7368',
+    chainName: 'Rarimo Mainnet',
+    chainSymbolImageUrl:
+      'https://raw.githubusercontent.com/rarimo/js-sdk/2.0.0-rc.14/assets/logos/ra-dark-logo.png',
+
+    rpcEvm: 'https://l2.rarimo.com',
+    explorerUrl: 'https://scan.rarimo.com',
+  },
+}
+
+// TODO: Clarify if this contract can be used instead of MainnetBeta
+export const RARIMO_L2_CHAINS: Record<string, ChainInfo> = {
+  [RarimoL2Chains.Testnet]: {
+    chainId: '7369',
+    chainName: 'Rarimo L2 testnet ',
+    chainSymbolImageUrl:
+      'https://raw.githubusercontent.com/rarimo/js-sdk/2.0.0-rc.14/assets/logos/ra-dark-logo.png',
+    rpcEvm: 'https://l2.testnet.rarimo.com',
+    explorerUrl: 'https://evmscan.rarimo.com',
+  },
+  [RarimoL2Chains.Mainnet]: {
     chainId: '7368',
     chainName: 'Rarimo Mainnet',
     chainSymbolImageUrl:
