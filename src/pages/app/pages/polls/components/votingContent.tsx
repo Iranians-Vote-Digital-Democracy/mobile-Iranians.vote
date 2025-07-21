@@ -1,7 +1,5 @@
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import {
   UiBottomSheet,
@@ -46,7 +44,6 @@ export default function PollsVoteScreen({
 
       if (isLastQuestion) {
         sendVotesBottomSheet.present()
-        handleFinalSubmit()
       } else {
         onVoteSubmit(selectedAnswerId, currentQuestionIndex)
         setSelectedAnswerId(null)
@@ -55,24 +52,13 @@ export default function PollsVoteScreen({
     }
   }
 
-  const handleFinalSubmit = () => {
-    onVoteSubmit(selectedAnswerId!, currentQuestionIndex)
-    sendVotesBottomSheet.dismiss()
-  }
-
-  const insets = useSafeAreaInsets()
   const handleClose = () => {
     onCloseBottomSheet()
   }
 
   return (
     <>
-      <View
-        style={{
-          flex: 1,
-        }}
-        className='gap-3 bg-backgroundContainer p-4'
-      >
+      <View className='h-full gap-3 bg-backgroundPrimary p-4'>
         <Header current={currentQuestionIndex} max={questions.length} onClose={handleClose} />
 
         <View style={{ flex: 1 }} className='gap-3'>
@@ -84,6 +70,7 @@ export default function PollsVoteScreen({
             hasVoted={hasVoted}
           />
         </View>
+
         <Footer
           onPress={handleVote}
           selectedAnswerId={selectedAnswerId}
@@ -94,13 +81,14 @@ export default function PollsVoteScreen({
       <UiBottomSheet
         ref={sendVotesBottomSheet.ref}
         backgroundStyle={{
-          backgroundColor: 'warningLight',
+          backgroundColor: 'backgroundContainer',
         }}
+        snapPoints={['100%']}
+        enableDynamicSizing={false}
+        detached={false}
         headerComponent={<></>}
       >
-        <BottomSheetScrollView className='' style={{ paddingBottom: insets.bottom }}>
-          <PollSendScreen />
-        </BottomSheetScrollView>
+        <PollSendScreen />
       </UiBottomSheet>
     </>
   )
@@ -189,13 +177,16 @@ interface FooterProps {
 
 function Footer({ onPress, selectedAnswerId, hasVoted, isLastQuestion }: FooterProps) {
   return (
-    <UiButton
-      title={isLastQuestion ? 'Finish' : 'Next Question'}
-      trailingIconProps={{
-        customIcon: 'arrowRightIcon',
-      }}
-      onPress={onPress}
-      disabled={!selectedAnswerId || (hasVoted && !isLastQuestion)}
-    />
+    <>
+      <UiHorizontalDivider className='' />
+      <UiButton
+        title={isLastQuestion ? 'Finish' : 'Next Question'}
+        trailingIconProps={{
+          customIcon: 'arrowRightIcon',
+        }}
+        onPress={onPress}
+        disabled={!selectedAnswerId || (hasVoted && !isLastQuestion)}
+      />
+    </>
   )
 }

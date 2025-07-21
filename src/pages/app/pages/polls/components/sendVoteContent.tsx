@@ -70,12 +70,11 @@ export default function PollSendScreen() {
 
   return (
     <View
+      className='h-full justify-center gap-3 bg-backgroundPrimary p-4'
       style={{
-        flex: 1,
-        paddingTop: insets.top,
         paddingBottom: insets.bottom,
+        paddingTop: insets.top,
       }}
-      className='items-center justify-center'
     >
       {renderContent()}
     </View>

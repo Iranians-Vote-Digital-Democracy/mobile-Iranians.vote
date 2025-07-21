@@ -1,4 +1,3 @@
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { useQuery } from '@tanstack/react-query'
 import { JsonRpcProvider } from 'ethers'
 import { useMemo, useState } from 'react'
@@ -144,18 +143,17 @@ export default function PollsScreen(props: AppStackScreenProps<'Polls'>) {
         backgroundStyle={{
           backgroundColor: 'backgroundContainer',
         }}
-        enableDynamicSizing={true}
+        snapPoints={['100%']}
+        enableDynamicSizing={false}
+        detached={false}
+        headerComponent={<></>}
       >
-        <BottomSheetScrollView style={{ paddingBottom: insets.bottom }}>
-          <View className='min-h-full flex-1'>
-            <PollsVoteScreen
-              questions={ipfsData.data?.data.acceptedOptions || mockQuestions}
-              currentQuestionIndex={currentQuestionIndex}
-              onVoteSubmit={handleVoteSubmit}
-              onCloseBottomSheet={handleCloseBottomSheet}
-            />
-          </View>
-        </BottomSheetScrollView>
+        <PollsVoteScreen
+          questions={ipfsData.data?.data.acceptedOptions || mockQuestions}
+          currentQuestionIndex={currentQuestionIndex}
+          onVoteSubmit={handleVoteSubmit}
+          onCloseBottomSheet={handleCloseBottomSheet}
+        />
       </UiBottomSheet>
     </>
   )
