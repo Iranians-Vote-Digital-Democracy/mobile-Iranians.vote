@@ -13,7 +13,7 @@ import type {
   ContractRunner,
   ContractMethod,
   Listener,
-} from "ethers";
+} from 'ethers'
 import type {
   TypedContractEvent,
   TypedDeferredTopicFilter,
@@ -21,17 +21,17 @@ import type {
   TypedLogDescription,
   TypedListener,
   TypedContractMethod,
-} from "./common";
+} from './common'
 
 export declare namespace SparseMerkleTree {
   export type NodeStruct = {
-    nodeType: BigNumberish;
-    childLeft: BigNumberish;
-    childRight: BigNumberish;
-    nodeHash: BytesLike;
-    key: BytesLike;
-    value: BytesLike;
-  };
+    nodeType: BigNumberish
+    childLeft: BigNumberish
+    childRight: BigNumberish
+    nodeHash: BytesLike
+    key: BytesLike
+    value: BytesLike
+  }
 
   export type NodeStructOutput = [
     nodeType: bigint,
@@ -39,26 +39,26 @@ export declare namespace SparseMerkleTree {
     childRight: bigint,
     nodeHash: string,
     key: string,
-    value: string
+    value: string,
   ] & {
-    nodeType: bigint;
-    childLeft: bigint;
-    childRight: bigint;
-    nodeHash: string;
-    key: string;
-    value: string;
-  };
+    nodeType: bigint
+    childLeft: bigint
+    childRight: bigint
+    nodeHash: string
+    key: string
+    value: string
+  }
 
   export type ProofStruct = {
-    root: BytesLike;
-    siblings: BytesLike[];
-    existence: boolean;
-    key: BytesLike;
-    value: BytesLike;
-    auxExistence: boolean;
-    auxKey: BytesLike;
-    auxValue: BytesLike;
-  };
+    root: BytesLike
+    siblings: BytesLike[]
+    existence: boolean
+    key: BytesLike
+    value: BytesLike
+    auxExistence: boolean
+    auxKey: BytesLike
+    auxValue: BytesLike
+  }
 
   export type ProofStructOutput = [
     root: string,
@@ -68,425 +68,298 @@ export declare namespace SparseMerkleTree {
     value: string,
     auxExistence: boolean,
     auxKey: string,
-    auxValue: string
+    auxValue: string,
   ] & {
-    root: string;
-    siblings: string[];
-    existence: boolean;
-    key: string;
-    value: string;
-    auxExistence: boolean;
-    auxKey: string;
-    auxValue: string;
-  };
+    root: string
+    siblings: string[]
+    existence: boolean
+    key: string
+    value: string
+    auxExistence: boolean
+    auxKey: string
+    auxValue: string
+  }
 }
 
 export interface PoseidonSMTInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "ROOT_VALIDITY"
-      | "UPGRADE_INTERFACE_VERSION"
-      | "__PoseidonSMT_init"
-      | "add"
-      | "evidenceRegistry"
-      | "getNodeByKey"
-      | "getProof"
-      | "getRoot"
-      | "implementation"
-      | "isRootLatest"
-      | "isRootValid"
-      | "proxiableUUID"
-      | "remove"
-      | "stateKeeper"
-      | "update"
-      | "upgradeToAndCall"
-  ): FunctionFragment;
+      | 'ROOT_VALIDITY'
+      | 'UPGRADE_INTERFACE_VERSION'
+      | '__PoseidonSMT_init'
+      | 'add'
+      | 'evidenceRegistry'
+      | 'getNodeByKey'
+      | 'getProof'
+      | 'getRoot'
+      | 'implementation'
+      | 'isRootLatest'
+      | 'isRootValid'
+      | 'proxiableUUID'
+      | 'remove'
+      | 'stateKeeper'
+      | 'update'
+      | 'upgradeToAndCall',
+  ): FunctionFragment
 
-  getEvent(
-    nameOrSignatureOrTopic: "Initialized" | "RootUpdated" | "Upgraded"
-  ): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'Initialized' | 'RootUpdated' | 'Upgraded'): EventFragment
 
+  encodeFunctionData(functionFragment: 'ROOT_VALIDITY', values?: undefined): string
+  encodeFunctionData(functionFragment: 'UPGRADE_INTERFACE_VERSION', values?: undefined): string
   encodeFunctionData(
-    functionFragment: "ROOT_VALIDITY",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "UPGRADE_INTERFACE_VERSION",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "__PoseidonSMT_init",
-    values: [AddressLike, AddressLike, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "add",
-    values: [BytesLike, BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "evidenceRegistry",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getNodeByKey",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(functionFragment: "getProof", values: [BytesLike]): string;
-  encodeFunctionData(functionFragment: "getRoot", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "implementation",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "isRootLatest",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "isRootValid",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "proxiableUUID",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "remove", values: [BytesLike]): string;
-  encodeFunctionData(
-    functionFragment: "stateKeeper",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "update",
-    values: [BytesLike, BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "upgradeToAndCall",
-    values: [AddressLike, BytesLike]
-  ): string;
+    functionFragment: '__PoseidonSMT_init',
+    values: [AddressLike, AddressLike, BigNumberish],
+  ): string
+  encodeFunctionData(functionFragment: 'add', values: [BytesLike, BytesLike]): string
+  encodeFunctionData(functionFragment: 'evidenceRegistry', values?: undefined): string
+  encodeFunctionData(functionFragment: 'getNodeByKey', values: [BytesLike]): string
+  encodeFunctionData(functionFragment: 'getProof', values: [BytesLike]): string
+  encodeFunctionData(functionFragment: 'getRoot', values?: undefined): string
+  encodeFunctionData(functionFragment: 'implementation', values?: undefined): string
+  encodeFunctionData(functionFragment: 'isRootLatest', values: [BytesLike]): string
+  encodeFunctionData(functionFragment: 'isRootValid', values: [BytesLike]): string
+  encodeFunctionData(functionFragment: 'proxiableUUID', values?: undefined): string
+  encodeFunctionData(functionFragment: 'remove', values: [BytesLike]): string
+  encodeFunctionData(functionFragment: 'stateKeeper', values?: undefined): string
+  encodeFunctionData(functionFragment: 'update', values: [BytesLike, BytesLike]): string
+  encodeFunctionData(functionFragment: 'upgradeToAndCall', values: [AddressLike, BytesLike]): string
 
-  decodeFunctionResult(
-    functionFragment: "ROOT_VALIDITY",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "UPGRADE_INTERFACE_VERSION",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "__PoseidonSMT_init",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "add", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "evidenceRegistry",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getNodeByKey",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "getProof", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "getRoot", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "implementation",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "isRootLatest",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "isRootValid",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "proxiableUUID",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "remove", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "stateKeeper",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "update", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "upgradeToAndCall",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: 'ROOT_VALIDITY', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'UPGRADE_INTERFACE_VERSION', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: '__PoseidonSMT_init', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'add', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'evidenceRegistry', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'getNodeByKey', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'getProof', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'getRoot', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'implementation', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'isRootLatest', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'isRootValid', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'proxiableUUID', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'remove', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'stateKeeper', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'update', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: 'upgradeToAndCall', data: BytesLike): Result
 }
 
 export namespace InitializedEvent {
-  export type InputTuple = [version: BigNumberish];
-  export type OutputTuple = [version: bigint];
+  export type InputTuple = [version: BigNumberish]
+  export type OutputTuple = [version: bigint]
   export interface OutputObject {
-    version: bigint;
+    version: bigint
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
+  export type Filter = TypedDeferredTopicFilter<Event>
+  export type Log = TypedEventLog<Event>
+  export type LogDescription = TypedLogDescription<Event>
 }
 
 export namespace RootUpdatedEvent {
-  export type InputTuple = [root: BytesLike];
-  export type OutputTuple = [root: string];
+  export type InputTuple = [root: BytesLike]
+  export type OutputTuple = [root: string]
   export interface OutputObject {
-    root: string;
+    root: string
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
+  export type Filter = TypedDeferredTopicFilter<Event>
+  export type Log = TypedEventLog<Event>
+  export type LogDescription = TypedLogDescription<Event>
 }
 
 export namespace UpgradedEvent {
-  export type InputTuple = [implementation: AddressLike];
-  export type OutputTuple = [implementation: string];
+  export type InputTuple = [implementation: AddressLike]
+  export type OutputTuple = [implementation: string]
   export interface OutputObject {
-    implementation: string;
+    implementation: string
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
+  export type Filter = TypedDeferredTopicFilter<Event>
+  export type Log = TypedEventLog<Event>
+  export type LogDescription = TypedLogDescription<Event>
 }
 
 export interface PoseidonSMT extends BaseContract {
-  connect(runner?: ContractRunner | null): PoseidonSMT;
-  waitForDeployment(): Promise<this>;
+  connect(runner?: ContractRunner | null): PoseidonSMT
+  waitForDeployment(): Promise<this>
 
-  interface: PoseidonSMTInterface;
+  interface: PoseidonSMTInterface
 
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
-  ): Promise<Array<TypedEventLog<TCEvent>>>;
+    toBlock?: string | number | undefined,
+  ): Promise<Array<TypedEventLog<TCEvent>>>
   queryFilter<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
-  ): Promise<Array<TypedEventLog<TCEvent>>>;
+    toBlock?: string | number | undefined,
+  ): Promise<Array<TypedEventLog<TCEvent>>>
 
   on<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
+    listener: TypedListener<TCEvent>,
+  ): Promise<this>
   on<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
+    listener: TypedListener<TCEvent>,
+  ): Promise<this>
 
   once<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
+    listener: TypedListener<TCEvent>,
+  ): Promise<this>
   once<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
+    listener: TypedListener<TCEvent>,
+  ): Promise<this>
 
   listeners<TCEvent extends TypedContractEvent>(
-    event: TCEvent
-  ): Promise<Array<TypedListener<TCEvent>>>;
-  listeners(eventName?: string): Promise<Array<Listener>>;
-  removeAllListeners<TCEvent extends TypedContractEvent>(
-    event?: TCEvent
-  ): Promise<this>;
+    event: TCEvent,
+  ): Promise<Array<TypedListener<TCEvent>>>
+  listeners(eventName?: string): Promise<Array<Listener>>
+  removeAllListeners<TCEvent extends TypedContractEvent>(event?: TCEvent): Promise<this>
 
-  ROOT_VALIDITY: TypedContractMethod<[], [bigint], "view">;
+  ROOT_VALIDITY: TypedContractMethod<[], [bigint], 'view'>
 
-  UPGRADE_INTERFACE_VERSION: TypedContractMethod<[], [string], "view">;
+  UPGRADE_INTERFACE_VERSION: TypedContractMethod<[], [string], 'view'>
 
   __PoseidonSMT_init: TypedContractMethod<
-    [
-      stateKeeper_: AddressLike,
-      evidenceRegistry_: AddressLike,
-      treeHeight_: BigNumberish
-    ],
+    [stateKeeper_: AddressLike, evidenceRegistry_: AddressLike, treeHeight_: BigNumberish],
     [void],
-    "nonpayable"
-  >;
+    'nonpayable'
+  >
 
-  add: TypedContractMethod<
-    [keyOfElement_: BytesLike, element_: BytesLike],
-    [void],
-    "nonpayable"
-  >;
+  add: TypedContractMethod<[keyOfElement_: BytesLike, element_: BytesLike], [void], 'nonpayable'>
 
-  evidenceRegistry: TypedContractMethod<[], [string], "view">;
+  evidenceRegistry: TypedContractMethod<[], [string], 'view'>
 
-  getNodeByKey: TypedContractMethod<
-    [key_: BytesLike],
-    [SparseMerkleTree.NodeStructOutput],
-    "view"
-  >;
+  getNodeByKey: TypedContractMethod<[key_: BytesLike], [SparseMerkleTree.NodeStructOutput], 'view'>
 
-  getProof: TypedContractMethod<
-    [key_: BytesLike],
-    [SparseMerkleTree.ProofStructOutput],
-    "view"
-  >;
+  getProof: TypedContractMethod<[key_: BytesLike], [SparseMerkleTree.ProofStructOutput], 'view'>
 
-  getRoot: TypedContractMethod<[], [string], "view">;
+  getRoot: TypedContractMethod<[], [string], 'view'>
 
-  implementation: TypedContractMethod<[], [string], "view">;
+  implementation: TypedContractMethod<[], [string], 'view'>
 
-  isRootLatest: TypedContractMethod<[root_: BytesLike], [boolean], "view">;
+  isRootLatest: TypedContractMethod<[root_: BytesLike], [boolean], 'view'>
 
-  isRootValid: TypedContractMethod<[root_: BytesLike], [boolean], "view">;
+  isRootValid: TypedContractMethod<[root_: BytesLike], [boolean], 'view'>
 
-  proxiableUUID: TypedContractMethod<[], [string], "view">;
+  proxiableUUID: TypedContractMethod<[], [string], 'view'>
 
-  remove: TypedContractMethod<[keyOfElement_: BytesLike], [void], "nonpayable">;
+  remove: TypedContractMethod<[keyOfElement_: BytesLike], [void], 'nonpayable'>
 
-  stateKeeper: TypedContractMethod<[], [string], "view">;
+  stateKeeper: TypedContractMethod<[], [string], 'view'>
 
   update: TypedContractMethod<
     [keyOfElement_: BytesLike, newElement_: BytesLike],
     [void],
-    "nonpayable"
-  >;
+    'nonpayable'
+  >
 
   upgradeToAndCall: TypedContractMethod<
     [newImplementation: AddressLike, data: BytesLike],
     [void],
-    "payable"
-  >;
+    'payable'
+  >
 
-  getFunction<T extends ContractMethod = ContractMethod>(
-    key: string | FunctionFragment
-  ): T;
+  getFunction<T extends ContractMethod = ContractMethod>(key: string | FunctionFragment): T
 
+  getFunction(nameOrSignature: 'ROOT_VALIDITY'): TypedContractMethod<[], [bigint], 'view'>
   getFunction(
-    nameOrSignature: "ROOT_VALIDITY"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'UPGRADE_INTERFACE_VERSION',
+  ): TypedContractMethod<[], [string], 'view'>
   getFunction(
-    nameOrSignature: "UPGRADE_INTERFACE_VERSION"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "__PoseidonSMT_init"
+    nameOrSignature: '__PoseidonSMT_init',
   ): TypedContractMethod<
-    [
-      stateKeeper_: AddressLike,
-      evidenceRegistry_: AddressLike,
-      treeHeight_: BigNumberish
-    ],
+    [stateKeeper_: AddressLike, evidenceRegistry_: AddressLike, treeHeight_: BigNumberish],
     [void],
-    "nonpayable"
-  >;
+    'nonpayable'
+  >
   getFunction(
-    nameOrSignature: "add"
-  ): TypedContractMethod<
-    [keyOfElement_: BytesLike, element_: BytesLike],
-    [void],
-    "nonpayable"
-  >;
+    nameOrSignature: 'add',
+  ): TypedContractMethod<[keyOfElement_: BytesLike, element_: BytesLike], [void], 'nonpayable'>
+  getFunction(nameOrSignature: 'evidenceRegistry'): TypedContractMethod<[], [string], 'view'>
   getFunction(
-    nameOrSignature: "evidenceRegistry"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'getNodeByKey',
+  ): TypedContractMethod<[key_: BytesLike], [SparseMerkleTree.NodeStructOutput], 'view'>
   getFunction(
-    nameOrSignature: "getNodeByKey"
-  ): TypedContractMethod<
-    [key_: BytesLike],
-    [SparseMerkleTree.NodeStructOutput],
-    "view"
-  >;
+    nameOrSignature: 'getProof',
+  ): TypedContractMethod<[key_: BytesLike], [SparseMerkleTree.ProofStructOutput], 'view'>
+  getFunction(nameOrSignature: 'getRoot'): TypedContractMethod<[], [string], 'view'>
+  getFunction(nameOrSignature: 'implementation'): TypedContractMethod<[], [string], 'view'>
   getFunction(
-    nameOrSignature: "getProof"
-  ): TypedContractMethod<
-    [key_: BytesLike],
-    [SparseMerkleTree.ProofStructOutput],
-    "view"
-  >;
+    nameOrSignature: 'isRootLatest',
+  ): TypedContractMethod<[root_: BytesLike], [boolean], 'view'>
   getFunction(
-    nameOrSignature: "getRoot"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'isRootValid',
+  ): TypedContractMethod<[root_: BytesLike], [boolean], 'view'>
+  getFunction(nameOrSignature: 'proxiableUUID'): TypedContractMethod<[], [string], 'view'>
   getFunction(
-    nameOrSignature: "implementation"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'remove',
+  ): TypedContractMethod<[keyOfElement_: BytesLike], [void], 'nonpayable'>
+  getFunction(nameOrSignature: 'stateKeeper'): TypedContractMethod<[], [string], 'view'>
   getFunction(
-    nameOrSignature: "isRootLatest"
-  ): TypedContractMethod<[root_: BytesLike], [boolean], "view">;
+    nameOrSignature: 'update',
+  ): TypedContractMethod<[keyOfElement_: BytesLike, newElement_: BytesLike], [void], 'nonpayable'>
   getFunction(
-    nameOrSignature: "isRootValid"
-  ): TypedContractMethod<[root_: BytesLike], [boolean], "view">;
-  getFunction(
-    nameOrSignature: "proxiableUUID"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "remove"
-  ): TypedContractMethod<[keyOfElement_: BytesLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "stateKeeper"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "update"
-  ): TypedContractMethod<
-    [keyOfElement_: BytesLike, newElement_: BytesLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "upgradeToAndCall"
-  ): TypedContractMethod<
-    [newImplementation: AddressLike, data: BytesLike],
-    [void],
-    "payable"
-  >;
+    nameOrSignature: 'upgradeToAndCall',
+  ): TypedContractMethod<[newImplementation: AddressLike, data: BytesLike], [void], 'payable'>
 
   getEvent(
-    key: "Initialized"
+    key: 'Initialized',
   ): TypedContractEvent<
     InitializedEvent.InputTuple,
     InitializedEvent.OutputTuple,
     InitializedEvent.OutputObject
-  >;
+  >
   getEvent(
-    key: "RootUpdated"
+    key: 'RootUpdated',
   ): TypedContractEvent<
     RootUpdatedEvent.InputTuple,
     RootUpdatedEvent.OutputTuple,
     RootUpdatedEvent.OutputObject
-  >;
+  >
   getEvent(
-    key: "Upgraded"
+    key: 'Upgraded',
   ): TypedContractEvent<
     UpgradedEvent.InputTuple,
     UpgradedEvent.OutputTuple,
     UpgradedEvent.OutputObject
-  >;
+  >
 
   filters: {
-    "Initialized(uint64)": TypedContractEvent<
+    'Initialized(uint64)': TypedContractEvent<
       InitializedEvent.InputTuple,
       InitializedEvent.OutputTuple,
       InitializedEvent.OutputObject
-    >;
+    >
     Initialized: TypedContractEvent<
       InitializedEvent.InputTuple,
       InitializedEvent.OutputTuple,
       InitializedEvent.OutputObject
-    >;
+    >
 
-    "RootUpdated(bytes32)": TypedContractEvent<
+    'RootUpdated(bytes32)': TypedContractEvent<
       RootUpdatedEvent.InputTuple,
       RootUpdatedEvent.OutputTuple,
       RootUpdatedEvent.OutputObject
-    >;
+    >
     RootUpdated: TypedContractEvent<
       RootUpdatedEvent.InputTuple,
       RootUpdatedEvent.OutputTuple,
       RootUpdatedEvent.OutputObject
-    >;
+    >
 
-    "Upgraded(address)": TypedContractEvent<
+    'Upgraded(address)': TypedContractEvent<
       UpgradedEvent.InputTuple,
       UpgradedEvent.OutputTuple,
       UpgradedEvent.OutputObject
-    >;
+    >
     Upgraded: TypedContractEvent<
       UpgradedEvent.InputTuple,
       UpgradedEvent.OutputTuple,
       UpgradedEvent.OutputObject
-    >;
-  };
+    >
+  }
 }
