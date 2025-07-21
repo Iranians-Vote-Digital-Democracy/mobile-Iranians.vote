@@ -1,6 +1,7 @@
+import { useNavigation } from '@react-navigation/native'
 import { useQuery } from '@tanstack/react-query'
 import { JsonRpcProvider } from 'ethers'
-import { ReactNode, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Text, View } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -22,77 +23,70 @@ import {
   useUiBottomSheet,
 } from '@/ui'
 
-import VoteScreenContent from './components/VoteScreenContent'
-import { ProposalMetadata } from './utils/types'
-import { parseProposalFromContract } from './utils/utils'
+import QuestionScreen from './components/QuestionScreen'
+import SendVoteScreen from './components/SubmitVoteScreen'
+import { parseProposalFromContract } from './utils'
 
-export enum Steps {
-  NeedVerification,
-  Verified,
-  NotVerified,
-  AlredyVote,
-}
-
-export default function PollScreen(props: AppStackScreenProps<'Polls'>) {
+export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
   const insets = useSafeAreaInsets()
   const appPaddings = useAppPaddings()
-  const votingBottomSheet = useUiBottomSheet()
-  const [currentPollStep, setCurrentPollStep] = useState<Steps>(Steps.Verified)
+  const bottomSheet = useUiBottomSheet()
+  const navigation = useNavigation()
+  const [answers, setAnswers] = useState<Map<number, string>>(new Map())
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
 
   const contract = useMemo(() => {
     const provider = new JsonRpcProvider(RARIMO_L2_CHAINS[Config.RMO_L2_CHAIN_ID].rpcEvm)
-
     return ProposalState__factory.connect(Config.PROPOSAL_STATE_CONTRACT_ADDRESS, provider)
   }, [])
 
-  const { data: parsedProposalFromContract } = useQuery({
+  const {
+    data: parsedProposal,
+    isLoading: isParsedProposalLoading,
+    error: parsedProposalError,
+  } = useQuery({
     queryKey: ['contractProposal'],
-
     queryFn: async () => {
-      if (!props.route.params?.proposalId) {
-        return null
-      }
-
-      const rawProposal = await contract.getProposalInfo(BigInt(props.route.params?.proposalId))
-
-      return parseProposalFromContract(rawProposal)
+      if (!route.params?.proposalId) return null
+      const raw = await contract.getProposalInfo(BigInt(route.params.proposalId))
+      return parseProposalFromContract(raw)
     },
-    enabled: Boolean(props.route.params?.proposalId),
+    enabled: Boolean(route.params?.proposalId),
   })
 
   const {
-    data: ipfsProposalMetadata,
-    isLoading,
-    error,
+    data: proposalMetadata,
+    isLoading: isProposalMetadataLoading,
+    error: proposalMetadataError,
   } = useQuery({
     queryKey: ['ipfsProposalMetadata'],
-
     queryFn: async () => {
-      const res = await apiClient.get<ProposalMetadata>(
-        `${Config.IPFS_NODE_URL}${parsedProposalFromContract?.cid}`,
-      )
-      return res
+      return apiClient.get(`${Config.IPFS_NODE_URL}${parsedProposal?.cid}`)
     },
-    enabled: Boolean(parsedProposalFromContract),
+    enabled: Boolean(parsedProposal),
   })
-  const handleVoteSubmit = (selectedAnswerId: string, questionIndex: number) => {
-    if (!ipfsProposalMetadata) return
-    if (questionIndex < ipfsProposalMetadata?.data.acceptedOptions.length - 1) {
-      setCurrentQuestionIndex(questionIndex + 1)
-    } else {
-      votingBottomSheet.dismiss()
-      setCurrentPollStep(Steps.AlredyVote)
-      setCurrentQuestionIndex(0)
-    }
+
+  const questions = proposalMetadata?.data.acceptedOptions ?? []
+  const totalQuestions = questions.length
+  const hasAnsweredAll = answers.size === totalQuestions
+
+  const saveAnswerAndNext = (selectedAnswerId: string) => {
+    setAnswers(prev => {
+      const updated = new Map(prev)
+      updated.set(currentQuestionIndex, selectedAnswerId)
+      return updated
+    })
+
+    setCurrentQuestionIndex(prev => prev + 1)
   }
 
-  const handleCloseBottomSheet = () => {
-    votingBottomSheet.dismiss()
-    setCurrentQuestionIndex(0)
+  const goToPreviousQuestion = () => {
+    setCurrentQuestionIndex(prev => Math.max(prev - 1, 0))
   }
-  if (error) return <Text>Error</Text> //TODO
-  if (isLoading || !ipfsProposalMetadata) return <Text>Loading ...</Text> //TODO
+
+  if (proposalMetadataError || parsedProposalError) return <Text>Error</Text>
+  if (isProposalMetadataLoading || !proposalMetadata || isParsedProposalLoading || !parsedProposal)
+    return <Text>Loading...</Text>
 
   return (
     <>
@@ -108,181 +102,62 @@ export default function PollScreen(props: AppStackScreenProps<'Polls'>) {
         <View className='flex flex-col gap-4'>
           <Pressable
             onPress={() => {
-              /* TODO: Close screen or navigate back */
+              navigation.navigate('App', {
+                screen: 'Tabs',
+              })
             }}
           >
             <View className='h-10 w-10 items-center justify-center self-end rounded-full bg-componentPrimary'>
               <UiIcon customIcon='closeIcon' size={20} className='color-textPrimary' />
             </View>
           </Pressable>
-
           <PollsHeader
-            title={ipfsProposalMetadata.data.title}
-            subtitle={ipfsProposalMetadata.data.description}
-            date={formatDateDMY(parsedProposalFromContract?.startTimestamp)}
+            title={proposalMetadata.data.title}
+            subtitle={proposalMetadata.data.description}
+            date={formatDateDMY(parsedProposal?.startTimestamp)}
           />
         </View>
 
-        <UiHorizontalDivider />
+        <UiHorizontalDivider className='my-5' />
 
-        <View className='flex-1 p-4'>
-          <PollsContent
-            currentStep={currentPollStep}
-            onPresentVoteBottomSheet={votingBottomSheet.present}
-          />
+        {/* TODO: Implement criterias */}
+        <View className='gap-3'>
+          <CriteriaRow title='Test criteria 1' status='approved' />
+          <CriteriaRow title='Test criteria 2' status='approved' />
+          <CriteriaRow title='Test criteria 3' status='approved' />
+        </View>
+
+        <View className='w-full flex-1 justify-end'>
+          <UiButton title='Vote' onPress={bottomSheet.present} className='mt-8 w-full' />
         </View>
       </UiScreenScrollable>
 
       <UiBottomSheet
-        ref={votingBottomSheet.ref}
-        backgroundStyle={{
-          backgroundColor: 'backgroundContainer',
-        }}
+        ref={bottomSheet.ref}
         snapPoints={['100%']}
         enableDynamicSizing={false}
-        detached={false}
+        backgroundStyle={{ backgroundColor: 'backgroundContainer' }}
         headerComponent={<></>}
       >
-        <VoteScreenContent
-          questions={ipfsProposalMetadata.data.acceptedOptions}
-          currentQuestionIndex={currentQuestionIndex}
-          onVoteSubmit={handleVoteSubmit}
-          onCloseBottomSheet={handleCloseBottomSheet}
-        />
+        {hasAnsweredAll ? (
+          <SendVoteScreen answers={answers} parsedProposal={parsedProposal} />
+        ) : (
+          <QuestionScreen
+            questions={questions}
+            currentQuestionIndex={currentQuestionIndex}
+            onClose={() => bottomSheet.dismiss()}
+            onSubmit={saveAnswerAndNext}
+            onBack={goToPreviousQuestion}
+          />
+        )}
       </UiBottomSheet>
     </>
   )
 }
 
-function PollsHeader({ title, subtitle, date }: { title: string; subtitle: string; date: string }) {
-  return (
-    <View className='gap-6 overflow-hidden rounded-3xl'>
-      <UiCard className='p-6'>
-        <View className='flex-col gap-2'>
-          <Text className='typography-h6 text-textPrimary'>{title}</Text>
-          <Text className='typography-body3 text-textSecondary'>{subtitle}</Text>
-        </View>
-
-        <View className='mt-6 flex-row items-center justify-between'>
-          <View className='flex-row items-center gap-2'>
-            <UiIcon customIcon='calendarBlankIcon' size={20} className='color-textSecondary' />
-            <Text className='typography-subtitle5 text-textSecondary'>{date}</Text>
-          </View>
-        </View>
-      </UiCard>
-    </View>
-  )
-}
-
-function PollsContent({
-  currentStep,
-  onPresentVoteBottomSheet,
-}: {
-  currentStep: Steps
-  onPresentVoteBottomSheet: () => void
-}) {
-  switch (currentStep) {
-    case Steps.NeedVerification:
-      return (
-        <View className='flex-1'>
-          <Text className='typography-overline2 mb-6 text-textSecondary'>CRITERIA</Text>
-          <UiCard className='mb-8 flex-row items-center justify-between rounded-lg p-3'>
-            <Text className='typography-body3 text-textSecondary'>Your status:</Text>
-            <View className='flex-row items-center gap-2 bg-warningLight'>
-              <Text className='typography-buttonMedium text-warningMain'>NEED VERIFICATION</Text>
-            </View>
-          </UiCard>
-          <View className='mb-auto flex-col gap-4'>
-            <CriteriaRow title='test' status='needVerification' />
-            <CriteriaRow title='anonymous' status='needVerification' />
-          </View>
-          <UiButton
-            title='verify your identity'
-            trailingIconProps={{ customIcon: 'userIcon' }}
-            onPress={() => {}} //TODO: navigate to scan document screen
-            className='mt-8 w-full'
-          />
-        </View>
-      )
-
-    case Steps.Verified:
-      return (
-        <View className='flex-1'>
-          <Text className='typography-overline2 mb-6 text-textSecondary'>CRITERIA</Text>
-          <UiCard className='mb-8 flex-row items-center justify-between rounded-lg p-3'>
-            <Text className='typography-body3 text-textSecondary'>Your status:</Text>
-            <View className='flex-row items-center gap-2 bg-successLight'>
-              <Text className='typography-buttonMedium text-successMain'>VERIFIED</Text>
-            </View>
-          </UiCard>
-          <View className='mb-auto flex-col gap-4'>
-            <CriteriaRow title='test' status='approved' />
-            <CriteriaRow title='anonymous' status='approved' />
-          </View>
-          <UiButton
-            title='Vote'
-            trailingIconProps={{ customIcon: 'userIcon' }}
-            onPress={onPresentVoteBottomSheet}
-            className='mt-8 w-full'
-          />
-        </View>
-      )
-
-    case Steps.NotVerified:
-      return (
-        <View className='flex-1'>
-          <Text className='typography-overline2 mb-6 text-textSecondary'>CRITERIA</Text>
-          <UiCard className='mb-8 flex-row items-center justify-between rounded-lg p-3'>
-            <Text className='typography-body3 text-textSecondary'>Your status:</Text>
-            <View className='flex-row items-center gap-2 bg-errorLight'>
-              <Text className='typography-buttonMedium text-errorMain'>NOT VERIFIED</Text>
-            </View>
-          </UiCard>
-          <View className='mb-auto flex-col gap-4'>
-            <CriteriaRow title='test' status='notVerified' />
-            <CriteriaRow title='anonymous' status='notVerified' />
-          </View>
-          <Text className='typography-h4 text-errorMain'>
-            Based on the criteria, you do not meet the requirements for participation
-          </Text>
-          <UiButton
-            title='Back Home'
-            onPress={() => {}} //TODO: Navigate to home screen
-            className='mt-8 w-full'
-          />
-        </View>
-      )
-
-    case Steps.AlredyVote:
-      return (
-        <View className='flex-1'>
-          <Text className='typography-overline2 mb-6 text-textSecondary'>CRITERIA</Text>
-          <UiCard className='mb-8 flex-row items-center justify-between rounded-lg p-3'>
-            <Text className='typography-body3 text-textSecondary'>Your status:</Text>
-            <View className='flex-row items-center gap-2 bg-successLight'>
-              <Text className='typography-buttonMedium text-successMain'>VOTED</Text>
-            </View>
-          </UiCard>
-          <UiButton
-            title='You have already voted'
-            onPress={() => {}}
-            className='mt-8 w-full'
-            disabled={true}
-          />
-        </View>
-      )
-  }
-}
-
 export type CriteriaStatus = 'approved' | 'needVerification' | 'notVerified'
 
-const statusMeta: Record<
-  CriteriaStatus,
-  {
-    icon: ReactNode
-    textColor: string
-  }
-> = {
+const statusMeta = {
   approved: {
     icon: <UiIcon customIcon='checkIcon' size={20} className='color-successMain' />,
     textColor: 'text-textPrimary',
@@ -297,9 +172,8 @@ const statusMeta: Record<
   },
 }
 
-function CriteriaRow({ title, status }: { title: string; status: CriteriaStatus }) {
+const CriteriaRow = ({ title, status }: { title: string; status: CriteriaStatus }) => {
   const { icon, textColor } = statusMeta[status]
-
   return (
     <View className='flex-row items-center gap-2'>
       {icon}
@@ -307,3 +181,28 @@ function CriteriaRow({ title, status }: { title: string; status: CriteriaStatus 
     </View>
   )
 }
+
+const PollsHeader = ({
+  title,
+  subtitle,
+  date,
+}: {
+  title: string
+  subtitle: string
+  date: string
+}) => (
+  <View className='gap-6 overflow-hidden rounded-3xl'>
+    <UiCard className='p-6'>
+      <View className='flex-col gap-2'>
+        <Text className='typography-h6 text-textPrimary'>{title}</Text>
+        <Text className='typography-body3 text-textSecondary'>{subtitle}</Text>
+      </View>
+      <View className='mt-6 flex-row items-center justify-between'>
+        <View className='flex-row items-center gap-2'>
+          <UiIcon customIcon='calendarBlankIcon' size={20} className='color-textSecondary' />
+          <Text className='typography-subtitle5 text-textSecondary'>{date}</Text>
+        </View>
+      </View>
+    </UiCard>
+  </View>
+)
