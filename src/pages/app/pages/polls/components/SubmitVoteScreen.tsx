@@ -37,6 +37,38 @@ export default function SubmitVoteScreen({
   const [progress, setProgress] = useState(0)
   const identities = identityStore.useIdentityStore(state => state.identities)
   const privateKey = walletStore.useWalletStore(state => state.privateKey)
+  useEffect(() => {
+    const ANIMATION_INTERVAL_MS = 300
+
+    let intervalId: NodeJS.Timeout | null = null
+
+    const calculateNextProgressStep = (current: number): number => {
+      const target = 100
+      if (current >= target) return target
+
+      const stepAmount = Math.max(1, Math.floor((target - current) * 0.05))
+      return Math.min(current + stepAmount, target)
+    }
+
+    if (step === Step.SendProof && progress < 100) {
+      intervalId = setInterval(() => {
+        setProgress(prevProgress => {
+          if (prevProgress >= 100) {
+            if (intervalId) clearInterval(intervalId)
+            return 100
+          }
+
+          return calculateNextProgressStep(prevProgress)
+        })
+      }, ANIMATION_INTERVAL_MS)
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId)
+      }
+    }
+  }, [progress, step])
 
   useEffect(() => {
     onStart()
