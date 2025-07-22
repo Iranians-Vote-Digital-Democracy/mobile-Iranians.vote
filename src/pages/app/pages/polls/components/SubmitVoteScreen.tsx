@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Text, View } from 'react-native'
+import { StyleProp, Text, View, ViewStyle } from 'react-native'
+import Animated, {
+  AnimatedStyle,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { bus, DefaultBusEvents } from '@/core'
@@ -34,41 +40,26 @@ export default function SubmitVoteScreen({
 }: SubmitVoteScreenProps) {
   const insets = useSafeAreaInsets()
   const [step, setStep] = useState<Step>(Step.SendProof)
-  const [progress, setProgress] = useState(0)
   const identities = identityStore.useIdentityStore(state => state.identities)
   const privateKey = walletStore.useWalletStore(state => state.privateKey)
+
+  const progress = useSharedValue(0)
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      width: `${progress.value}%`, // Assuming a max width of 200 for the container
+    }
+  })
+
+  const startProgress = () => {
+    progress.value = withTiming(97, { duration: 36_000 })
+  }
+
   useEffect(() => {
-    const ANIMATION_INTERVAL_MS = 300
+    startProgress()
 
-    let intervalId: NodeJS.Timeout | null = null
-
-    const calculateNextProgressStep = (current: number): number => {
-      const target = 100
-      if (current >= target) return target
-
-      const stepAmount = Math.max(1, Math.floor((target - current) * 0.05))
-      return Math.min(current + stepAmount, target)
-    }
-
-    if (step === Step.SendProof && progress < 100) {
-      intervalId = setInterval(() => {
-        setProgress(prevProgress => {
-          if (prevProgress >= 100) {
-            if (intervalId) clearInterval(intervalId)
-            return 100
-          }
-
-          return calculateNextProgressStep(prevProgress)
-        })
-      }, ANIMATION_INTERVAL_MS)
-    }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId)
-      }
-    }
-  }, [progress, step])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     onStart()
@@ -99,7 +90,7 @@ export default function SubmitVoteScreen({
           message: 'Proof generated successfully!',
         })
 
-        setProgress(100)
+        progress.value = withTiming(100, { duration: 100 })
         setStep(Step.Finish)
         await sleep(5_000)
         onFinish()
@@ -112,7 +103,7 @@ export default function SubmitVoteScreen({
     }
 
     generateProof()
-  }, [identities, onFinish, onStart, parsedProposal, privateKey])
+  }, [identities, onFinish, onStart, parsedProposal, privateKey, progress])
 
   return (
     <View
@@ -122,12 +113,12 @@ export default function SubmitVoteScreen({
         paddingTop: insets.top,
       }}
     >
-      {step === Step.SendProof ? <SendProofStep progress={progress} /> : <FinishStep />}
+      {step === Step.SendProof ? <SendProofStep animatedStyle={animatedStyle} /> : <FinishStep />}
     </View>
   )
 }
 
-function SendProofStep({ progress }: { progress: number }) {
+function SendProofStep({ animatedStyle }: { animatedStyle: { width: string } }) {
   return (
     <View className='w-full items-center gap-6'>
       <View className='mb-4 flex-row items-center justify-center rounded-full bg-warningLight'>
@@ -138,10 +129,15 @@ function SendProofStep({ progress }: { progress: number }) {
       <Text className='typography-body3 mb-6 text-textSecondary'>Anonymizing your vote</Text>
 
       <View className='mb-4 h-2 w-4/5 rounded-full bg-componentPrimary'>
-        <View className='h-full rounded-full bg-primaryMain' style={{ width: `${progress}%` }} />
+        <Animated.View
+          className='h-full rounded-full bg-primaryMain'
+          style={
+            {
+              width: animatedStyle.width,
+            } as StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>
+          }
+        />
       </View>
-
-      <Text className='typography-caption2 mb-8 text-primaryMain'>{progress.toFixed(0)}%</Text>
 
       <UiHorizontalDivider />
 
