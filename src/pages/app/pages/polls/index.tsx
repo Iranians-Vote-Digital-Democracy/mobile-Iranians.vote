@@ -124,9 +124,15 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
 
         {/* TODO: Implement criterias */}
         <View className='gap-3'>
-          <CriteriaRow title='Test criteria 1' status='approved' />
-          <CriteriaRow title='Test criteria 2' status='approved' />
-          <CriteriaRow title='Test criteria 3' status='approved' />
+          <CriteriaRow title='Citizen of IRAN' status='approved' />
+          <CriteriaRow
+            title={`After ${formatDateDMY(parsedProposal.startTimestamp)}`}
+            status='approved'
+          />
+          <CriteriaRow
+            title={`Before ${formatDateDMY(parsedProposal.startTimestamp + parsedProposal.duration)}`}
+            status='approved'
+          />
         </View>
 
         <View className='w-full flex-1 justify-end'>
