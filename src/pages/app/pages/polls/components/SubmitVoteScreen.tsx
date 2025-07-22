@@ -99,7 +99,7 @@ function SendProofStep({ progress }: { progress: number }) {
   return (
     <View className='w-full items-center gap-6'>
       <View className='mb-4 flex-row items-center justify-center rounded-full bg-warningLight'>
-        <UiIcon customIcon='dotsThreeOutlineIcon' size={64} className='mb-4 color-warningMain' />
+        <UiIcon customIcon='dotsThreeOutlineIcon' size={64} className='color-warningMain' />
       </View>
 
       <Text className='typography-h5 mb-2 text-textPrimary'>Please wait</Text>
@@ -125,17 +125,16 @@ function SendProofStep({ progress }: { progress: number }) {
 
 function FinishStep() {
   return (
-    <View className='w-full items-center gap-6'>
-      <View className='mb-4 flex-row items-center justify-center rounded-full bg-successLight'>
-        <UiIcon customIcon='checkIcon' size={64} className='mb-4 color-successMain' />
+    <View className='w-full flex-1 items-center'>
+      <View className='w-full flex-1 items-center justify-center gap-6 px-4'>
+        <View className='mb-4 flex-row items-center justify-center rounded-full bg-successLight'>
+          <UiIcon customIcon='checkIcon' size={64} className='color-successMain' />
+        </View>
+        <Text className='typography-h5 mb-2 text-textPrimary'>Poll finished</Text>
+        <Text className='typography-body3 mb-6 text-textSecondary'>Thanks for participation!</Text>
+        <UiHorizontalDivider />
       </View>
-
-      <Text className='typography-h5 mb-2 text-textPrimary'>Poll finished</Text>
-      <Text className='typography-body3 mb-6 text-textSecondary'>Thanks for participation!</Text>
-
-      <UiHorizontalDivider />
-
-      <View className='absolute bottom-0 mb-4 w-full px-4'>
+      <View className='absolute inset-x-0 bottom-0 p-4'>
         <UiButton title='Go Back' onPress={() => {}} className='w-full' />
       </View>
     </View>
