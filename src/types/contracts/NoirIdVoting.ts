@@ -41,9 +41,11 @@ export declare namespace AQueryProofExecutor {
   };
 }
 
-export interface BaseVotingInterface extends Interface {
+export interface NoirIdVotingInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "IDENTITY_LIMIT"
+      | "__NoirIDVoting_init"
       | "_afterVerify"
       | "_beforeVerify"
       | "_buildPublicSignals"
@@ -70,6 +72,14 @@ export interface BaseVotingInterface extends Interface {
       | "Upgraded"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "IDENTITY_LIMIT",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "__NoirIDVoting_init",
+    values: [AddressLike, AddressLike, AddressLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "_afterVerify",
     values: [BytesLike, BigNumberish, BytesLike]
@@ -133,6 +143,14 @@ export interface BaseVotingInterface extends Interface {
     values: [AddressLike, BytesLike]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "IDENTITY_LIMIT",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "__NoirIDVoting_init",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "_afterVerify",
     data: BytesLike
@@ -248,11 +266,11 @@ export namespace UpgradedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export interface BaseVoting extends BaseContract {
-  connect(runner?: ContractRunner | null): BaseVoting;
+export interface NoirIdVoting extends BaseContract {
+  connect(runner?: ContractRunner | null): NoirIdVoting;
   waitForDeployment(): Promise<this>;
 
-  interface: BaseVotingInterface;
+  interface: NoirIdVotingInterface;
 
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,
@@ -290,6 +308,18 @@ export interface BaseVoting extends BaseContract {
   removeAllListeners<TCEvent extends TypedContractEvent>(
     event?: TCEvent
   ): Promise<this>;
+
+  IDENTITY_LIMIT: TypedContractMethod<[], [bigint], "view">;
+
+  __NoirIDVoting_init: TypedContractMethod<
+    [
+      registrationSMT_: AddressLike,
+      proposalsState_: AddressLike,
+      votingVerifier_: AddressLike
+    ],
+    [void],
+    "nonpayable"
+  >;
 
   _afterVerify: TypedContractMethod<
     [
@@ -379,6 +409,20 @@ export interface BaseVoting extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "IDENTITY_LIMIT"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "__NoirIDVoting_init"
+  ): TypedContractMethod<
+    [
+      registrationSMT_: AddressLike,
+      proposalsState_: AddressLike,
+      votingVerifier_: AddressLike
+    ],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "_afterVerify"
   ): TypedContractMethod<

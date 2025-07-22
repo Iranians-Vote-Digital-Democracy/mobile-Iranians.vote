@@ -13,7 +13,7 @@ import type {
   ContractRunner,
   ContractMethod,
   Listener,
-} from 'ethers'
+} from "ethers";
 import type {
   TypedContractEvent,
   TypedDeferredTopicFilter,
@@ -21,18 +21,18 @@ import type {
   TypedLogDescription,
   TypedListener,
   TypedContractMethod,
-} from './common'
+} from "./common";
 
 export declare namespace ProposalsState {
   export type ProposalConfigStruct = {
-    startTimestamp: BigNumberish
-    duration: BigNumberish
-    multichoice: BigNumberish
-    acceptedOptions: BigNumberish[]
-    description: string
-    votingWhitelist: AddressLike[]
-    votingWhitelistData: BytesLike[]
-  }
+    startTimestamp: BigNumberish;
+    duration: BigNumberish;
+    multichoice: BigNumberish;
+    acceptedOptions: BigNumberish[];
+    description: string;
+    votingWhitelist: AddressLike[];
+    votingWhitelistData: BytesLike[];
+  };
 
   export type ProposalConfigStructOutput = [
     startTimestamp: bigint,
@@ -41,947 +41,1303 @@ export declare namespace ProposalsState {
     acceptedOptions: bigint[],
     description: string,
     votingWhitelist: string[],
-    votingWhitelistData: string[],
-  ] & {
-    startTimestamp: bigint
-    duration: bigint
-    multichoice: bigint
-    acceptedOptions: bigint[]
-    description: string
-    votingWhitelist: string[]
     votingWhitelistData: string[]
-  }
+  ] & {
+    startTimestamp: bigint;
+    duration: bigint;
+    multichoice: bigint;
+    acceptedOptions: bigint[];
+    description: string;
+    votingWhitelist: string[];
+    votingWhitelistData: string[];
+  };
 
   export type ProposalInfoStruct = {
-    proposalSMT: AddressLike
-    status: BigNumberish
-    config: ProposalsState.ProposalConfigStruct
-    votingResults: BigNumberish[][]
-  }
+    proposalSMT: AddressLike;
+    status: BigNumberish;
+    config: ProposalsState.ProposalConfigStruct;
+    votingResults: BigNumberish[][];
+  };
 
   export type ProposalInfoStructOutput = [
     proposalSMT: string,
     status: bigint,
     config: ProposalsState.ProposalConfigStructOutput,
-    votingResults: bigint[][],
-  ] & {
-    proposalSMT: string
-    status: bigint
-    config: ProposalsState.ProposalConfigStructOutput
     votingResults: bigint[][]
-  }
+  ] & {
+    proposalSMT: string;
+    status: bigint;
+    config: ProposalsState.ProposalConfigStructOutput;
+    votingResults: bigint[][];
+  };
 }
 
 export interface ProposalStateInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | 'CONTRACT_MANAGER_ROLE'
-      | 'DEFAULT_ADMIN_ROLE'
-      | 'FUNDS_MANAGER_ROLE'
-      | 'MAXIMUM_CHOICES_PER_OPTION'
-      | 'MAXIMUM_OPTIONS'
-      | 'PROPOSAL_MANAGER_ROLE'
-      | '__ProposalsState_init'
-      | 'addFundsToProposal'
-      | 'addVoting'
-      | 'changeProposalConfig'
-      | 'changeProposalDuration'
-      | 'createProposal'
-      | 'getProposalConfig'
-      | 'getProposalEventId'
-      | 'getProposalInfo'
-      | 'getProposalStatus'
-      | 'getRoleAdmin'
-      | 'getVotingByKey'
-      | 'getVotings'
-      | 'grantRole'
-      | 'hasRole'
-      | 'hideProposal(uint256,bool)'
-      | 'hideProposal(uint256)'
-      | 'implementation'
-      | 'isVoting'
-      | 'lastProposalId'
-      | 'minFundingAmount'
-      | 'owner'
-      | 'proposalSMTImpl'
-      | 'proxiableUUID'
-      | 'removeVoting'
-      | 'renounceOwnership'
-      | 'renounceRole'
-      | 'revokeRole'
-      | 'setMinFundingAmount'
-      | 'supportsInterface'
-      | 'transferOwnership'
-      | 'upgradeTo'
-      | 'upgradeToAndCall'
-      | 'vote'
-      | 'withdrawFunds',
-  ): FunctionFragment
+      | "CONTRACT_MANAGER_ROLE"
+      | "DEFAULT_ADMIN_ROLE"
+      | "FUNDS_MANAGER_ROLE"
+      | "MAXIMUM_CHOICES_PER_OPTION"
+      | "MAXIMUM_OPTIONS"
+      | "PROPOSAL_MANAGER_ROLE"
+      | "__ProposalsState_init"
+      | "addFundsToProposal"
+      | "addVoting"
+      | "changeProposalConfig"
+      | "changeProposalDuration"
+      | "createProposal"
+      | "getProposalConfig"
+      | "getProposalEventId"
+      | "getProposalInfo"
+      | "getProposalStatus"
+      | "getRoleAdmin"
+      | "getVotingByKey"
+      | "getVotings"
+      | "grantRole"
+      | "hasRole"
+      | "hideProposal(uint256,bool)"
+      | "hideProposal(uint256)"
+      | "implementation"
+      | "isVoting"
+      | "lastProposalId"
+      | "minFundingAmount"
+      | "owner"
+      | "proposalSMTImpl"
+      | "proxiableUUID"
+      | "removeVoting"
+      | "renounceOwnership"
+      | "renounceRole"
+      | "revokeRole"
+      | "setMinFundingAmount"
+      | "supportsInterface"
+      | "transferOwnership"
+      | "upgradeTo"
+      | "upgradeToAndCall"
+      | "vote"
+      | "withdrawFunds"
+  ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic:
-      | 'AdminChanged'
-      | 'BeaconUpgraded'
-      | 'Initialized'
-      | 'MinFundingAmountSet'
-      | 'OwnershipTransferred'
-      | 'ProposalConfigChanged'
-      | 'ProposalCreated'
-      | 'ProposalFunded'
-      | 'ProposalHidden'
-      | 'RoleAdminChanged'
-      | 'RoleGranted'
-      | 'RoleRevoked'
-      | 'Upgraded'
-      | 'VoteCast',
-  ): EventFragment
+      | "AdminChanged"
+      | "BeaconUpgraded"
+      | "Initialized"
+      | "MinFundingAmountSet"
+      | "OwnershipTransferred"
+      | "ProposalConfigChanged"
+      | "ProposalCreated"
+      | "ProposalFunded"
+      | "ProposalHidden"
+      | "RoleAdminChanged"
+      | "RoleGranted"
+      | "RoleRevoked"
+      | "Upgraded"
+      | "VoteCast"
+  ): EventFragment;
 
-  encodeFunctionData(functionFragment: 'CONTRACT_MANAGER_ROLE', values?: undefined): string
-  encodeFunctionData(functionFragment: 'DEFAULT_ADMIN_ROLE', values?: undefined): string
-  encodeFunctionData(functionFragment: 'FUNDS_MANAGER_ROLE', values?: undefined): string
-  encodeFunctionData(functionFragment: 'MAXIMUM_CHOICES_PER_OPTION', values?: undefined): string
-  encodeFunctionData(functionFragment: 'MAXIMUM_OPTIONS', values?: undefined): string
-  encodeFunctionData(functionFragment: 'PROPOSAL_MANAGER_ROLE', values?: undefined): string
   encodeFunctionData(
-    functionFragment: '__ProposalsState_init',
-    values: [AddressLike, BigNumberish],
-  ): string
-  encodeFunctionData(functionFragment: 'addFundsToProposal', values: [BigNumberish]): string
-  encodeFunctionData(functionFragment: 'addVoting', values: [string, AddressLike]): string
+    functionFragment: "CONTRACT_MANAGER_ROLE",
+    values?: undefined
+  ): string;
   encodeFunctionData(
-    functionFragment: 'changeProposalConfig',
-    values: [BigNumberish, ProposalsState.ProposalConfigStruct],
-  ): string
+    functionFragment: "DEFAULT_ADMIN_ROLE",
+    values?: undefined
+  ): string;
   encodeFunctionData(
-    functionFragment: 'changeProposalDuration',
-    values: [BigNumberish, BigNumberish],
-  ): string
+    functionFragment: "FUNDS_MANAGER_ROLE",
+    values?: undefined
+  ): string;
   encodeFunctionData(
-    functionFragment: 'createProposal',
-    values: [ProposalsState.ProposalConfigStruct],
-  ): string
-  encodeFunctionData(functionFragment: 'getProposalConfig', values: [BigNumberish]): string
-  encodeFunctionData(functionFragment: 'getProposalEventId', values: [BigNumberish]): string
-  encodeFunctionData(functionFragment: 'getProposalInfo', values: [BigNumberish]): string
-  encodeFunctionData(functionFragment: 'getProposalStatus', values: [BigNumberish]): string
-  encodeFunctionData(functionFragment: 'getRoleAdmin', values: [BytesLike]): string
-  encodeFunctionData(functionFragment: 'getVotingByKey', values: [string]): string
-  encodeFunctionData(functionFragment: 'getVotings', values?: undefined): string
-  encodeFunctionData(functionFragment: 'grantRole', values: [BytesLike, AddressLike]): string
-  encodeFunctionData(functionFragment: 'hasRole', values: [BytesLike, AddressLike]): string
+    functionFragment: "MAXIMUM_CHOICES_PER_OPTION",
+    values?: undefined
+  ): string;
   encodeFunctionData(
-    functionFragment: 'hideProposal(uint256,bool)',
-    values: [BigNumberish, boolean],
-  ): string
-  encodeFunctionData(functionFragment: 'hideProposal(uint256)', values: [BigNumberish]): string
-  encodeFunctionData(functionFragment: 'implementation', values?: undefined): string
-  encodeFunctionData(functionFragment: 'isVoting', values: [AddressLike]): string
-  encodeFunctionData(functionFragment: 'lastProposalId', values?: undefined): string
-  encodeFunctionData(functionFragment: 'minFundingAmount', values?: undefined): string
-  encodeFunctionData(functionFragment: 'owner', values?: undefined): string
-  encodeFunctionData(functionFragment: 'proposalSMTImpl', values?: undefined): string
-  encodeFunctionData(functionFragment: 'proxiableUUID', values?: undefined): string
-  encodeFunctionData(functionFragment: 'removeVoting', values: [string]): string
-  encodeFunctionData(functionFragment: 'renounceOwnership', values?: undefined): string
-  encodeFunctionData(functionFragment: 'renounceRole', values: [BytesLike, AddressLike]): string
-  encodeFunctionData(functionFragment: 'revokeRole', values: [BytesLike, AddressLike]): string
-  encodeFunctionData(functionFragment: 'setMinFundingAmount', values: [BigNumberish]): string
-  encodeFunctionData(functionFragment: 'supportsInterface', values: [BytesLike]): string
-  encodeFunctionData(functionFragment: 'transferOwnership', values: [AddressLike]): string
-  encodeFunctionData(functionFragment: 'upgradeTo', values: [AddressLike]): string
-  encodeFunctionData(functionFragment: 'upgradeToAndCall', values: [AddressLike, BytesLike]): string
+    functionFragment: "MAXIMUM_OPTIONS",
+    values?: undefined
+  ): string;
   encodeFunctionData(
-    functionFragment: 'vote',
-    values: [BigNumberish, BigNumberish, BigNumberish[]],
-  ): string
-  encodeFunctionData(functionFragment: 'withdrawFunds', values: [AddressLike, BigNumberish]): string
+    functionFragment: "PROPOSAL_MANAGER_ROLE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "__ProposalsState_init",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "addFundsToProposal",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "addVoting",
+    values: [string, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "changeProposalConfig",
+    values: [BigNumberish, ProposalsState.ProposalConfigStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "changeProposalDuration",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "createProposal",
+    values: [ProposalsState.ProposalConfigStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProposalConfig",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProposalEventId",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProposalInfo",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProposalStatus",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getRoleAdmin",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getVotingByKey",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getVotings",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "grantRole",
+    values: [BytesLike, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "hasRole",
+    values: [BytesLike, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "hideProposal(uint256,bool)",
+    values: [BigNumberish, boolean]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "hideProposal(uint256)",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "implementation",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isVoting",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "lastProposalId",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "minFundingAmount",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "proposalSMTImpl",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "proxiableUUID",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeVoting",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "renounceOwnership",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "renounceRole",
+    values: [BytesLike, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "revokeRole",
+    values: [BytesLike, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setMinFundingAmount",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "supportsInterface",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferOwnership",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "upgradeTo",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "upgradeToAndCall",
+    values: [AddressLike, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "vote",
+    values: [BigNumberish, BigNumberish, BigNumberish[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "withdrawFunds",
+    values: [AddressLike, BigNumberish]
+  ): string;
 
-  decodeFunctionResult(functionFragment: 'CONTRACT_MANAGER_ROLE', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'DEFAULT_ADMIN_ROLE', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'FUNDS_MANAGER_ROLE', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'MAXIMUM_CHOICES_PER_OPTION', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'MAXIMUM_OPTIONS', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'PROPOSAL_MANAGER_ROLE', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: '__ProposalsState_init', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'addFundsToProposal', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'addVoting', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'changeProposalConfig', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'changeProposalDuration', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'createProposal', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getProposalConfig', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getProposalEventId', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getProposalInfo', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getProposalStatus', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getRoleAdmin', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getVotingByKey', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'getVotings', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'grantRole', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'hasRole', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'hideProposal(uint256,bool)', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'hideProposal(uint256)', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'implementation', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'isVoting', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'lastProposalId', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'minFundingAmount', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'proposalSMTImpl', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'proxiableUUID', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'removeVoting', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'renounceOwnership', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'renounceRole', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'revokeRole', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'setMinFundingAmount', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'supportsInterface', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'upgradeTo', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'upgradeToAndCall', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'vote', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'withdrawFunds', data: BytesLike): Result
+  decodeFunctionResult(
+    functionFragment: "CONTRACT_MANAGER_ROLE",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "DEFAULT_ADMIN_ROLE",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "FUNDS_MANAGER_ROLE",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "MAXIMUM_CHOICES_PER_OPTION",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "MAXIMUM_OPTIONS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "PROPOSAL_MANAGER_ROLE",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "__ProposalsState_init",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "addFundsToProposal",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "addVoting", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "changeProposalConfig",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "changeProposalDuration",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "createProposal",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProposalConfig",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProposalEventId",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProposalInfo",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProposalStatus",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRoleAdmin",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getVotingByKey",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "getVotings", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "hideProposal(uint256,bool)",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "hideProposal(uint256)",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "implementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "isVoting", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "lastProposalId",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "minFundingAmount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "proposalSMTImpl",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "proxiableUUID",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "removeVoting",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "renounceRole",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setMinFundingAmount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "supportsInterface",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "upgradeTo", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeToAndCall",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "vote", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "withdrawFunds",
+    data: BytesLike
+  ): Result;
 }
 
 export namespace AdminChangedEvent {
-  export type InputTuple = [previousAdmin: AddressLike, newAdmin: AddressLike]
-  export type OutputTuple = [previousAdmin: string, newAdmin: string]
+  export type InputTuple = [previousAdmin: AddressLike, newAdmin: AddressLike];
+  export type OutputTuple = [previousAdmin: string, newAdmin: string];
   export interface OutputObject {
-    previousAdmin: string
-    newAdmin: string
+    previousAdmin: string;
+    newAdmin: string;
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-  export type Filter = TypedDeferredTopicFilter<Event>
-  export type Log = TypedEventLog<Event>
-  export type LogDescription = TypedLogDescription<Event>
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace BeaconUpgradedEvent {
-  export type InputTuple = [beacon: AddressLike]
-  export type OutputTuple = [beacon: string]
+  export type InputTuple = [beacon: AddressLike];
+  export type OutputTuple = [beacon: string];
   export interface OutputObject {
-    beacon: string
+    beacon: string;
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-  export type Filter = TypedDeferredTopicFilter<Event>
-  export type Log = TypedEventLog<Event>
-  export type LogDescription = TypedLogDescription<Event>
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace InitializedEvent {
-  export type InputTuple = [version: BigNumberish]
-  export type OutputTuple = [version: bigint]
+  export type InputTuple = [version: BigNumberish];
+  export type OutputTuple = [version: bigint];
   export interface OutputObject {
-    version: bigint
+    version: bigint;
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-  export type Filter = TypedDeferredTopicFilter<Event>
-  export type Log = TypedEventLog<Event>
-  export type LogDescription = TypedLogDescription<Event>
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace MinFundingAmountSetEvent {
-  export type InputTuple = [amount: BigNumberish]
-  export type OutputTuple = [amount: bigint]
+  export type InputTuple = [amount: BigNumberish];
+  export type OutputTuple = [amount: bigint];
   export interface OutputObject {
-    amount: bigint
+    amount: bigint;
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-  export type Filter = TypedDeferredTopicFilter<Event>
-  export type Log = TypedEventLog<Event>
-  export type LogDescription = TypedLogDescription<Event>
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace OwnershipTransferredEvent {
-  export type InputTuple = [previousOwner: AddressLike, newOwner: AddressLike]
-  export type OutputTuple = [previousOwner: string, newOwner: string]
+  export type InputTuple = [previousOwner: AddressLike, newOwner: AddressLike];
+  export type OutputTuple = [previousOwner: string, newOwner: string];
   export interface OutputObject {
-    previousOwner: string
-    newOwner: string
+    previousOwner: string;
+    newOwner: string;
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-  export type Filter = TypedDeferredTopicFilter<Event>
-  export type Log = TypedEventLog<Event>
-  export type LogDescription = TypedLogDescription<Event>
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace ProposalConfigChangedEvent {
-  export type InputTuple = [proposalId: BigNumberish]
-  export type OutputTuple = [proposalId: bigint]
+  export type InputTuple = [proposalId: BigNumberish];
+  export type OutputTuple = [proposalId: bigint];
   export interface OutputObject {
-    proposalId: bigint
+    proposalId: bigint;
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-  export type Filter = TypedDeferredTopicFilter<Event>
-  export type Log = TypedEventLog<Event>
-  export type LogDescription = TypedLogDescription<Event>
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace ProposalCreatedEvent {
   export type InputTuple = [
     proposalId: BigNumberish,
     proposalSMT: AddressLike,
-    fundAmount: BigNumberish,
-  ]
-  export type OutputTuple = [proposalId: bigint, proposalSMT: string, fundAmount: bigint]
-  export interface OutputObject {
-    proposalId: bigint
-    proposalSMT: string
+    fundAmount: BigNumberish
+  ];
+  export type OutputTuple = [
+    proposalId: bigint,
+    proposalSMT: string,
     fundAmount: bigint
+  ];
+  export interface OutputObject {
+    proposalId: bigint;
+    proposalSMT: string;
+    fundAmount: bigint;
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-  export type Filter = TypedDeferredTopicFilter<Event>
-  export type Log = TypedEventLog<Event>
-  export type LogDescription = TypedLogDescription<Event>
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace ProposalFundedEvent {
-  export type InputTuple = [proposalId: BigNumberish, fundAmount: BigNumberish]
-  export type OutputTuple = [proposalId: bigint, fundAmount: bigint]
+  export type InputTuple = [proposalId: BigNumberish, fundAmount: BigNumberish];
+  export type OutputTuple = [proposalId: bigint, fundAmount: bigint];
   export interface OutputObject {
-    proposalId: bigint
-    fundAmount: bigint
+    proposalId: bigint;
+    fundAmount: bigint;
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-  export type Filter = TypedDeferredTopicFilter<Event>
-  export type Log = TypedEventLog<Event>
-  export type LogDescription = TypedLogDescription<Event>
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace ProposalHiddenEvent {
-  export type InputTuple = [proposalId: BigNumberish, hide: boolean]
-  export type OutputTuple = [proposalId: bigint, hide: boolean]
+  export type InputTuple = [proposalId: BigNumberish, hide: boolean];
+  export type OutputTuple = [proposalId: bigint, hide: boolean];
   export interface OutputObject {
-    proposalId: bigint
-    hide: boolean
+    proposalId: bigint;
+    hide: boolean;
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-  export type Filter = TypedDeferredTopicFilter<Event>
-  export type Log = TypedEventLog<Event>
-  export type LogDescription = TypedLogDescription<Event>
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace RoleAdminChangedEvent {
-  export type InputTuple = [role: BytesLike, previousAdminRole: BytesLike, newAdminRole: BytesLike]
-  export type OutputTuple = [role: string, previousAdminRole: string, newAdminRole: string]
-  export interface OutputObject {
-    role: string
-    previousAdminRole: string
+  export type InputTuple = [
+    role: BytesLike,
+    previousAdminRole: BytesLike,
+    newAdminRole: BytesLike
+  ];
+  export type OutputTuple = [
+    role: string,
+    previousAdminRole: string,
     newAdminRole: string
+  ];
+  export interface OutputObject {
+    role: string;
+    previousAdminRole: string;
+    newAdminRole: string;
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-  export type Filter = TypedDeferredTopicFilter<Event>
-  export type Log = TypedEventLog<Event>
-  export type LogDescription = TypedLogDescription<Event>
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace RoleGrantedEvent {
-  export type InputTuple = [role: BytesLike, account: AddressLike, sender: AddressLike]
-  export type OutputTuple = [role: string, account: string, sender: string]
+  export type InputTuple = [
+    role: BytesLike,
+    account: AddressLike,
+    sender: AddressLike
+  ];
+  export type OutputTuple = [role: string, account: string, sender: string];
   export interface OutputObject {
-    role: string
-    account: string
-    sender: string
+    role: string;
+    account: string;
+    sender: string;
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-  export type Filter = TypedDeferredTopicFilter<Event>
-  export type Log = TypedEventLog<Event>
-  export type LogDescription = TypedLogDescription<Event>
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace RoleRevokedEvent {
-  export type InputTuple = [role: BytesLike, account: AddressLike, sender: AddressLike]
-  export type OutputTuple = [role: string, account: string, sender: string]
+  export type InputTuple = [
+    role: BytesLike,
+    account: AddressLike,
+    sender: AddressLike
+  ];
+  export type OutputTuple = [role: string, account: string, sender: string];
   export interface OutputObject {
-    role: string
-    account: string
-    sender: string
+    role: string;
+    account: string;
+    sender: string;
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-  export type Filter = TypedDeferredTopicFilter<Event>
-  export type Log = TypedEventLog<Event>
-  export type LogDescription = TypedLogDescription<Event>
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace UpgradedEvent {
-  export type InputTuple = [implementation: AddressLike]
-  export type OutputTuple = [implementation: string]
+  export type InputTuple = [implementation: AddressLike];
+  export type OutputTuple = [implementation: string];
   export interface OutputObject {
-    implementation: string
+    implementation: string;
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-  export type Filter = TypedDeferredTopicFilter<Event>
-  export type Log = TypedEventLog<Event>
-  export type LogDescription = TypedLogDescription<Event>
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace VoteCastEvent {
   export type InputTuple = [
     proposalId: BigNumberish,
     userNullifier: BigNumberish,
-    vote: BigNumberish[],
-  ]
-  export type OutputTuple = [proposalId: bigint, userNullifier: bigint, vote: bigint[]]
-  export interface OutputObject {
-    proposalId: bigint
-    userNullifier: bigint
+    vote: BigNumberish[]
+  ];
+  export type OutputTuple = [
+    proposalId: bigint,
+    userNullifier: bigint,
     vote: bigint[]
+  ];
+  export interface OutputObject {
+    proposalId: bigint;
+    userNullifier: bigint;
+    vote: bigint[];
   }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-  export type Filter = TypedDeferredTopicFilter<Event>
-  export type Log = TypedEventLog<Event>
-  export type LogDescription = TypedLogDescription<Event>
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export interface ProposalState extends BaseContract {
-  connect(runner?: ContractRunner | null): ProposalState
-  waitForDeployment(): Promise<this>
+  connect(runner?: ContractRunner | null): ProposalState;
+  waitForDeployment(): Promise<this>;
 
-  interface: ProposalStateInterface
+  interface: ProposalStateInterface;
 
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined,
-  ): Promise<Array<TypedEventLog<TCEvent>>>
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
   queryFilter<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined,
-  ): Promise<Array<TypedEventLog<TCEvent>>>
+    toBlock?: string | number | undefined
+  ): Promise<Array<TypedEventLog<TCEvent>>>;
 
   on<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>,
-  ): Promise<this>
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
   on<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>,
-  ): Promise<this>
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
   once<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>,
-  ): Promise<this>
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
   once<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>,
-  ): Promise<this>
+    listener: TypedListener<TCEvent>
+  ): Promise<this>;
 
   listeners<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
-  ): Promise<Array<TypedListener<TCEvent>>>
-  listeners(eventName?: string): Promise<Array<Listener>>
-  removeAllListeners<TCEvent extends TypedContractEvent>(event?: TCEvent): Promise<this>
+    event: TCEvent
+  ): Promise<Array<TypedListener<TCEvent>>>;
+  listeners(eventName?: string): Promise<Array<Listener>>;
+  removeAllListeners<TCEvent extends TypedContractEvent>(
+    event?: TCEvent
+  ): Promise<this>;
 
-  CONTRACT_MANAGER_ROLE: TypedContractMethod<[], [string], 'view'>
+  CONTRACT_MANAGER_ROLE: TypedContractMethod<[], [string], "view">;
 
-  DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], 'view'>
+  DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
 
-  FUNDS_MANAGER_ROLE: TypedContractMethod<[], [string], 'view'>
+  FUNDS_MANAGER_ROLE: TypedContractMethod<[], [string], "view">;
 
-  MAXIMUM_CHOICES_PER_OPTION: TypedContractMethod<[], [bigint], 'view'>
+  MAXIMUM_CHOICES_PER_OPTION: TypedContractMethod<[], [bigint], "view">;
 
-  MAXIMUM_OPTIONS: TypedContractMethod<[], [bigint], 'view'>
+  MAXIMUM_OPTIONS: TypedContractMethod<[], [bigint], "view">;
 
-  PROPOSAL_MANAGER_ROLE: TypedContractMethod<[], [string], 'view'>
+  PROPOSAL_MANAGER_ROLE: TypedContractMethod<[], [string], "view">;
 
   __ProposalsState_init: TypedContractMethod<
     [proposalSMTImpl_: AddressLike, minFundingAmount_: BigNumberish],
     [void],
-    'nonpayable'
-  >
+    "nonpayable"
+  >;
 
-  addFundsToProposal: TypedContractMethod<[proposalId_: BigNumberish], [void], 'payable'>
+  addFundsToProposal: TypedContractMethod<
+    [proposalId_: BigNumberish],
+    [void],
+    "payable"
+  >;
 
   addVoting: TypedContractMethod<
     [votingName_: string, votingAddress_: AddressLike],
     [void],
-    'nonpayable'
-  >
+    "nonpayable"
+  >;
 
   changeProposalConfig: TypedContractMethod<
-    [proposalId_: BigNumberish, newProposalConfig_: ProposalsState.ProposalConfigStruct],
+    [
+      proposalId_: BigNumberish,
+      newProposalConfig_: ProposalsState.ProposalConfigStruct
+    ],
     [void],
-    'nonpayable'
-  >
+    "nonpayable"
+  >;
 
   changeProposalDuration: TypedContractMethod<
     [proposalId_: BigNumberish, newDuration_: BigNumberish],
     [void],
-    'nonpayable'
-  >
+    "nonpayable"
+  >;
 
   createProposal: TypedContractMethod<
     [proposalConfig_: ProposalsState.ProposalConfigStruct],
     [void],
-    'payable'
-  >
+    "payable"
+  >;
 
   getProposalConfig: TypedContractMethod<
     [proposalId_: BigNumberish],
     [ProposalsState.ProposalConfigStructOutput],
-    'view'
-  >
+    "view"
+  >;
 
-  getProposalEventId: TypedContractMethod<[proposalId_: BigNumberish], [bigint], 'view'>
+  getProposalEventId: TypedContractMethod<
+    [proposalId_: BigNumberish],
+    [bigint],
+    "view"
+  >;
 
   getProposalInfo: TypedContractMethod<
     [proposalId_: BigNumberish],
     [ProposalsState.ProposalInfoStructOutput],
-    'view'
-  >
+    "view"
+  >;
 
-  getProposalStatus: TypedContractMethod<[proposalId_: BigNumberish], [bigint], 'view'>
+  getProposalStatus: TypedContractMethod<
+    [proposalId_: BigNumberish],
+    [bigint],
+    "view"
+  >;
 
-  getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], 'view'>
+  getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
 
-  getVotingByKey: TypedContractMethod<[key_: string], [string], 'view'>
+  getVotingByKey: TypedContractMethod<[key_: string], [string], "view">;
 
   getVotings: TypedContractMethod<
     [],
     [[string[], string[]] & { keys_: string[]; values_: string[] }],
-    'view'
-  >
+    "view"
+  >;
 
-  grantRole: TypedContractMethod<[role: BytesLike, account: AddressLike], [void], 'nonpayable'>
+  grantRole: TypedContractMethod<
+    [role: BytesLike, account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-  hasRole: TypedContractMethod<[role: BytesLike, account: AddressLike], [boolean], 'view'>
+  hasRole: TypedContractMethod<
+    [role: BytesLike, account: AddressLike],
+    [boolean],
+    "view"
+  >;
 
-  'hideProposal(uint256,bool)': TypedContractMethod<
+  "hideProposal(uint256,bool)": TypedContractMethod<
     [proposalId_: BigNumberish, hide_: boolean],
     [void],
-    'nonpayable'
-  >
+    "nonpayable"
+  >;
 
-  'hideProposal(uint256)': TypedContractMethod<[proposalId_: BigNumberish], [void], 'nonpayable'>
+  "hideProposal(uint256)": TypedContractMethod<
+    [proposalId_: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
-  implementation: TypedContractMethod<[], [string], 'view'>
+  implementation: TypedContractMethod<[], [string], "view">;
 
-  isVoting: TypedContractMethod<[voting_: AddressLike], [boolean], 'view'>
+  isVoting: TypedContractMethod<[voting_: AddressLike], [boolean], "view">;
 
-  lastProposalId: TypedContractMethod<[], [bigint], 'view'>
+  lastProposalId: TypedContractMethod<[], [bigint], "view">;
 
-  minFundingAmount: TypedContractMethod<[], [bigint], 'view'>
+  minFundingAmount: TypedContractMethod<[], [bigint], "view">;
 
-  owner: TypedContractMethod<[], [string], 'view'>
+  owner: TypedContractMethod<[], [string], "view">;
 
-  proposalSMTImpl: TypedContractMethod<[], [string], 'view'>
+  proposalSMTImpl: TypedContractMethod<[], [string], "view">;
 
-  proxiableUUID: TypedContractMethod<[], [string], 'view'>
+  proxiableUUID: TypedContractMethod<[], [string], "view">;
 
-  removeVoting: TypedContractMethod<[votingName_: string], [void], 'nonpayable'>
+  removeVoting: TypedContractMethod<
+    [votingName_: string],
+    [void],
+    "nonpayable"
+  >;
 
-  renounceOwnership: TypedContractMethod<[], [void], 'nonpayable'>
+  renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
-  renounceRole: TypedContractMethod<[role: BytesLike, account: AddressLike], [void], 'nonpayable'>
+  renounceRole: TypedContractMethod<
+    [role: BytesLike, account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-  revokeRole: TypedContractMethod<[role: BytesLike, account: AddressLike], [void], 'nonpayable'>
+  revokeRole: TypedContractMethod<
+    [role: BytesLike, account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-  setMinFundingAmount: TypedContractMethod<[amount_: BigNumberish], [void], 'nonpayable'>
+  setMinFundingAmount: TypedContractMethod<
+    [amount_: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
-  supportsInterface: TypedContractMethod<[interfaceId: BytesLike], [boolean], 'view'>
+  supportsInterface: TypedContractMethod<
+    [interfaceId: BytesLike],
+    [boolean],
+    "view"
+  >;
 
-  transferOwnership: TypedContractMethod<[newOwner: AddressLike], [void], 'nonpayable'>
+  transferOwnership: TypedContractMethod<
+    [newOwner: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
-  upgradeTo: TypedContractMethod<[newImplementation: AddressLike], [void], 'nonpayable'>
+  upgradeTo: TypedContractMethod<
+    [newImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
   upgradeToAndCall: TypedContractMethod<
     [newImplementation: AddressLike, data: BytesLike],
     [void],
-    'payable'
-  >
+    "payable"
+  >;
 
   vote: TypedContractMethod<
-    [proposalId_: BigNumberish, userNullifier_: BigNumberish, vote_: BigNumberish[]],
+    [
+      proposalId_: BigNumberish,
+      userNullifier_: BigNumberish,
+      vote_: BigNumberish[]
+    ],
     [void],
-    'nonpayable'
-  >
+    "nonpayable"
+  >;
 
   withdrawFunds: TypedContractMethod<
     [recipient_: AddressLike, amount_: BigNumberish],
     [void],
-    'nonpayable'
-  >
+    "nonpayable"
+  >;
 
-  getFunction<T extends ContractMethod = ContractMethod>(key: string | FunctionFragment): T
+  getFunction<T extends ContractMethod = ContractMethod>(
+    key: string | FunctionFragment
+  ): T;
 
-  getFunction(nameOrSignature: 'CONTRACT_MANAGER_ROLE'): TypedContractMethod<[], [string], 'view'>
-  getFunction(nameOrSignature: 'DEFAULT_ADMIN_ROLE'): TypedContractMethod<[], [string], 'view'>
-  getFunction(nameOrSignature: 'FUNDS_MANAGER_ROLE'): TypedContractMethod<[], [string], 'view'>
   getFunction(
-    nameOrSignature: 'MAXIMUM_CHOICES_PER_OPTION',
-  ): TypedContractMethod<[], [bigint], 'view'>
-  getFunction(nameOrSignature: 'MAXIMUM_OPTIONS'): TypedContractMethod<[], [bigint], 'view'>
-  getFunction(nameOrSignature: 'PROPOSAL_MANAGER_ROLE'): TypedContractMethod<[], [string], 'view'>
+    nameOrSignature: "CONTRACT_MANAGER_ROLE"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: '__ProposalsState_init',
+    nameOrSignature: "DEFAULT_ADMIN_ROLE"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "FUNDS_MANAGER_ROLE"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "MAXIMUM_CHOICES_PER_OPTION"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "MAXIMUM_OPTIONS"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "PROPOSAL_MANAGER_ROLE"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "__ProposalsState_init"
   ): TypedContractMethod<
     [proposalSMTImpl_: AddressLike, minFundingAmount_: BigNumberish],
     [void],
-    'nonpayable'
-  >
+    "nonpayable"
+  >;
   getFunction(
-    nameOrSignature: 'addFundsToProposal',
-  ): TypedContractMethod<[proposalId_: BigNumberish], [void], 'payable'>
+    nameOrSignature: "addFundsToProposal"
+  ): TypedContractMethod<[proposalId_: BigNumberish], [void], "payable">;
   getFunction(
-    nameOrSignature: 'addVoting',
-  ): TypedContractMethod<[votingName_: string, votingAddress_: AddressLike], [void], 'nonpayable'>
-  getFunction(
-    nameOrSignature: 'changeProposalConfig',
+    nameOrSignature: "addVoting"
   ): TypedContractMethod<
-    [proposalId_: BigNumberish, newProposalConfig_: ProposalsState.ProposalConfigStruct],
+    [votingName_: string, votingAddress_: AddressLike],
     [void],
-    'nonpayable'
-  >
+    "nonpayable"
+  >;
   getFunction(
-    nameOrSignature: 'changeProposalDuration',
+    nameOrSignature: "changeProposalConfig"
+  ): TypedContractMethod<
+    [
+      proposalId_: BigNumberish,
+      newProposalConfig_: ProposalsState.ProposalConfigStruct
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "changeProposalDuration"
   ): TypedContractMethod<
     [proposalId_: BigNumberish, newDuration_: BigNumberish],
     [void],
-    'nonpayable'
-  >
+    "nonpayable"
+  >;
   getFunction(
-    nameOrSignature: 'createProposal',
-  ): TypedContractMethod<[proposalConfig_: ProposalsState.ProposalConfigStruct], [void], 'payable'>
+    nameOrSignature: "createProposal"
+  ): TypedContractMethod<
+    [proposalConfig_: ProposalsState.ProposalConfigStruct],
+    [void],
+    "payable"
+  >;
   getFunction(
-    nameOrSignature: 'getProposalConfig',
+    nameOrSignature: "getProposalConfig"
   ): TypedContractMethod<
     [proposalId_: BigNumberish],
     [ProposalsState.ProposalConfigStructOutput],
-    'view'
-  >
+    "view"
+  >;
   getFunction(
-    nameOrSignature: 'getProposalEventId',
-  ): TypedContractMethod<[proposalId_: BigNumberish], [bigint], 'view'>
+    nameOrSignature: "getProposalEventId"
+  ): TypedContractMethod<[proposalId_: BigNumberish], [bigint], "view">;
   getFunction(
-    nameOrSignature: 'getProposalInfo',
+    nameOrSignature: "getProposalInfo"
   ): TypedContractMethod<
     [proposalId_: BigNumberish],
     [ProposalsState.ProposalInfoStructOutput],
-    'view'
-  >
+    "view"
+  >;
   getFunction(
-    nameOrSignature: 'getProposalStatus',
-  ): TypedContractMethod<[proposalId_: BigNumberish], [bigint], 'view'>
+    nameOrSignature: "getProposalStatus"
+  ): TypedContractMethod<[proposalId_: BigNumberish], [bigint], "view">;
   getFunction(
-    nameOrSignature: 'getRoleAdmin',
-  ): TypedContractMethod<[role: BytesLike], [string], 'view'>
+    nameOrSignature: "getRoleAdmin"
+  ): TypedContractMethod<[role: BytesLike], [string], "view">;
   getFunction(
-    nameOrSignature: 'getVotingByKey',
-  ): TypedContractMethod<[key_: string], [string], 'view'>
+    nameOrSignature: "getVotingByKey"
+  ): TypedContractMethod<[key_: string], [string], "view">;
   getFunction(
-    nameOrSignature: 'getVotings',
+    nameOrSignature: "getVotings"
   ): TypedContractMethod<
     [],
     [[string[], string[]] & { keys_: string[]; values_: string[] }],
-    'view'
-  >
+    "view"
+  >;
   getFunction(
-    nameOrSignature: 'grantRole',
-  ): TypedContractMethod<[role: BytesLike, account: AddressLike], [void], 'nonpayable'>
-  getFunction(
-    nameOrSignature: 'hasRole',
-  ): TypedContractMethod<[role: BytesLike, account: AddressLike], [boolean], 'view'>
-  getFunction(
-    nameOrSignature: 'hideProposal(uint256,bool)',
-  ): TypedContractMethod<[proposalId_: BigNumberish, hide_: boolean], [void], 'nonpayable'>
-  getFunction(
-    nameOrSignature: 'hideProposal(uint256)',
-  ): TypedContractMethod<[proposalId_: BigNumberish], [void], 'nonpayable'>
-  getFunction(nameOrSignature: 'implementation'): TypedContractMethod<[], [string], 'view'>
-  getFunction(
-    nameOrSignature: 'isVoting',
-  ): TypedContractMethod<[voting_: AddressLike], [boolean], 'view'>
-  getFunction(nameOrSignature: 'lastProposalId'): TypedContractMethod<[], [bigint], 'view'>
-  getFunction(nameOrSignature: 'minFundingAmount'): TypedContractMethod<[], [bigint], 'view'>
-  getFunction(nameOrSignature: 'owner'): TypedContractMethod<[], [string], 'view'>
-  getFunction(nameOrSignature: 'proposalSMTImpl'): TypedContractMethod<[], [string], 'view'>
-  getFunction(nameOrSignature: 'proxiableUUID'): TypedContractMethod<[], [string], 'view'>
-  getFunction(
-    nameOrSignature: 'removeVoting',
-  ): TypedContractMethod<[votingName_: string], [void], 'nonpayable'>
-  getFunction(nameOrSignature: 'renounceOwnership'): TypedContractMethod<[], [void], 'nonpayable'>
-  getFunction(
-    nameOrSignature: 'renounceRole',
-  ): TypedContractMethod<[role: BytesLike, account: AddressLike], [void], 'nonpayable'>
-  getFunction(
-    nameOrSignature: 'revokeRole',
-  ): TypedContractMethod<[role: BytesLike, account: AddressLike], [void], 'nonpayable'>
-  getFunction(
-    nameOrSignature: 'setMinFundingAmount',
-  ): TypedContractMethod<[amount_: BigNumberish], [void], 'nonpayable'>
-  getFunction(
-    nameOrSignature: 'supportsInterface',
-  ): TypedContractMethod<[interfaceId: BytesLike], [boolean], 'view'>
-  getFunction(
-    nameOrSignature: 'transferOwnership',
-  ): TypedContractMethod<[newOwner: AddressLike], [void], 'nonpayable'>
-  getFunction(
-    nameOrSignature: 'upgradeTo',
-  ): TypedContractMethod<[newImplementation: AddressLike], [void], 'nonpayable'>
-  getFunction(
-    nameOrSignature: 'upgradeToAndCall',
-  ): TypedContractMethod<[newImplementation: AddressLike, data: BytesLike], [void], 'payable'>
-  getFunction(
-    nameOrSignature: 'vote',
+    nameOrSignature: "grantRole"
   ): TypedContractMethod<
-    [proposalId_: BigNumberish, userNullifier_: BigNumberish, vote_: BigNumberish[]],
+    [role: BytesLike, account: AddressLike],
     [void],
-    'nonpayable'
-  >
+    "nonpayable"
+  >;
   getFunction(
-    nameOrSignature: 'withdrawFunds',
-  ): TypedContractMethod<[recipient_: AddressLike, amount_: BigNumberish], [void], 'nonpayable'>
+    nameOrSignature: "hasRole"
+  ): TypedContractMethod<
+    [role: BytesLike, account: AddressLike],
+    [boolean],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "hideProposal(uint256,bool)"
+  ): TypedContractMethod<
+    [proposalId_: BigNumberish, hide_: boolean],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "hideProposal(uint256)"
+  ): TypedContractMethod<[proposalId_: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "implementation"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "isVoting"
+  ): TypedContractMethod<[voting_: AddressLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "lastProposalId"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "minFundingAmount"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "owner"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "proposalSMTImpl"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "proxiableUUID"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "removeVoting"
+  ): TypedContractMethod<[votingName_: string], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "renounceOwnership"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "renounceRole"
+  ): TypedContractMethod<
+    [role: BytesLike, account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "revokeRole"
+  ): TypedContractMethod<
+    [role: BytesLike, account: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setMinFundingAmount"
+  ): TypedContractMethod<[amount_: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "supportsInterface"
+  ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "transferOwnership"
+  ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "upgradeTo"
+  ): TypedContractMethod<
+    [newImplementation: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "upgradeToAndCall"
+  ): TypedContractMethod<
+    [newImplementation: AddressLike, data: BytesLike],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "vote"
+  ): TypedContractMethod<
+    [
+      proposalId_: BigNumberish,
+      userNullifier_: BigNumberish,
+      vote_: BigNumberish[]
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "withdrawFunds"
+  ): TypedContractMethod<
+    [recipient_: AddressLike, amount_: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
   getEvent(
-    key: 'AdminChanged',
+    key: "AdminChanged"
   ): TypedContractEvent<
     AdminChangedEvent.InputTuple,
     AdminChangedEvent.OutputTuple,
     AdminChangedEvent.OutputObject
-  >
+  >;
   getEvent(
-    key: 'BeaconUpgraded',
+    key: "BeaconUpgraded"
   ): TypedContractEvent<
     BeaconUpgradedEvent.InputTuple,
     BeaconUpgradedEvent.OutputTuple,
     BeaconUpgradedEvent.OutputObject
-  >
+  >;
   getEvent(
-    key: 'Initialized',
+    key: "Initialized"
   ): TypedContractEvent<
     InitializedEvent.InputTuple,
     InitializedEvent.OutputTuple,
     InitializedEvent.OutputObject
-  >
+  >;
   getEvent(
-    key: 'MinFundingAmountSet',
+    key: "MinFundingAmountSet"
   ): TypedContractEvent<
     MinFundingAmountSetEvent.InputTuple,
     MinFundingAmountSetEvent.OutputTuple,
     MinFundingAmountSetEvent.OutputObject
-  >
+  >;
   getEvent(
-    key: 'OwnershipTransferred',
+    key: "OwnershipTransferred"
   ): TypedContractEvent<
     OwnershipTransferredEvent.InputTuple,
     OwnershipTransferredEvent.OutputTuple,
     OwnershipTransferredEvent.OutputObject
-  >
+  >;
   getEvent(
-    key: 'ProposalConfigChanged',
+    key: "ProposalConfigChanged"
   ): TypedContractEvent<
     ProposalConfigChangedEvent.InputTuple,
     ProposalConfigChangedEvent.OutputTuple,
     ProposalConfigChangedEvent.OutputObject
-  >
+  >;
   getEvent(
-    key: 'ProposalCreated',
+    key: "ProposalCreated"
   ): TypedContractEvent<
     ProposalCreatedEvent.InputTuple,
     ProposalCreatedEvent.OutputTuple,
     ProposalCreatedEvent.OutputObject
-  >
+  >;
   getEvent(
-    key: 'ProposalFunded',
+    key: "ProposalFunded"
   ): TypedContractEvent<
     ProposalFundedEvent.InputTuple,
     ProposalFundedEvent.OutputTuple,
     ProposalFundedEvent.OutputObject
-  >
+  >;
   getEvent(
-    key: 'ProposalHidden',
+    key: "ProposalHidden"
   ): TypedContractEvent<
     ProposalHiddenEvent.InputTuple,
     ProposalHiddenEvent.OutputTuple,
     ProposalHiddenEvent.OutputObject
-  >
+  >;
   getEvent(
-    key: 'RoleAdminChanged',
+    key: "RoleAdminChanged"
   ): TypedContractEvent<
     RoleAdminChangedEvent.InputTuple,
     RoleAdminChangedEvent.OutputTuple,
     RoleAdminChangedEvent.OutputObject
-  >
+  >;
   getEvent(
-    key: 'RoleGranted',
+    key: "RoleGranted"
   ): TypedContractEvent<
     RoleGrantedEvent.InputTuple,
     RoleGrantedEvent.OutputTuple,
     RoleGrantedEvent.OutputObject
-  >
+  >;
   getEvent(
-    key: 'RoleRevoked',
+    key: "RoleRevoked"
   ): TypedContractEvent<
     RoleRevokedEvent.InputTuple,
     RoleRevokedEvent.OutputTuple,
     RoleRevokedEvent.OutputObject
-  >
+  >;
   getEvent(
-    key: 'Upgraded',
+    key: "Upgraded"
   ): TypedContractEvent<
     UpgradedEvent.InputTuple,
     UpgradedEvent.OutputTuple,
     UpgradedEvent.OutputObject
-  >
+  >;
   getEvent(
-    key: 'VoteCast',
+    key: "VoteCast"
   ): TypedContractEvent<
     VoteCastEvent.InputTuple,
     VoteCastEvent.OutputTuple,
     VoteCastEvent.OutputObject
-  >
+  >;
 
   filters: {
-    'AdminChanged(address,address)': TypedContractEvent<
+    "AdminChanged(address,address)": TypedContractEvent<
       AdminChangedEvent.InputTuple,
       AdminChangedEvent.OutputTuple,
       AdminChangedEvent.OutputObject
-    >
+    >;
     AdminChanged: TypedContractEvent<
       AdminChangedEvent.InputTuple,
       AdminChangedEvent.OutputTuple,
       AdminChangedEvent.OutputObject
-    >
+    >;
 
-    'BeaconUpgraded(address)': TypedContractEvent<
+    "BeaconUpgraded(address)": TypedContractEvent<
       BeaconUpgradedEvent.InputTuple,
       BeaconUpgradedEvent.OutputTuple,
       BeaconUpgradedEvent.OutputObject
-    >
+    >;
     BeaconUpgraded: TypedContractEvent<
       BeaconUpgradedEvent.InputTuple,
       BeaconUpgradedEvent.OutputTuple,
       BeaconUpgradedEvent.OutputObject
-    >
+    >;
 
-    'Initialized(uint8)': TypedContractEvent<
+    "Initialized(uint8)": TypedContractEvent<
       InitializedEvent.InputTuple,
       InitializedEvent.OutputTuple,
       InitializedEvent.OutputObject
-    >
+    >;
     Initialized: TypedContractEvent<
       InitializedEvent.InputTuple,
       InitializedEvent.OutputTuple,
       InitializedEvent.OutputObject
-    >
+    >;
 
-    'MinFundingAmountSet(uint256)': TypedContractEvent<
+    "MinFundingAmountSet(uint256)": TypedContractEvent<
       MinFundingAmountSetEvent.InputTuple,
       MinFundingAmountSetEvent.OutputTuple,
       MinFundingAmountSetEvent.OutputObject
-    >
+    >;
     MinFundingAmountSet: TypedContractEvent<
       MinFundingAmountSetEvent.InputTuple,
       MinFundingAmountSetEvent.OutputTuple,
       MinFundingAmountSetEvent.OutputObject
-    >
+    >;
 
-    'OwnershipTransferred(address,address)': TypedContractEvent<
+    "OwnershipTransferred(address,address)": TypedContractEvent<
       OwnershipTransferredEvent.InputTuple,
       OwnershipTransferredEvent.OutputTuple,
       OwnershipTransferredEvent.OutputObject
-    >
+    >;
     OwnershipTransferred: TypedContractEvent<
       OwnershipTransferredEvent.InputTuple,
       OwnershipTransferredEvent.OutputTuple,
       OwnershipTransferredEvent.OutputObject
-    >
+    >;
 
-    'ProposalConfigChanged(uint256)': TypedContractEvent<
+    "ProposalConfigChanged(uint256)": TypedContractEvent<
       ProposalConfigChangedEvent.InputTuple,
       ProposalConfigChangedEvent.OutputTuple,
       ProposalConfigChangedEvent.OutputObject
-    >
+    >;
     ProposalConfigChanged: TypedContractEvent<
       ProposalConfigChangedEvent.InputTuple,
       ProposalConfigChangedEvent.OutputTuple,
       ProposalConfigChangedEvent.OutputObject
-    >
+    >;
 
-    'ProposalCreated(uint256,address,uint256)': TypedContractEvent<
+    "ProposalCreated(uint256,address,uint256)": TypedContractEvent<
       ProposalCreatedEvent.InputTuple,
       ProposalCreatedEvent.OutputTuple,
       ProposalCreatedEvent.OutputObject
-    >
+    >;
     ProposalCreated: TypedContractEvent<
       ProposalCreatedEvent.InputTuple,
       ProposalCreatedEvent.OutputTuple,
       ProposalCreatedEvent.OutputObject
-    >
+    >;
 
-    'ProposalFunded(uint256,uint256)': TypedContractEvent<
+    "ProposalFunded(uint256,uint256)": TypedContractEvent<
       ProposalFundedEvent.InputTuple,
       ProposalFundedEvent.OutputTuple,
       ProposalFundedEvent.OutputObject
-    >
+    >;
     ProposalFunded: TypedContractEvent<
       ProposalFundedEvent.InputTuple,
       ProposalFundedEvent.OutputTuple,
       ProposalFundedEvent.OutputObject
-    >
+    >;
 
-    'ProposalHidden(uint256,bool)': TypedContractEvent<
+    "ProposalHidden(uint256,bool)": TypedContractEvent<
       ProposalHiddenEvent.InputTuple,
       ProposalHiddenEvent.OutputTuple,
       ProposalHiddenEvent.OutputObject
-    >
+    >;
     ProposalHidden: TypedContractEvent<
       ProposalHiddenEvent.InputTuple,
       ProposalHiddenEvent.OutputTuple,
       ProposalHiddenEvent.OutputObject
-    >
+    >;
 
-    'RoleAdminChanged(bytes32,bytes32,bytes32)': TypedContractEvent<
+    "RoleAdminChanged(bytes32,bytes32,bytes32)": TypedContractEvent<
       RoleAdminChangedEvent.InputTuple,
       RoleAdminChangedEvent.OutputTuple,
       RoleAdminChangedEvent.OutputObject
-    >
+    >;
     RoleAdminChanged: TypedContractEvent<
       RoleAdminChangedEvent.InputTuple,
       RoleAdminChangedEvent.OutputTuple,
       RoleAdminChangedEvent.OutputObject
-    >
+    >;
 
-    'RoleGranted(bytes32,address,address)': TypedContractEvent<
+    "RoleGranted(bytes32,address,address)": TypedContractEvent<
       RoleGrantedEvent.InputTuple,
       RoleGrantedEvent.OutputTuple,
       RoleGrantedEvent.OutputObject
-    >
+    >;
     RoleGranted: TypedContractEvent<
       RoleGrantedEvent.InputTuple,
       RoleGrantedEvent.OutputTuple,
       RoleGrantedEvent.OutputObject
-    >
+    >;
 
-    'RoleRevoked(bytes32,address,address)': TypedContractEvent<
+    "RoleRevoked(bytes32,address,address)": TypedContractEvent<
       RoleRevokedEvent.InputTuple,
       RoleRevokedEvent.OutputTuple,
       RoleRevokedEvent.OutputObject
-    >
+    >;
     RoleRevoked: TypedContractEvent<
       RoleRevokedEvent.InputTuple,
       RoleRevokedEvent.OutputTuple,
       RoleRevokedEvent.OutputObject
-    >
+    >;
 
-    'Upgraded(address)': TypedContractEvent<
+    "Upgraded(address)": TypedContractEvent<
       UpgradedEvent.InputTuple,
       UpgradedEvent.OutputTuple,
       UpgradedEvent.OutputObject
-    >
+    >;
     Upgraded: TypedContractEvent<
       UpgradedEvent.InputTuple,
       UpgradedEvent.OutputTuple,
       UpgradedEvent.OutputObject
-    >
+    >;
 
-    'VoteCast(uint256,uint256,uint256[])': TypedContractEvent<
+    "VoteCast(uint256,uint256,uint256[])": TypedContractEvent<
       VoteCastEvent.InputTuple,
       VoteCastEvent.OutputTuple,
       VoteCastEvent.OutputObject
-    >
+    >;
     VoteCast: TypedContractEvent<
       VoteCastEvent.InputTuple,
       VoteCastEvent.OutputTuple,
       VoteCastEvent.OutputObject
-    >
-  }
+    >;
+  };
 }

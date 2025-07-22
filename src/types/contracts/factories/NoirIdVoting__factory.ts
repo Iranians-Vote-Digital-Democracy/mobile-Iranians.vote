@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 import { Contract, Interface, type ContractRunner } from "ethers";
-import type { BaseVoting, BaseVotingInterface } from "../BaseVoting";
+import type { NoirIdVoting, NoirIdVotingInterface } from "../NoirIdVoting";
 
 const _abi = [
   {
@@ -165,6 +165,42 @@ const _abi = [
     type: "event",
   },
   {
+    inputs: [],
+    name: "IDENTITY_LIMIT",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "registrationSMT_",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "proposalsState_",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "votingVerifier_",
+        type: "address",
+      },
+    ],
+    name: "__NoirIDVoting_init",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "bytes32",
@@ -232,7 +268,7 @@ const _abi = [
     outputs: [
       {
         internalType: "uint256",
-        name: "dataPointer_",
+        name: "",
         type: "uint256",
       },
     ],
@@ -443,12 +479,15 @@ const _abi = [
   },
 ] as const;
 
-export class BaseVoting__factory {
+export class NoirIdVoting__factory {
   static readonly abi = _abi;
-  static createInterface(): BaseVotingInterface {
-    return new Interface(_abi) as BaseVotingInterface;
+  static createInterface(): NoirIdVotingInterface {
+    return new Interface(_abi) as NoirIdVotingInterface;
   }
-  static connect(address: string, runner?: ContractRunner | null): BaseVoting {
-    return new Contract(address, _abi, runner) as unknown as BaseVoting;
+  static connect(
+    address: string,
+    runner?: ContractRunner | null
+  ): NoirIdVoting {
+    return new Contract(address, _abi, runner) as unknown as NoirIdVoting;
   }
 }
