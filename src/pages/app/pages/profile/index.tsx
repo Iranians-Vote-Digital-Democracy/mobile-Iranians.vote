@@ -44,7 +44,7 @@ function OptionButton({
     <Pressable onPress={onPress}>
       <View
         className={cn(
-          'border- w-full rounded-[20px] border px-5 py-4',
+          'w-full rounded-[20px] border-[20px] px-5 py-4',
           isSelected ? 'border-textPrimary bg-componentPrimary' : 'border-componentPrimary',
         )}
       >
@@ -144,7 +144,7 @@ function ProfileCard() {
         <BottomSheetView className='w-full gap-3'>
           <UiCard>
             <Text className='typography-body2 text-textPrimary'>Your private key:</Text>
-            <UiCard className='mt-2 bg-backgroundPrimary'>
+            <UiCard className='mt-2 rounded-[20px] bg-backgroundPrimary'>
               <Text className='typography-body3 text-textPrimary'>{privateKey}</Text>
             </UiCard>
 
