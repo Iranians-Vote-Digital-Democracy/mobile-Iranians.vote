@@ -1,8 +1,11 @@
+import { BottomSheetView } from '@gorhom/bottom-sheet'
+import { version } from 'package.json'
 import { useCallback, useMemo } from 'react'
-import { Button, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
+import { Pressable } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { ErrorHandler, useSelectedLanguage } from '@/core'
+import { useSelectedLanguage } from '@/core'
 import { type Language, resources } from '@/core/localization/resources'
 import { useCopyToClipboard } from '@/hooks'
 import type { AppTabScreenProps } from '@/route-types'
@@ -14,7 +17,14 @@ import {
   walletStore,
 } from '@/store'
 import { cn, useAppPaddings, useBottomBarOffset, useSelectedTheme } from '@/theme'
-import { UiButton, UiCard, UiScreenScrollable, UiSwitcher } from '@/ui'
+import {
+  UiBottomSheet,
+  UiButton,
+  UiCard,
+  UiScreenScrollable,
+  UiSwitcher,
+  useUiBottomSheet,
+} from '@/ui'
 
 import AppContainer from '../../components/AppContainer'
 
@@ -35,26 +45,25 @@ export default function ProfileScreen({}: AppTabScreenProps<'Profile'>) {
         }}
         className='gap-3'
       >
-        <View className='flex flex-1 flex-col gap-4'>
-          <WalletCard />
-          <LangCard />
-          <ThemeCard />
-          <LocalAuthMethodCard />
+        <View className='flex flex-1 flex-col justify-center gap-4'>
+          <ProfileCard />
+          <SettingsCard />
           <LogoutCard />
-          <TestsCard />
+          <AppVersionCard />
         </View>
       </UiScreenScrollable>
     </AppContainer>
   )
 }
 
-function WalletCard() {
+function ProfileCard() {
   const privateKey = walletStore.useWalletStore(state => state.privateKey)
   const { isCopied, copy } = useCopyToClipboard()
 
   return (
     <UiCard>
-      <UiCard className='bg-backgroundPrimary'>
+      <Text className='typography-body2 ms-3 text-textPrimary'>Your private key:</Text>
+      <UiCard className='mt-2 bg-backgroundPrimary'>
         <Text className='typography-body3 text-textPrimary'>{privateKey}</Text>
       </UiCard>
 
@@ -74,39 +83,98 @@ function WalletCard() {
 function LangCard() {
   // TODO: reload app after change language
   const { language, setLanguage } = useSelectedLanguage()
+  const languageBottomSheet = useUiBottomSheet()
+  const insets = useSafeAreaInsets()
+  const appPaddings = useAppPaddings()
 
   return (
-    <UiCard className={cn('flex flex-col items-center gap-4')}>
-      <Text className={cn('text-textPrimary')}>current lang: {language}</Text>
-
-      <View className={cn('flex flex-row gap-2')}>
-        {Object.keys(resources).map(el => (
-          <Button
-            key={el}
-            title={el}
-            onPress={() => {
-              setLanguage(el as Language)
-            }}
-          />
-        ))}
+    <>
+      <View className='flex w-full flex-col gap-4'>
+        <UiButton title='Language' onPress={languageBottomSheet.present} />
       </View>
-    </UiCard>
+      <UiBottomSheet
+        title={`Current language: ${language}`}
+        ref={languageBottomSheet.ref}
+        enableDynamicSizing={true}
+      >
+        <BottomSheetView
+          className='mt-3 w-full gap-3' // <-- Added gap-3 here
+          style={{
+            paddingBottom: insets.bottom + 20, // <-- Added +20 padding
+            paddingLeft: appPaddings.left,
+            paddingRight: appPaddings.right,
+          }}
+        >
+          {Object.keys(resources).map(el => (
+            <OptionButton
+              key={el}
+              title={el}
+              isSelected={language === el}
+              onPress={() => {
+                setLanguage(el as Language)
+                languageBottomSheet.dismiss()
+              }}
+            />
+          ))}
+        </BottomSheetView>
+      </UiBottomSheet>
+    </>
   )
 }
 
 function ThemeCard() {
   const { selectedTheme, setSelectedTheme } = useSelectedTheme()
+  const themeBottomSheet = useUiBottomSheet()
+  const appPaddings = useAppPaddings()
+  const insets = useSafeAreaInsets()
 
   return (
-    <UiCard className={cn('flex items-center gap-4')}>
-      <Text className={cn('text-textPrimary')}>{selectedTheme}</Text>
-
-      <View className={cn('flex flex-row gap-4')}>
-        <Button title='Light' onPress={() => setSelectedTheme('light')} />
-        <Button title='Dark' onPress={() => setSelectedTheme('dark')} />
-        <Button title='System' onPress={() => setSelectedTheme('system')} />
+    <>
+      <View className='flex w-full flex-col gap-4'>
+        <UiButton title='Theme' onPress={themeBottomSheet.present} />
       </View>
-    </UiCard>
+      <UiBottomSheet
+        title={`Current theme: ${selectedTheme}`}
+        ref={themeBottomSheet.ref}
+        enableDynamicSizing={true}
+      >
+        <BottomSheetView
+          className='mt-3 w-full gap-3' // <-- Added gap-3 here
+          style={{
+            paddingBottom: insets.bottom + 20, // <-- Added +20 padding
+            paddingLeft: appPaddings.left,
+            paddingRight: appPaddings.right,
+          }}
+        >
+          <View className={cn('flex w-full flex-col gap-2')}>
+            <OptionButton
+              title='Light'
+              isSelected={selectedTheme === 'light'}
+              onPress={() => {
+                setSelectedTheme('light')
+                themeBottomSheet.dismiss()
+              }}
+            />
+            <OptionButton
+              title='Dark'
+              isSelected={selectedTheme === 'dark'}
+              onPress={() => {
+                setSelectedTheme('dark')
+                themeBottomSheet.dismiss()
+              }}
+            />
+            <OptionButton
+              title='System'
+              isSelected={selectedTheme === 'system'}
+              onPress={() => {
+                setSelectedTheme('system')
+                themeBottomSheet.dismiss()
+              }}
+            />
+          </View>
+        </BottomSheetView>
+      </UiBottomSheet>
+    </>
   )
 }
 
@@ -115,9 +183,11 @@ function LocalAuthMethodCard() {
   const biometricStatus = localAuthStore.useLocalAuthStore(state => state.biometricStatus)
   const disablePasscode = localAuthStore.useLocalAuthStore(state => state.disablePasscode)
   const disableBiometric = localAuthStore.useLocalAuthStore(state => state.disableBiometrics)
-
+  const authMethodBottomSheet = useUiBottomSheet()
   const setPasscodeStatus = localAuthStore.useLocalAuthStore(state => state.setPasscodeStatus)
   const setBiometricsStatus = localAuthStore.useLocalAuthStore(state => state.setBiometricsStatus)
+  const insets = useSafeAreaInsets()
+  const appPaddings = useAppPaddings()
 
   const isPasscodeEnabled = useMemo(
     () => passcodeStatus === PasscodeStatuses.Enabled,
@@ -156,22 +226,43 @@ function LocalAuthMethodCard() {
   }, [biometricStatus, disableBiometric, setBiometricsStatus])
 
   return (
-    <UiCard className='flex flex-col gap-4'>
-      <Text className='typography-subtitle3 mb-4 text-center text-textPrimary'>Auth methods</Text>
-      <UiSwitcher
-        label='Passcode'
-        value={isPasscodeEnabled}
-        onValueChange={handleChangePasscodeStatus}
-      />
-      {isBiometricsEnrolled && (
-        <UiSwitcher
-          label='Biometric'
-          value={isBiometricsEnabled}
-          onValueChange={handleChangeBiometricStatus}
-          disabled={!isPasscodeEnabled}
-        />
-      )}
-    </UiCard>
+    <>
+      <View className='flex w-full flex-col gap-4'>
+        <UiButton title='Auth methods' onPress={authMethodBottomSheet.present} />
+      </View>
+      <UiBottomSheet title='Auth Method' ref={authMethodBottomSheet.ref}>
+        <BottomSheetView
+          style={{
+            paddingBottom: insets.bottom + 20,
+            paddingLeft: appPaddings.left,
+            paddingRight: appPaddings.right,
+          }}
+          className='gap-3'
+        >
+          <UiSwitcher
+            label='Passcode'
+            value={isPasscodeEnabled}
+            onValueChange={handleChangePasscodeStatus}
+            style={{
+              transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
+              marginLeft: 230,
+            }}
+          />
+          {isBiometricsEnrolled && (
+            <UiSwitcher
+              label='Biometric'
+              value={isBiometricsEnabled}
+              onValueChange={handleChangeBiometricStatus}
+              disabled={!isPasscodeEnabled}
+              style={{
+                transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
+                marginLeft: 230,
+              }}
+            />
+          )}
+        </BottomSheetView>
+      </UiBottomSheet>
+    </>
   )
 }
 
@@ -192,23 +283,43 @@ function LogoutCard() {
   )
 }
 
-function TestsCard() {
-  const pk = walletStore.useWalletStore(state => state.privateKey)
-  const genAuthProof = authStore.useAuthProof({ byFilePath: true })
-
-  const testAuthProof = async () => {
-    try {
-      const zkProof = await genAuthProof(pk)
-      /* eslint-disable-next-line no-console */
-      console.log(zkProof)
-    } catch (error) {
-      ErrorHandler.process(error)
-    }
-  }
-
+function AppVersionCard() {
   return (
-    <UiCard>
-      <UiButton title='testAuthProof' onPress={testAuthProof} />
+    <UiCard className='items-center'>
+      <Text className='typography-body3 text-textSecondary'>App Version: {version} </Text>
     </UiCard>
+  )
+}
+
+function SettingsCard() {
+  return (
+    <UiCard className='items-center gap-3'>
+      <Text className='typography-body2 text-textPrimary'>Settings</Text>
+      <LocalAuthMethodCard />
+      <LangCard />
+      <ThemeCard />
+    </UiCard>
+  )
+}
+
+function OptionButton({
+  title,
+  isSelected,
+  onPress,
+}: {
+  title: string
+  isSelected: boolean
+  onPress: () => void
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      className={cn(
+        'rounded-lg border px-5 py-4',
+        isSelected ? 'border-textPrimary bg-componentPrimary' : 'border-componentPrimary',
+      )}
+    >
+      <Text className='typography-subtitle4 text-center text-textPrimary'>{title}</Text>
+    </Pressable>
   )
 }
