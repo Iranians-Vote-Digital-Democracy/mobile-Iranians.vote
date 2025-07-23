@@ -3,8 +3,7 @@ import { createAvatar } from '@dicebear/core'
 import { BottomSheetView } from '@gorhom/bottom-sheet'
 import { version } from 'package.json'
 import { ReactNode, useCallback, useMemo } from 'react'
-import { Text, View } from 'react-native'
-import { Pressable } from 'react-native-gesture-handler'
+import { Pressable, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SvgXml } from 'react-native-svg'
 
@@ -31,6 +30,60 @@ import {
 } from '@/ui'
 
 import AppContainer from '../../components/AppContainer'
+
+function OptionButton({
+  title,
+  isSelected,
+  onPress,
+}: {
+  title: string
+  isSelected: boolean
+  onPress: () => void
+}) {
+  return (
+    <Pressable onPress={onPress}>
+      <View
+        className={cn(
+          'border- w-full rounded-[20px] border px-5 py-4',
+          isSelected ? 'border-textPrimary bg-componentPrimary' : 'border-componentPrimary',
+        )}
+      >
+        <Text className='typography-subtitle4 text-center text-textPrimary'>{title}</Text>
+      </View>
+    </Pressable>
+  )
+}
+
+function ProfileButton({
+  title,
+  icon,
+  selectedVariant,
+  onPress,
+}: {
+  title: string
+  icon?: ReactNode
+  selectedVariant?: string
+  onPress: () => void
+}) {
+  return (
+    <Pressable onPress={onPress}>
+      <View className={cn('w-full flex-row items-center justify-between rounded-[20px] px-5 py-4')}>
+        <View className='flex-row items-center gap-4'>
+          {icon}
+          <Text className='typography-subtitle4 text-textPrimary'>{title}</Text>
+        </View>
+
+        <View className='flex-row items-center gap-2'>
+          {selectedVariant && (
+            <Text className='typography-body2 text-textSecondary'>{selectedVariant}</Text>
+          )}
+
+          <UiIcon customIcon='caretRightIcon' className='text-textSecondary' size={20} />
+        </View>
+      </View>
+    </Pressable>
+  )
+}
 
 // eslint-disable-next-line no-empty-pattern
 export default function ProfileScreen({}: AppTabScreenProps<'Profile'>) {
@@ -297,7 +350,7 @@ function LocalAuthMethodCard() {
           }}
           className='gap-6'
         >
-          <View className='w-full flex-row gap-2 rounded-lg border border-componentPrimary px-2 py-4'>
+          <View className='w-full flex-row gap-2 rounded-[20px] border border-componentPrimary px-2 py-4'>
             <UiIcon className='color-textPrimary' customIcon='passwordIcon' />
             <Text className='typography-body2 text-textPrimary'>Passcode</Text>
             <UiSwitcher
@@ -311,7 +364,7 @@ function LocalAuthMethodCard() {
           </View>
 
           {isBiometricsEnrolled && (
-            <View className='w-full flex-row gap-2 rounded-lg border border-componentPrimary px-2 py-4'>
+            <View className='w-full flex-row gap-2 rounded-[20px] border border-componentPrimary px-2 py-4'>
               <UiIcon
                 className={!isPasscodeEnabled ? 'color-textSecondary' : 'color-textPrimary'}
                 customIcon='fingerprintIcon'
@@ -374,59 +427,5 @@ function SettingsCard() {
       <LangCard />
       <ThemeCard />
     </UiCard>
-  )
-}
-
-function OptionButton({
-  title,
-  isSelected,
-  onPress,
-}: {
-  title: string
-  isSelected: boolean
-  onPress: () => void
-}) {
-  return (
-    <Pressable onPress={onPress}>
-      <View
-        className={cn(
-          'w-full rounded-lg border px-5 py-4',
-          isSelected ? 'border-textPrimary bg-componentPrimary' : 'border-componentPrimary',
-        )}
-      >
-        <Text className='typography-subtitle4 text-center text-textPrimary'>{title}</Text>
-      </View>
-    </Pressable>
-  )
-}
-
-function ProfileButton({
-  title,
-  icon,
-  selectedVariant,
-  onPress,
-}: {
-  title: string
-  icon?: ReactNode
-  selectedVariant?: string
-  onPress: () => void
-}) {
-  return (
-    <Pressable onPress={onPress}>
-      <View className={cn('w-full flex-row items-center justify-between px-5 py-4')}>
-        <View className='flex-row items-center gap-4'>
-          {icon}
-          <Text className='typography-subtitle4 text-textPrimary'>{title}</Text>
-        </View>
-
-        <View className='flex-row items-center gap-2'>
-          {selectedVariant && (
-            <Text className='typography-body2 text-textSecondary'>{selectedVariant}</Text>
-          )}
-
-          <UiIcon customIcon='caretRightIcon' className='text-textSecondary' size={20} />
-        </View>
-      </View>
-    </Pressable>
   )
 }
