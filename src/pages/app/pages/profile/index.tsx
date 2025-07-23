@@ -85,7 +85,8 @@ function ProfileCard() {
         title='Profile'
         detached={true}
         ref={bottomSheet.ref}
-        enableDynamicSizing={true}
+        enableDynamicSizing={false}
+        snapPoints={['40%']}
       >
         <BottomSheetView className='w-full gap-3'>
           <UiCard>
@@ -131,8 +132,9 @@ function LangCard() {
       <UiBottomSheet
         title={`Current language: ${language}`}
         ref={languageBottomSheet.ref}
-        enableDynamicSizing={true}
         detached={true}
+        enableDynamicSizing={false}
+        snapPoints={['30%']}
       >
         <BottomSheetView
           className='mt-3 w-full gap-2'
@@ -179,8 +181,9 @@ function ThemeCard() {
       <UiBottomSheet
         title={`Current theme: ${selectedTheme}`}
         ref={themeBottomSheet.ref}
-        enableDynamicSizing={true}
         detached={true}
+        enableDynamicSizing={false}
+        snapPoints={['30%']}
       >
         <BottomSheetView
           className='mt-3 gap-3'
@@ -278,7 +281,13 @@ function LocalAuthMethodCard() {
           icon={<UiIcon customIcon='shieldCheckIcon' className='text-textPrimary' size={24} />}
         />
       </View>
-      <UiBottomSheet detached={true} title='Auth Method' ref={authMethodBottomSheet.ref}>
+      <UiBottomSheet
+        detached={true}
+        title='Auth Method'
+        ref={authMethodBottomSheet.ref}
+        enableDynamicSizing={false}
+        snapPoints={['30%']}
+      >
         <BottomSheetView
           style={{
             paddingBottom: insets.bottom + 20,
@@ -286,28 +295,45 @@ function LocalAuthMethodCard() {
             paddingRight: appPaddings.right,
             paddingTop: 20,
           }}
-          className='gap-8'
+          className='gap-6'
         >
-          <UiSwitcher
-            label='Passcode'
-            value={isPasscodeEnabled}
-            onValueChange={handleChangePasscodeStatus}
-            style={{
-              transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
-              marginLeft: 200,
-            }}
-          />
-          {isBiometricsEnrolled && (
+          <View className='w-full flex-row gap-2 rounded-lg border border-componentPrimary px-2 py-4'>
+            <UiIcon className='color-textPrimary' customIcon='passwordIcon' />
+            <Text className='typography-body2 text-textPrimary'>Passcode</Text>
             <UiSwitcher
-              label='Biometric'
-              value={isBiometricsEnabled}
-              onValueChange={handleChangeBiometricStatus}
-              disabled={!isPasscodeEnabled}
+              value={isPasscodeEnabled}
+              onValueChange={handleChangePasscodeStatus}
               style={{
                 transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
-                marginLeft: 200,
+                marginLeft: 150,
               }}
             />
+          </View>
+
+          {isBiometricsEnrolled && (
+            <View className='w-full flex-row gap-2 rounded-lg border border-componentPrimary px-2 py-4'>
+              <UiIcon
+                className={!isPasscodeEnabled ? 'color-textSecondary' : 'color-textPrimary'}
+                customIcon='fingerprintIcon'
+              />
+              <Text
+                className={cn(
+                  'typography-body2',
+                  !isPasscodeEnabled ? 'text-textSecondary' : 'text-textPrimary',
+                )}
+              >
+                Biometric
+              </Text>
+              <UiSwitcher
+                value={isBiometricsEnabled}
+                onValueChange={handleChangeBiometricStatus}
+                disabled={!isPasscodeEnabled}
+                style={{
+                  transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
+                  marginLeft: 150,
+                }}
+              />
+            </View>
           )}
         </BottomSheetView>
       </UiBottomSheet>
