@@ -48,7 +48,7 @@ export default function ProfileScreen({}: AppTabScreenProps<'Profile'>) {
           paddingBottom: offset,
         }}
       >
-        <View className='flex flex-1 flex-col justify-center gap-4'>
+        <View className='flex flex-1 flex-col gap-4'>
           <ProfileCard />
           <SettingsCard />
           <AppVersionCard />
@@ -81,10 +81,15 @@ function ProfileCard() {
         </View>
       </Pressable>
 
-      <UiBottomSheet title='Profile' ref={bottomSheet.ref} enableDynamicSizing={true}>
-        <BottomSheetView className='w-full gap-3 px-4'>
+      <UiBottomSheet
+        title='Profile'
+        detached={true}
+        ref={bottomSheet.ref}
+        enableDynamicSizing={true}
+      >
+        <BottomSheetView className='w-full gap-3'>
           <UiCard>
-            <Text className='typography-body2 ms-3 text-textPrimary'>Your private key:</Text>
+            <Text className='typography-body2 text-textPrimary'>Your private key:</Text>
             <UiCard className='mt-2 bg-backgroundPrimary'>
               <Text className='typography-body3 text-textPrimary'>{privateKey}</Text>
             </UiCard>
@@ -127,6 +132,7 @@ function LangCard() {
         title={`Current language: ${language}`}
         ref={languageBottomSheet.ref}
         enableDynamicSizing={true}
+        detached={true}
       >
         <BottomSheetView
           className='mt-3 w-full gap-2'
@@ -174,6 +180,7 @@ function ThemeCard() {
         title={`Current theme: ${selectedTheme}`}
         ref={themeBottomSheet.ref}
         enableDynamicSizing={true}
+        detached={true}
       >
         <BottomSheetView
           className='mt-3 gap-3'
@@ -271,14 +278,15 @@ function LocalAuthMethodCard() {
           icon={<UiIcon customIcon='shieldCheckIcon' className='text-textPrimary' size={24} />}
         />
       </View>
-      <UiBottomSheet title='Auth Method' ref={authMethodBottomSheet.ref}>
+      <UiBottomSheet detached={true} title='Auth Method' ref={authMethodBottomSheet.ref}>
         <BottomSheetView
           style={{
             paddingBottom: insets.bottom + 20,
             paddingLeft: appPaddings.left,
             paddingRight: appPaddings.right,
+            paddingTop: 20,
           }}
-          className='gap-3'
+          className='gap-8'
         >
           <UiSwitcher
             label='Passcode'
@@ -286,7 +294,7 @@ function LocalAuthMethodCard() {
             onValueChange={handleChangePasscodeStatus}
             style={{
               transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
-              marginLeft: 230,
+              marginLeft: 200,
             }}
           />
           {isBiometricsEnrolled && (
@@ -297,7 +305,7 @@ function LocalAuthMethodCard() {
               disabled={!isPasscodeEnabled}
               style={{
                 transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
-                marginLeft: 230,
+                marginLeft: 200,
               }}
             />
           )}
