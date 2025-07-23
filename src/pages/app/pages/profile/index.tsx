@@ -1,6 +1,6 @@
 import { BottomSheetView } from '@gorhom/bottom-sheet'
 import { version } from 'package.json'
-import { useCallback, useMemo } from 'react'
+import { ReactNode, useCallback, useMemo } from 'react'
 import { Text, View } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -21,6 +21,7 @@ import {
   UiBottomSheet,
   UiButton,
   UiCard,
+  UiIcon,
   UiScreenScrollable,
   UiSwitcher,
   useUiBottomSheet,
@@ -90,7 +91,12 @@ function LangCard() {
   return (
     <>
       <View className='flex w-full flex-col gap-4'>
-        <UiButton title='Language' onPress={languageBottomSheet.present} />
+        <ProfileButton
+          title='Language'
+          icon={<UiIcon customIcon='earthLineIcon' className='text-textPrimary' size={24} />}
+          onPress={languageBottomSheet.present}
+          selectedVariant={`${language}`}
+        />
       </View>
       <UiBottomSheet
         title={`Current language: ${language}`}
@@ -98,7 +104,7 @@ function LangCard() {
         enableDynamicSizing={true}
       >
         <BottomSheetView
-          className='mt-3 w-full gap-6'
+          className='mt-3 w-full gap-2'
           style={{
             paddingBottom: insets.bottom + 20,
 
@@ -132,7 +138,12 @@ function ThemeCard() {
   return (
     <>
       <View className='flex w-full flex-col gap-4'>
-        <UiButton title='Theme' onPress={themeBottomSheet.present} />
+        <ProfileButton
+          title='Theme'
+          onPress={themeBottomSheet.present}
+          selectedVariant={`${selectedTheme}`}
+          icon={<UiIcon customIcon='paletteIcon' className='text-textPrimary' size={24} />}
+        />
       </View>
       <UiBottomSheet
         title={`Current theme: ${selectedTheme}`}
@@ -229,7 +240,11 @@ function LocalAuthMethodCard() {
   return (
     <>
       <View className='flex w-full flex-col gap-4'>
-        <UiButton title='Auth methods' onPress={authMethodBottomSheet.present} />
+        <ProfileButton
+          title='Auth methods'
+          onPress={authMethodBottomSheet.present}
+          icon={<UiIcon customIcon='shieldCheckIcon' className='text-textPrimary' size={24} />}
+        />
       </View>
       <UiBottomSheet title='Auth Method' ref={authMethodBottomSheet.ref}>
         <BottomSheetView
@@ -321,6 +336,37 @@ function OptionButton({
         )}
       >
         <Text className='typography-subtitle4 text-center text-textPrimary'>{title}</Text>
+      </View>
+    </Pressable>
+  )
+}
+
+function ProfileButton({
+  title,
+  icon,
+  selectedVariant,
+  onPress,
+}: {
+  title: string
+  icon?: ReactNode
+  selectedVariant?: string
+  onPress: () => void
+}) {
+  return (
+    <Pressable onPress={onPress}>
+      <View className={cn('w-full flex-row items-center justify-between px-5 py-4')}>
+        <View className='flex-row items-center gap-4'>
+          {icon}
+          <Text className='typography-subtitle4 text-textPrimary'>{title}</Text>
+        </View>
+
+        <View className='flex-row items-center gap-2'>
+          {selectedVariant && (
+            <Text className='typography-body2 text-textSecondary'>{selectedVariant}</Text>
+          )}
+
+          <UiIcon customIcon='caretRightIcon' className='text-textSecondary' size={20} />
+        </View>
       </View>
     </Pressable>
   )

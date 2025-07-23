@@ -101,6 +101,7 @@ const CUSTOM_ICONS = {
   warningIcon: require('@assets/icons/warning-icon.svg').default,
   xCircleIcon: require('@assets/icons/x-circle-icon.svg').default,
   eyeIcon: require('@assets/icons/eye-icon.svg').default,
+  earthLineIcon: require('@assets/icons/earth-line-icon.svg').default,
 }
 
 const ICON_LIBRARIES = {
