@@ -44,7 +44,7 @@ function OptionButton({
     <Pressable onPress={onPress}>
       <View
         className={cn(
-          'w-full rounded-[20px] border-[20px] px-5 py-4',
+          'w-full rounded-3xl px-5 py-4',
           isSelected ? 'border-textPrimary bg-componentPrimary' : 'border-componentPrimary',
         )}
       >
@@ -67,7 +67,7 @@ function ProfileButton({
 }) {
   return (
     <Pressable onPress={onPress}>
-      <View className={cn('w-full flex-row items-center justify-between rounded-[20px] px-5 py-4')}>
+      <View className={cn('w-full flex-row items-center justify-between rounded-3xl px-5 py-4')}>
         <View className='flex-row items-center gap-4'>
           {icon}
           <Text className='typography-subtitle4 text-textPrimary'>{title}</Text>
@@ -142,9 +142,9 @@ function ProfileCard() {
         snapPoints={['40%']}
       >
         <BottomSheetView className='w-full gap-3'>
-          <UiCard>
+          <UiCard className='rounded-3xl'>
             <Text className='typography-body2 text-textPrimary'>Your private key:</Text>
-            <UiCard className='mt-2 rounded-[20px] bg-backgroundPrimary'>
+            <UiCard className='mt-2 rounded-3xl bg-backgroundPrimary'>
               <Text className='typography-body3 text-textPrimary'>{privateKey}</Text>
             </UiCard>
 
@@ -350,7 +350,7 @@ function LocalAuthMethodCard() {
           }}
           className='gap-6'
         >
-          <View className='w-full flex-row gap-2 rounded-[20px] border border-componentPrimary px-2 py-4'>
+          <View className='w-full flex-row gap-2 rounded-3xl border border-componentPrimary px-3 py-4'>
             <UiIcon className='color-textPrimary' customIcon='passwordIcon' />
             <Text className='typography-body2 text-textPrimary'>Passcode</Text>
             <UiSwitcher
@@ -364,7 +364,7 @@ function LocalAuthMethodCard() {
           </View>
 
           {isBiometricsEnrolled && (
-            <View className='w-full flex-row gap-2 rounded-[20px] border border-componentPrimary px-2 py-4'>
+            <View className='w-full flex-row gap-2 rounded-3xl border border-componentPrimary px-3 py-4'>
               <UiIcon
                 className={!isPasscodeEnabled ? 'color-textSecondary' : 'color-textPrimary'}
                 customIcon='fingerprintIcon'
@@ -398,7 +398,7 @@ function LogoutCard() {
   const logout = authStore.useLogout()
 
   return (
-    <UiCard>
+    <UiCard className='rounded-3xl'>
       <UiButton
         color='error'
         title='delete account'
@@ -406,6 +406,7 @@ function LogoutCard() {
           customIcon: 'trashSimpleIcon',
         }}
         onPress={logout}
+        className='rounded-3xl'
       />
     </UiCard>
   )
@@ -413,7 +414,7 @@ function LogoutCard() {
 
 function AppVersionCard() {
   return (
-    <UiCard className='items-center'>
+    <UiCard className='items-center rounded-3xl'>
       <Text className='typography-body3 text-textSecondary'>App Version: {version} </Text>
     </UiCard>
   )
@@ -421,7 +422,7 @@ function AppVersionCard() {
 
 function SettingsCard() {
   return (
-    <UiCard className='items-center gap-3'>
+    <UiCard className='items-center gap-3 rounded-3xl'>
       <Text className='typography-body2 text-textPrimary'>Settings</Text>
       <LocalAuthMethodCard />
       <LangCard />
