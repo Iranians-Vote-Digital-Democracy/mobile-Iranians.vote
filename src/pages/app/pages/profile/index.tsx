@@ -1,11 +1,16 @@
-import { useCallback, useMemo } from 'react'
-import { Button, Text, View } from 'react-native'
+import { identicon } from '@dicebear/collection'
+import { createAvatar } from '@dicebear/core'
+import { BottomSheetView } from '@gorhom/bottom-sheet'
+import { version } from 'package.json'
+import { ReactNode, useCallback, useMemo } from 'react'
+import { Pressable, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SvgXml } from 'react-native-svg'
 
-import { ErrorHandler, useSelectedLanguage } from '@/core'
+import { useSelectedLanguage } from '@/core'
 import { type Language, resources } from '@/core/localization/resources'
 import { useCopyToClipboard } from '@/hooks'
-import type { AppTabScreenProps } from '@/route-types'
+import { AppTabScreenProps } from '@/route-types'
 import {
   authStore,
   BiometricStatuses,
@@ -14,9 +19,71 @@ import {
   walletStore,
 } from '@/store'
 import { cn, useAppPaddings, useBottomBarOffset, useSelectedTheme } from '@/theme'
-import { UiButton, UiCard, UiScreenScrollable, UiSwitcher } from '@/ui'
+import {
+  UiBottomSheet,
+  UiButton,
+  UiCard,
+  UiIcon,
+  UiScreenScrollable,
+  UiSwitcher,
+  useUiBottomSheet,
+} from '@/ui'
 
 import AppContainer from '../../components/AppContainer'
+
+function OptionButton({
+  title,
+  isSelected,
+  onPress,
+}: {
+  title: string
+  isSelected: boolean
+  onPress: () => void
+}) {
+  return (
+    <Pressable onPress={onPress}>
+      <View
+        className={cn(
+          'w-full rounded-3xl px-5 py-4',
+          isSelected ? 'border-textPrimary bg-componentPrimary' : 'border-componentPrimary',
+        )}
+      >
+        <Text className='typography-subtitle4 text-center text-textPrimary'>{title}</Text>
+      </View>
+    </Pressable>
+  )
+}
+
+function ProfileButton({
+  title,
+  icon,
+  selectedVariant,
+  onPress,
+}: {
+  title: string
+  icon?: ReactNode
+  selectedVariant?: string
+  onPress: () => void
+}) {
+  return (
+    <Pressable onPress={onPress}>
+      <View className={cn('w-full flex-row items-center justify-between rounded-3xl px-5 py-4')}>
+        <View className='flex-row items-center gap-4'>
+          {icon}
+          <Text className='typography-subtitle4 text-textPrimary'>{title}</Text>
+        </View>
+
+        <View className='flex-row items-center gap-2'>
+          {selectedVariant && (
+            <Text className='typography-body2 text-textSecondary'>{selectedVariant}</Text>
+          )}
+
+          <UiIcon customIcon='caretRightIcon' className='text-textSecondary' size={20} />
+        </View>
+      </View>
+    </Pressable>
+  )
+}
 
 // eslint-disable-next-line no-empty-pattern
 export default function ProfileScreen({}: AppTabScreenProps<'Profile'>) {
@@ -33,80 +100,181 @@ export default function ProfileScreen({}: AppTabScreenProps<'Profile'>) {
           paddingRight: appPaddings.right,
           paddingBottom: offset,
         }}
-        className='gap-3'
       >
         <View className='flex flex-1 flex-col gap-4'>
-          <WalletCard />
-          <LangCard />
-          <ThemeCard />
-          <LocalAuthMethodCard />
-          <LogoutCard />
-          <TestsCard />
+          <ProfileCard />
+          <SettingsCard />
+          <AppVersionCard />
         </View>
       </UiScreenScrollable>
     </AppContainer>
   )
 }
 
-function WalletCard() {
+function ProfileCard() {
   const privateKey = walletStore.useWalletStore(state => state.privateKey)
+  const publicKeyHash = walletStore.usePublicKeyHash().toString()
   const { isCopied, copy } = useCopyToClipboard()
 
-  return (
-    <UiCard>
-      <UiCard className='bg-backgroundPrimary'>
-        <Text className='typography-body3 text-textPrimary'>{privateKey}</Text>
-      </UiCard>
+  const avatar = createAvatar(identicon, {
+    seed: publicKeyHash,
+  }).toString()
 
-      <UiButton
-        variant='text'
-        color='text'
-        leadingIconProps={{
-          customIcon: isCopied ? 'checkIcon' : 'copySimpleIcon',
-        }}
-        title='Copy to Clipboard'
-        onPress={() => copy(privateKey)}
-      />
-    </UiCard>
+  const bottomSheet = useUiBottomSheet()
+
+  return (
+    <>
+      <Pressable onPress={bottomSheet.present} className='w-full items-center'>
+        <View className='w-full items-center justify-center'>
+          <View className='size-[85px] items-center overflow-hidden rounded-full bg-componentPrimary'>
+            <SvgXml height={80} width={80} xml={avatar} />
+          </View>
+
+          <Text className='typography-body1 mt-2 text-center text-textPrimary'>Stranger</Text>
+        </View>
+      </Pressable>
+
+      <UiBottomSheet
+        title='Profile'
+        detached={true}
+        ref={bottomSheet.ref}
+        enableDynamicSizing={false}
+        snapPoints={['40%']}
+      >
+        <BottomSheetView className='w-full gap-3'>
+          <UiCard className='rounded-3xl'>
+            <Text className='typography-body2 text-textPrimary'>Your private key:</Text>
+            <UiCard className='mt-2 rounded-3xl bg-backgroundPrimary'>
+              <Text className='typography-body3 text-textPrimary'>{privateKey}</Text>
+            </UiCard>
+
+            <UiButton
+              variant='text'
+              color='text'
+              leadingIconProps={{
+                customIcon: isCopied ? 'checkIcon' : 'copySimpleIcon',
+              }}
+              title='Copy to Clipboard'
+              onPress={() => copy(privateKey)}
+            />
+          </UiCard>
+          <LogoutCard />
+        </BottomSheetView>
+      </UiBottomSheet>
+    </>
   )
 }
 
 function LangCard() {
   // TODO: reload app after change language
   const { language, setLanguage } = useSelectedLanguage()
+  const languageBottomSheet = useUiBottomSheet()
+  const insets = useSafeAreaInsets()
+  const appPaddings = useAppPaddings()
 
   return (
-    <UiCard className={cn('flex flex-col items-center gap-4')}>
-      <Text className={cn('text-textPrimary')}>current lang: {language}</Text>
-
-      <View className={cn('flex flex-row gap-2')}>
-        {Object.keys(resources).map(el => (
-          <Button
-            key={el}
-            title={el}
-            onPress={() => {
-              setLanguage(el as Language)
-            }}
-          />
-        ))}
+    <>
+      <View className='flex w-full flex-col gap-4'>
+        <ProfileButton
+          title='Language'
+          icon={<UiIcon customIcon='earthLineIcon' className='text-textPrimary' size={24} />}
+          onPress={languageBottomSheet.present}
+          selectedVariant={`${language}`}
+        />
       </View>
-    </UiCard>
+      <UiBottomSheet
+        title={`Current language: ${language}`}
+        ref={languageBottomSheet.ref}
+        detached={true}
+        enableDynamicSizing={false}
+        snapPoints={['30%']}
+      >
+        <BottomSheetView
+          className='mt-3 w-full gap-2'
+          style={{
+            paddingBottom: insets.bottom + 20,
+
+            paddingLeft: appPaddings.left,
+            paddingRight: appPaddings.right,
+          }}
+        >
+          {Object.keys(resources).map(el => (
+            <OptionButton
+              key={el}
+              title={el}
+              isSelected={language === el}
+              onPress={() => {
+                setLanguage(el as Language)
+                languageBottomSheet.dismiss()
+              }}
+            />
+          ))}
+        </BottomSheetView>
+      </UiBottomSheet>
+    </>
   )
 }
 
 function ThemeCard() {
   const { selectedTheme, setSelectedTheme } = useSelectedTheme()
+  const themeBottomSheet = useUiBottomSheet()
+  const appPaddings = useAppPaddings()
+  const insets = useSafeAreaInsets()
 
   return (
-    <UiCard className={cn('flex items-center gap-4')}>
-      <Text className={cn('text-textPrimary')}>{selectedTheme}</Text>
-
-      <View className={cn('flex flex-row gap-4')}>
-        <Button title='Light' onPress={() => setSelectedTheme('light')} />
-        <Button title='Dark' onPress={() => setSelectedTheme('dark')} />
-        <Button title='System' onPress={() => setSelectedTheme('system')} />
+    <>
+      <View className='flex w-full flex-col gap-4'>
+        <ProfileButton
+          title='Theme'
+          onPress={themeBottomSheet.present}
+          selectedVariant={`${selectedTheme}`}
+          icon={<UiIcon customIcon='paletteIcon' className='text-textPrimary' size={24} />}
+        />
       </View>
-    </UiCard>
+      <UiBottomSheet
+        title={`Current theme: ${selectedTheme}`}
+        ref={themeBottomSheet.ref}
+        detached={true}
+        enableDynamicSizing={false}
+        snapPoints={['30%']}
+      >
+        <BottomSheetView
+          className='mt-3 gap-3'
+          style={{
+            paddingBottom: insets.bottom + 20,
+            paddingLeft: appPaddings.left,
+            paddingRight: appPaddings.right,
+          }}
+        >
+          <View className={cn('flex flex-col gap-2')}>
+            <OptionButton
+              title='Light'
+              isSelected={selectedTheme === 'light'}
+              onPress={() => {
+                setSelectedTheme('light')
+                themeBottomSheet.dismiss()
+              }}
+            />
+            <OptionButton
+              title='Dark'
+              isSelected={selectedTheme === 'dark'}
+              onPress={() => {
+                setSelectedTheme('dark')
+                themeBottomSheet.dismiss()
+              }}
+            />
+            <OptionButton
+              title='System'
+              isSelected={selectedTheme === 'system'}
+              onPress={() => {
+                setSelectedTheme('system')
+                themeBottomSheet.dismiss()
+              }}
+            />
+          </View>
+        </BottomSheetView>
+      </UiBottomSheet>
+    </>
   )
 }
 
@@ -115,9 +283,11 @@ function LocalAuthMethodCard() {
   const biometricStatus = localAuthStore.useLocalAuthStore(state => state.biometricStatus)
   const disablePasscode = localAuthStore.useLocalAuthStore(state => state.disablePasscode)
   const disableBiometric = localAuthStore.useLocalAuthStore(state => state.disableBiometrics)
-
+  const authMethodBottomSheet = useUiBottomSheet()
   const setPasscodeStatus = localAuthStore.useLocalAuthStore(state => state.setPasscodeStatus)
   const setBiometricsStatus = localAuthStore.useLocalAuthStore(state => state.setBiometricsStatus)
+  const insets = useSafeAreaInsets()
+  const appPaddings = useAppPaddings()
 
   const isPasscodeEnabled = useMemo(
     () => passcodeStatus === PasscodeStatuses.Enabled,
@@ -156,22 +326,71 @@ function LocalAuthMethodCard() {
   }, [biometricStatus, disableBiometric, setBiometricsStatus])
 
   return (
-    <UiCard className='flex flex-col gap-4'>
-      <Text className='typography-subtitle3 mb-4 text-center text-textPrimary'>Auth methods</Text>
-      <UiSwitcher
-        label='Passcode'
-        value={isPasscodeEnabled}
-        onValueChange={handleChangePasscodeStatus}
-      />
-      {isBiometricsEnrolled && (
-        <UiSwitcher
-          label='Biometric'
-          value={isBiometricsEnabled}
-          onValueChange={handleChangeBiometricStatus}
-          disabled={!isPasscodeEnabled}
+    <>
+      <View className='flex w-full flex-col gap-4'>
+        <ProfileButton
+          title='Auth methods'
+          onPress={authMethodBottomSheet.present}
+          icon={<UiIcon customIcon='shieldCheckIcon' className='text-textPrimary' size={24} />}
         />
-      )}
-    </UiCard>
+      </View>
+      <UiBottomSheet
+        detached={true}
+        title='Auth Method'
+        ref={authMethodBottomSheet.ref}
+        enableDynamicSizing={false}
+        snapPoints={['30%']}
+      >
+        <BottomSheetView
+          style={{
+            paddingBottom: insets.bottom + 20,
+            paddingLeft: appPaddings.left,
+            paddingRight: appPaddings.right,
+            paddingTop: 20,
+          }}
+          className='gap-6'
+        >
+          <View className='w-full flex-row gap-2 rounded-3xl border border-componentPrimary px-3 py-4'>
+            <UiIcon className='color-textPrimary' customIcon='passwordIcon' />
+            <Text className='typography-body2 text-textPrimary'>Passcode</Text>
+            <UiSwitcher
+              value={isPasscodeEnabled}
+              onValueChange={handleChangePasscodeStatus}
+              style={{
+                transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
+                marginLeft: 150,
+              }}
+            />
+          </View>
+
+          {isBiometricsEnrolled && (
+            <View className='w-full flex-row gap-2 rounded-3xl border border-componentPrimary px-3 py-4'>
+              <UiIcon
+                className={!isPasscodeEnabled ? 'color-textSecondary' : 'color-textPrimary'}
+                customIcon='fingerprintIcon'
+              />
+              <Text
+                className={cn(
+                  'typography-body2',
+                  !isPasscodeEnabled ? 'text-textSecondary' : 'text-textPrimary',
+                )}
+              >
+                Biometric
+              </Text>
+              <UiSwitcher
+                value={isBiometricsEnabled}
+                onValueChange={handleChangeBiometricStatus}
+                disabled={!isPasscodeEnabled}
+                style={{
+                  transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
+                  marginLeft: 150,
+                }}
+              />
+            </View>
+          )}
+        </BottomSheetView>
+      </UiBottomSheet>
+    </>
   )
 }
 
@@ -179,7 +398,7 @@ function LogoutCard() {
   const logout = authStore.useLogout()
 
   return (
-    <UiCard>
+    <UiCard className='rounded-3xl'>
       <UiButton
         color='error'
         title='delete account'
@@ -187,28 +406,27 @@ function LogoutCard() {
           customIcon: 'trashSimpleIcon',
         }}
         onPress={logout}
+        className='rounded-3xl'
       />
     </UiCard>
   )
 }
 
-function TestsCard() {
-  const pk = walletStore.useWalletStore(state => state.privateKey)
-  const genAuthProof = authStore.useAuthProof({ byFilePath: true })
-
-  const testAuthProof = async () => {
-    try {
-      const zkProof = await genAuthProof(pk)
-      /* eslint-disable-next-line no-console */
-      console.log(zkProof)
-    } catch (error) {
-      ErrorHandler.process(error)
-    }
-  }
-
+function AppVersionCard() {
   return (
-    <UiCard>
-      <UiButton title='testAuthProof' onPress={testAuthProof} />
+    <UiCard className='items-center rounded-3xl'>
+      <Text className='typography-body3 text-textSecondary'>App Version: {version} </Text>
+    </UiCard>
+  )
+}
+
+function SettingsCard() {
+  return (
+    <UiCard className='items-center gap-3 rounded-3xl'>
+      <Text className='typography-body2 text-textPrimary'>Settings</Text>
+      <LocalAuthMethodCard />
+      <LangCard />
+      <ThemeCard />
     </UiCard>
   )
 }

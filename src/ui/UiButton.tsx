@@ -18,12 +18,12 @@ const buttonBaseTv = tv({
   variants: {
     size: {
       small: {
-        container: cn('h-[32px] px-[16px] rounded-[1000px] gap-2'),
+        container: cn('h-[32px] px-[16px] rounded-full gap-2'),
         text: cn('typography-bodySmall'),
         icon: cn('size-[16px]'),
       },
       medium: {
-        container: cn('h-[40px] px-[24px] rounded-[1000px] gap-4'),
+        container: cn('h-[40px] px-[24px] rounded-full gap-4'),
         text: cn('typography-bodyMedium'),
         icon: cn('size-[20px]'),
       },
@@ -435,7 +435,17 @@ type PressableRef = View
 
 export const UiButton = forwardRef<PressableRef, Props>(
   (
-    { title, size, variant, color, leadingIconProps, trailingIconProps, children, ...rest }: Props,
+    {
+      title,
+      size,
+      variant,
+      color,
+      leadingIconProps,
+      trailingIconProps,
+      children,
+      className,
+      ...rest
+    }: Props,
     ref,
   ) => {
     const [isPressed, setIsPressed] = useState(false)
@@ -471,12 +481,16 @@ export const UiButton = forwardRef<PressableRef, Props>(
     }, [baseStyles, children, title])
 
     return (
-      <Pressable {...rest} ref={ref} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-        <View className={cn(baseStyles.container())}>
-          {leadingIconProps && <UiIcon {...leadingIconProps} className={cn(baseStyles.icon())} />}
-          {btnContent}
-          {trailingIconProps && <UiIcon {...trailingIconProps} className={cn(baseStyles.icon())} />}
-        </View>
+      <Pressable
+        {...rest}
+        className={cn(baseStyles.container(), className)}
+        ref={ref}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {leadingIconProps && <UiIcon {...leadingIconProps} className={cn(baseStyles.icon())} />}
+        {btnContent}
+        {trailingIconProps && <UiIcon {...trailingIconProps} className={cn(baseStyles.icon())} />}
       </Pressable>
     )
   },

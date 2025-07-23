@@ -1792,6 +1792,325 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dicebear/adventurer-neutral@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/adventurer-neutral@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/342620430287ed40b0ab9d53d506910b45803c651c8af4fc65e891c65b0e1ff13d66fcb2e7b9605b38ddf5b556ec92467eab8d65bc87993ea5c4842e73434352
+  languageName: node
+  linkType: hard
+
+"@dicebear/adventurer@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/adventurer@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/cf113403aa372cbc3a45b4b79af267e6343cd5542d49db546f0098b16707c686fabe5d9cf7bc6742b0007d07363a58d200440554952046f33cb6c364366a0a0f
+  languageName: node
+  linkType: hard
+
+"@dicebear/avataaars-neutral@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/avataaars-neutral@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/267bc02400ffdd743e423e8c72476c30124b79bbbdfa048d428a66ec4c6dcb15e0d9fe175dd1688cf852e4af1abb5f4a9e4bc5bc4d9d5739337ea6047e0db02c
+  languageName: node
+  linkType: hard
+
+"@dicebear/avataaars@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/avataaars@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/bc5af37d8979da8573c2b11b22e3eaa1ade7025a77ef266b40c6ffe9e40f1b26ea658a0e12cf38de517548579376682c9080910aa2ce33b40e3e8326880b9a48
+  languageName: node
+  linkType: hard
+
+"@dicebear/big-ears-neutral@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/big-ears-neutral@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/3381d12d8bb92aa8431fac33a23b4f58ef333aa16ff604eb6b3df29bbb9c90e3f48b6b18025fea66313c08ed645c6ea0066588916a7341eb7141ddc57ac7246e
+  languageName: node
+  linkType: hard
+
+"@dicebear/big-ears@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/big-ears@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/676180f43d71b0a6a1245f88aa72f376531ec7ccbc4363c0bb6eef1e739c5f4ab8bf66c0e3eb803396335c541f005f7b8b2117661e63c68534737f6bd349d217
+  languageName: node
+  linkType: hard
+
+"@dicebear/big-smile@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/big-smile@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/7e0d2f58123424d0c5e3919b49d824d533891bc7f9674e87b43d5646749fd8c01bf6d59a6cd8e4146f98115ec9b55ef7470478ab3b05ed3267c66085602bb03d
+  languageName: node
+  linkType: hard
+
+"@dicebear/bottts-neutral@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/bottts-neutral@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/71bebc8ba7089ea08ed1dca5ca3cefba1b4d690871ada9ec1ccfc75429d5b0f55478c62278472960a55752e097675327f511c4cb5f554f9532a6b33995170f27
+  languageName: node
+  linkType: hard
+
+"@dicebear/bottts@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/bottts@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/015f02dfb5fca5c054251e5023d6bec6d0617a6ff86f3515e3c0fef1f3f4da3f04063acf4e42d1900a2da982a6fcc257445fa66a4f947700f988fcce4769b3fc
+  languageName: node
+  linkType: hard
+
+"@dicebear/collection@npm:^9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/collection@npm:9.2.3"
+  dependencies:
+    "@dicebear/adventurer": "npm:9.2.3"
+    "@dicebear/adventurer-neutral": "npm:9.2.3"
+    "@dicebear/avataaars": "npm:9.2.3"
+    "@dicebear/avataaars-neutral": "npm:9.2.3"
+    "@dicebear/big-ears": "npm:9.2.3"
+    "@dicebear/big-ears-neutral": "npm:9.2.3"
+    "@dicebear/big-smile": "npm:9.2.3"
+    "@dicebear/bottts": "npm:9.2.3"
+    "@dicebear/bottts-neutral": "npm:9.2.3"
+    "@dicebear/croodles": "npm:9.2.3"
+    "@dicebear/croodles-neutral": "npm:9.2.3"
+    "@dicebear/dylan": "npm:9.2.3"
+    "@dicebear/fun-emoji": "npm:9.2.3"
+    "@dicebear/glass": "npm:9.2.3"
+    "@dicebear/icons": "npm:9.2.3"
+    "@dicebear/identicon": "npm:9.2.3"
+    "@dicebear/initials": "npm:9.2.3"
+    "@dicebear/lorelei": "npm:9.2.3"
+    "@dicebear/lorelei-neutral": "npm:9.2.3"
+    "@dicebear/micah": "npm:9.2.3"
+    "@dicebear/miniavs": "npm:9.2.3"
+    "@dicebear/notionists": "npm:9.2.3"
+    "@dicebear/notionists-neutral": "npm:9.2.3"
+    "@dicebear/open-peeps": "npm:9.2.3"
+    "@dicebear/personas": "npm:9.2.3"
+    "@dicebear/pixel-art": "npm:9.2.3"
+    "@dicebear/pixel-art-neutral": "npm:9.2.3"
+    "@dicebear/rings": "npm:9.2.3"
+    "@dicebear/shapes": "npm:9.2.3"
+    "@dicebear/thumbs": "npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/bdd2200e9db0b14b6cca42a3f9b6ff56e406daaf8ae19e13d942bb4c4f22aed0bd5de9b0dbe13c14c99d29af8210a8434a68cf887b94573afbe1f8ed50853b6c
+  languageName: node
+  linkType: hard
+
+"@dicebear/core@npm:^9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/core@npm:9.2.3"
+  dependencies:
+    "@types/json-schema": "npm:^7.0.11"
+  checksum: 10/7049763dbb103c718689051011898295b74ba9c37d409c8c82d8f5512a1c8e28c51603c686a8414915426ab4a9be7f1b86419267f7c117e5ce9e0f792969bfff
+  languageName: node
+  linkType: hard
+
+"@dicebear/croodles-neutral@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/croodles-neutral@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/9d5f8cbccdc1320156834a86fdd4f7660d3c813040099c8548e5109bd35bd9e533c981000a01f9eade5beed7b74459597938a9458d514633f1e470af33de7a64
+  languageName: node
+  linkType: hard
+
+"@dicebear/croodles@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/croodles@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/7aac3fb8557510ac8c8b7dc877eb700a3c5417d4e14ee924167e8c0c02c4533ed96c22d8f27f6822099bbf4675f1a2d62c468860e7bdd6fdfba3699b4b259d58
+  languageName: node
+  linkType: hard
+
+"@dicebear/dylan@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/dylan@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/926fcdb711d33cfe970cc0731f53a1d95fb07c05c41acce221b801b1ae62c8501f73b075600aca159df7d023acd36227ef60b20f43080f149ac5de1578e6e155
+  languageName: node
+  linkType: hard
+
+"@dicebear/fun-emoji@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/fun-emoji@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/8d02d5026f669657a35586cbbd689552c3642bf1fe25f406a36fb9a0e874891f36c97b4597b250a3cc5b1f3acbf5ac82c9a5818da574b56393b0b58a687dbba5
+  languageName: node
+  linkType: hard
+
+"@dicebear/glass@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/glass@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/ac4e43d23245db37d086eaec17bfa410c94fa3c4143546f8885eaf125574e3179622bd4ff7c5b3e759acc7a8146fde53ba3a8f63f5264007b31c8491afec1f56
+  languageName: node
+  linkType: hard
+
+"@dicebear/icons@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/icons@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/63f9015fca90d9b90df7638c5b3cbf5289409626256f7f05816288b1cae16f2ee36ecc47b1abdebd0229cc041e9e0b773e1f644869fd974a16cecba6e09b1d9d
+  languageName: node
+  linkType: hard
+
+"@dicebear/identicon@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/identicon@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/57e878aef39cd223d5615c87d313ee4be69fb868e72f3216d2b094152a023fcf30d7d501f86ce54a76cf2d7fad9c1508eed64d6db89e690615fa51271b711634
+  languageName: node
+  linkType: hard
+
+"@dicebear/initials@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/initials@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/51843549e0d9ae3de1338e547de19f1768bc2f354951ad8ebf229ea49d22acfd9ef05a748bd770aa06db9f39d1d297d00cd45a4dc1ca7a21095f08c988f00ebd
+  languageName: node
+  linkType: hard
+
+"@dicebear/lorelei-neutral@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/lorelei-neutral@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/ec6ca2f00746021db1f44bb5918a5cb3401befb611dfa1b461f9eb8c1619278c50f59883fad719b69a32867ded1d638337dfbd040da38a84e13254712e3521d1
+  languageName: node
+  linkType: hard
+
+"@dicebear/lorelei@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/lorelei@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/9c4e188f8994fff7752d56fbcac6bc838a044d2a46681473f35b2bd47b67cfefd1dda763fa7df490e79f142e8b13933495e79e064902614633b0319ac66793f1
+  languageName: node
+  linkType: hard
+
+"@dicebear/micah@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/micah@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/a38b820c66b2202b6aa7cd5b963c36ac8070a9c26e1a65cdf0c905a2f7eec71256a56ad7829b5758ebf3bb6d24fb45bd6f02192329518e7da3e22633b7fde4a6
+  languageName: node
+  linkType: hard
+
+"@dicebear/miniavs@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/miniavs@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/8819da0676ac1a833badb28732aa4de2874cbe562fb9fea759feedfd1a8cf6f2cc645fa94c3591e9435b7ebe95ae4ab22ef8bd9e9504e2e795d58b60586d5835
+  languageName: node
+  linkType: hard
+
+"@dicebear/notionists-neutral@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/notionists-neutral@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/8cfd9f3e8b71610a0e91ab7881ae5344f6005a5a23997bdc2202ff0349662bba8d4ed960ddcf7cebff0229fa7f01d9bbca3d6de6f6332a9e4501ada0b1afa9c6
+  languageName: node
+  linkType: hard
+
+"@dicebear/notionists@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/notionists@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/600f1f0513fc6ef03803e4beb1bb95f85c8850e0934a3f505530cc8e997c8bb3d7edd7009c1dc7a0de647e9a848a4691b6200e9ed758f70925fb0b1fea0e1dcc
+  languageName: node
+  linkType: hard
+
+"@dicebear/open-peeps@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/open-peeps@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/ff7c3588f6fc1ba0010fa8ad9955499d107fc405eff1fcd7914e54f9ffe3b7f9a90ee5493f4418e43a343ffc62d26fff73e474c546a2a3014399af161b64f1e4
+  languageName: node
+  linkType: hard
+
+"@dicebear/personas@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/personas@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/3d6bddd7f70eecd3aafd97e10ae253ab29414b3a417675f1a1552e4cf0097460da6885c3427147934cf35a1cea6c6e0b3b14467c1986e8bcef5c2fb62c10f5bc
+  languageName: node
+  linkType: hard
+
+"@dicebear/pixel-art-neutral@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/pixel-art-neutral@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/6d73151c70d4fc24c3312d9fefc48ad5bad7074bcbda84c214148a05b2fb68dc0ddc9c2516cc0f8172711eea7372b031f581cdbd17488ae68ff27ad26c44b5d6
+  languageName: node
+  linkType: hard
+
+"@dicebear/pixel-art@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/pixel-art@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/f5a8d029d2699839e384ac1230574dc0e94ef3153a3f490f4d6dd00d4ee879cd8e8c28005acdcd82f778e2a7b449970fb33e0f5f3490c3ea7f87ff3c5a7d5e71
+  languageName: node
+  linkType: hard
+
+"@dicebear/rings@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/rings@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/8144ca251ad51ec9ed578b93b175e73f2f0b46f1d1cd994a397a8e773dc2423f393e840482fe84edfa415153ff5b1ba46cee71c3118c429620faf1cbe03809e4
+  languageName: node
+  linkType: hard
+
+"@dicebear/shapes@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/shapes@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/2075bb248908719a1f04e3162932bc84bb717bededf53096eec97becb47fe565086c9362a774384c82d920175cdf7c16df985d6e9a35cf69d6790fffb3c4c434
+  languageName: node
+  linkType: hard
+
+"@dicebear/thumbs@npm:9.2.3":
+  version: 9.2.3
+  resolution: "@dicebear/thumbs@npm:9.2.3"
+  peerDependencies:
+    "@dicebear/core": ^9.0.0
+  checksum: 10/3fbf819cfe03be2b68293d25d3812120c8c6f099b4cac9afa42fde8164ca672116e9628b63ca356909476cccd3229232f4c79ef00b29f0d2df7471c4025761e4
+  languageName: node
+  linkType: hard
+
 "@distributedlab/tools@npm:^1.0.0-rc.17":
   version: 1.0.0-rc.17
   resolution: "@distributedlab/tools@npm:1.0.0-rc.17"
@@ -5106,7 +5425,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/json-schema@npm:*, @types/json-schema@npm:^7.0.12, @types/json-schema@npm:^7.0.15":
+"@types/json-schema@npm:*, @types/json-schema@npm:^7.0.11, @types/json-schema@npm:^7.0.12, @types/json-schema@npm:^7.0.15":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
   checksum: 10/1a3c3e06236e4c4aab89499c428d585527ce50c24fe8259e8b3926d3df4cfbbbcf306cfc73ddfb66cbafc973116efd15967020b0f738f63e09e64c7d260519e7
@@ -19731,6 +20050,8 @@ __metadata:
     "@babel/core": "npm:^7.24.6"
     "@dev-plugins/react-navigation": "npm:^0.2.0"
     "@dev-plugins/react-query": "npm:^0.2.0"
+    "@dicebear/collection": "npm:^9.2.3"
+    "@dicebear/core": "npm:^9.2.3"
     "@distributedlab/tools": "npm:^1.0.0-rc.17"
     "@eslint/compat": "npm:^1.2.6"
     "@eslint/js": "npm:^9.19.0"
