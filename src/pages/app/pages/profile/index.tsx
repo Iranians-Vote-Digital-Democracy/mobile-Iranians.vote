@@ -98,9 +98,10 @@ function LangCard() {
         enableDynamicSizing={true}
       >
         <BottomSheetView
-          className='mt-3 w-full gap-3' // <-- Added gap-3 here
+          className='mt-3 w-full gap-6'
           style={{
-            paddingBottom: insets.bottom + 20, // <-- Added +20 padding
+            paddingBottom: insets.bottom + 20,
+
             paddingLeft: appPaddings.left,
             paddingRight: appPaddings.right,
           }}
@@ -139,14 +140,14 @@ function ThemeCard() {
         enableDynamicSizing={true}
       >
         <BottomSheetView
-          className='mt-3 w-full gap-3' // <-- Added gap-3 here
+          className='mt-3 gap-3'
           style={{
-            paddingBottom: insets.bottom + 20, // <-- Added +20 padding
+            paddingBottom: insets.bottom + 20,
             paddingLeft: appPaddings.left,
             paddingRight: appPaddings.right,
           }}
         >
-          <View className={cn('flex w-full flex-col gap-2')}>
+          <View className={cn('flex flex-col gap-2')}>
             <OptionButton
               title='Light'
               isSelected={selectedTheme === 'light'}
@@ -312,14 +313,15 @@ function OptionButton({
   onPress: () => void
 }) {
   return (
-    <Pressable
-      onPress={onPress}
-      className={cn(
-        'rounded-lg border px-5 py-4',
-        isSelected ? 'border-textPrimary bg-componentPrimary' : 'border-componentPrimary',
-      )}
-    >
-      <Text className='typography-subtitle4 text-center text-textPrimary'>{title}</Text>
+    <Pressable onPress={onPress}>
+      <View
+        className={cn(
+          'w-full rounded-lg border px-5 py-4',
+          isSelected ? 'border-textPrimary bg-componentPrimary' : 'border-componentPrimary',
+        )}
+      >
+        <Text className='typography-subtitle4 text-center text-textPrimary'>{title}</Text>
+      </View>
     </Pressable>
   )
 }
