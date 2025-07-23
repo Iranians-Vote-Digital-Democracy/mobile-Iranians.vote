@@ -1,14 +1,17 @@
+import { identicon } from '@dicebear/collection'
+import { createAvatar } from '@dicebear/core'
 import { BottomSheetView } from '@gorhom/bottom-sheet'
 import { version } from 'package.json'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { Text, View } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SvgXml } from 'react-native-svg'
 
 import { useSelectedLanguage } from '@/core'
 import { type Language, resources } from '@/core/localization/resources'
 import { useCopyToClipboard } from '@/hooks'
-import type { AppTabScreenProps } from '@/route-types'
+import { AppTabScreenProps } from '@/route-types'
 import {
   authStore,
   BiometricStatuses,
@@ -44,12 +47,10 @@ export default function ProfileScreen({}: AppTabScreenProps<'Profile'>) {
           paddingRight: appPaddings.right,
           paddingBottom: offset,
         }}
-        className='gap-3'
       >
         <View className='flex flex-1 flex-col justify-center gap-4'>
           <ProfileCard />
           <SettingsCard />
-          <LogoutCard />
           <AppVersionCard />
         </View>
       </UiScreenScrollable>
@@ -59,25 +60,49 @@ export default function ProfileScreen({}: AppTabScreenProps<'Profile'>) {
 
 function ProfileCard() {
   const privateKey = walletStore.useWalletStore(state => state.privateKey)
+  const publicKeyHash = walletStore.usePublicKeyHash().toString()
   const { isCopied, copy } = useCopyToClipboard()
 
-  return (
-    <UiCard>
-      <Text className='typography-body2 ms-3 text-textPrimary'>Your private key:</Text>
-      <UiCard className='mt-2 bg-backgroundPrimary'>
-        <Text className='typography-body3 text-textPrimary'>{privateKey}</Text>
-      </UiCard>
+  const avatar = createAvatar(identicon, {
+    seed: publicKeyHash,
+  }).toString()
 
-      <UiButton
-        variant='text'
-        color='text'
-        leadingIconProps={{
-          customIcon: isCopied ? 'checkIcon' : 'copySimpleIcon',
-        }}
-        title='Copy to Clipboard'
-        onPress={() => copy(privateKey)}
-      />
-    </UiCard>
+  const bottomSheet = useUiBottomSheet()
+
+  return (
+    <>
+      <Pressable onPress={bottomSheet.present} className='w-full items-center'>
+        <View className='w-full items-center justify-center'>
+          <View className='size-[85px] items-center overflow-hidden rounded-full bg-componentPrimary'>
+            <SvgXml height={80} width={80} xml={avatar} />
+          </View>
+
+          <Text className='typography-body1 mt-2 text-center text-textPrimary'>Stranger</Text>
+        </View>
+      </Pressable>
+
+      <UiBottomSheet title='Profile' ref={bottomSheet.ref} enableDynamicSizing={true}>
+        <BottomSheetView className='w-full gap-3 px-4'>
+          <UiCard>
+            <Text className='typography-body2 ms-3 text-textPrimary'>Your private key:</Text>
+            <UiCard className='mt-2 bg-backgroundPrimary'>
+              <Text className='typography-body3 text-textPrimary'>{privateKey}</Text>
+            </UiCard>
+
+            <UiButton
+              variant='text'
+              color='text'
+              leadingIconProps={{
+                customIcon: isCopied ? 'checkIcon' : 'copySimpleIcon',
+              }}
+              title='Copy to Clipboard'
+              onPress={() => copy(privateKey)}
+            />
+          </UiCard>
+          <LogoutCard />
+        </BottomSheetView>
+      </UiBottomSheet>
+    </>
   )
 }
 
