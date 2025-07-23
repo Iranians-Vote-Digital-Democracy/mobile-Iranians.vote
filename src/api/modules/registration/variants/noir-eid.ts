@@ -85,6 +85,8 @@ export class NoirEIDRegistration extends RegistrationStrategy {
       inclusionBranches: slaveCertSmtProof.siblings.map(el => BigInt(el)),
     })
 
+    console.log('registrationProof', registrationProof)
+
     const identityItem = new NoirEIDIdentity(eDocument, registrationProof)
 
     // const passportInfo = await identityItem.getPassportInfo()

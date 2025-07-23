@@ -7,7 +7,7 @@ import { Pressable } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { apiClient } from '@/api/client'
-import { RARIMO_CHAINS, RARIMO_L2_CHAINS } from '@/api/modules/rarimo'
+import { RARIMO_CHAINS } from '@/api/modules/rarimo'
 import { Config } from '@/config'
 import { bus, DefaultBusEvents } from '@/core'
 import {
@@ -55,12 +55,6 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
 
   const proposalId = route.params?.proposalId
 
-  // Providers
-  const rmol2Provider = useMemo(
-    () => new JsonRpcProvider(RARIMO_L2_CHAINS[Config.RMO_L2_CHAIN_ID].rpcEvm),
-    [],
-  )
-
   const rmoProvider = useMemo(
     () => new JsonRpcProvider(RARIMO_CHAINS[Config.RMO_CHAIN_ID].rpcEvm),
     [],
@@ -68,13 +62,13 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
 
   // Contracts
   const proposalContract = useMemo(
-    () => createProposalContract(Config.PROPOSAL_STATE_CONTRACT_ADDRESS, rmol2Provider),
-    [rmol2Provider],
+    () => createProposalContract(Config.PROPOSAL_STATE_CONTRACT_ADDRESS, rmoProvider),
+    [rmoProvider],
   )
 
   const noirIdVotingContract = useMemo(
-    () => createNoirIdVotingContract(Config.NOIR_ID_VOTING_CONTRACT, rmol2Provider),
-    [rmol2Provider],
+    () => createNoirIdVotingContract(Config.NOIR_ID_VOTING_CONTRACT, rmoProvider),
+    [rmoProvider],
   )
 
   const registrationPoseidonSMTContract = useMemo(

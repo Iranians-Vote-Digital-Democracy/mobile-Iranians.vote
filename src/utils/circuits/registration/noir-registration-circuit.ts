@@ -163,6 +163,8 @@ export class NoirEIDBasedRegistrationCircuit extends EIDBasedRegistrationCircuit
       sk_identity: skIdentity,
     }
 
+    console.log('inputs', inputs)
+
     const [proof, getProofError] = await tryCatch(
       this.noirCircuitParams.prove(JSON.stringify(inputs), byteCode),
     )
