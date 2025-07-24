@@ -17,7 +17,6 @@ import HomeScreen from './pages/home'
 import PassportTests from './pages/passport-tests'
 import PollScreen from './pages/polls'
 import ProfileScreen from './pages/profile'
-import QueryProofScreen from './pages/query-proof'
 
 const Stack = createNativeStackNavigator<AppStackParamsList>()
 const Tab = createBottomTabNavigator<AppTabParamsList>()
@@ -102,15 +101,6 @@ export default function App(props: RootStackScreenProps<'App'>) {
         options={{
           headerShown: false,
         }}
-      />
-
-      <Stack.Screen
-        name='QueryProof'
-        options={{
-          presentation: 'card',
-          headerShown: false,
-        }}
-        component={QueryProofScreen}
       />
 
       <Stack.Screen

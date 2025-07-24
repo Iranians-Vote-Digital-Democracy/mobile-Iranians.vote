@@ -2,7 +2,7 @@ import { Time } from '@distributedlab/tools'
 import { useNavigation } from '@react-navigation/native'
 import { useQuery } from '@tanstack/react-query'
 import { AbiCoder, hexlify, JsonRpcProvider, toUtf8Bytes } from 'ethers'
-import { ReactNode, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { Image, Pressable, Text, View } from 'react-native'
 import { useSharedValue, withTiming } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -47,6 +47,16 @@ export enum SendProofStep {
 
 type ScreenKey = 'questions' | 'submit'
 
+const rmoProvider = new JsonRpcProvider(RARIMO_CHAINS[Config.RMO_CHAIN_ID].rpcEvm)
+
+// Contracts
+const proposalContract = createProposalContract(Config.PROPOSAL_STATE_CONTRACT_ADDRESS, rmoProvider)
+const noirIdVotingContract = createNoirIdVotingContract(Config.NOIR_ID_VOTING_CONTRACT, rmoProvider)
+const registrationPoseidonSMTContract = createPoseidonSMTContract(
+  Config.REGISTRATION_POSEIDON_SMT_CONTRACT_ADDRESS,
+  rmoProvider,
+)
+
 export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
   const insets = useSafeAreaInsets()
   const bottomSheet = useUiBottomSheet()
@@ -56,7 +66,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
 
   const [answers, setAnswers] = useState<Map<number, string>>(new Map())
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [isCloseDisabled, setIsCloseDisabled] = useState(false)
+  const [isSubmitting, setIsCloseDisabled] = useState(false)
   const [screenKey, setScreenKey] = useState<ScreenKey>('questions')
   const [step, setStep] = useState<Step>(Step.SendProof)
   const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null)
@@ -68,27 +78,6 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
   const startProgress = () => {
     progress.value = withTiming(99, { duration: 5_000 })
   }
-
-  const rmoProvider = useMemo(
-    () => new JsonRpcProvider(RARIMO_CHAINS[Config.RMO_CHAIN_ID].rpcEvm),
-    [],
-  )
-
-  // Contracts
-  const proposalContract = useMemo(
-    () => createProposalContract(Config.PROPOSAL_STATE_CONTRACT_ADDRESS, rmoProvider),
-    [rmoProvider],
-  )
-
-  const noirIdVotingContract = useMemo(
-    () => createNoirIdVotingContract(Config.NOIR_ID_VOTING_CONTRACT, rmoProvider),
-    [rmoProvider],
-  )
-
-  const registrationPoseidonSMTContract = useMemo(
-    () => createPoseidonSMTContract(Config.REGISTRATION_POSEIDON_SMT_CONTRACT_ADDRESS, rmoProvider),
-    [rmoProvider],
-  )
 
   // Fetch proposal from contract
   const {
@@ -115,14 +104,14 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
     queryFn: async () => {
       if (!parsedProposal) return null
       const result = await apiClient.get<ProposalMetadata>(
-        `${Config.IPFS_NODE_URL}${parsedProposal.cid}`,
+        `${Config.IPFS_NODE_URL}/${parsedProposal.cid}`,
       )
       return result.data
     },
     enabled: Boolean(parsedProposal),
   })
 
-  const generateProof = async (_answers: Map<number, string>) => {
+  const generateProof = async (votes: Map<number, string>) => {
     setIsCloseDisabled(true)
     startProgress()
     try {
@@ -158,9 +147,9 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
       }
 
       const eventId = await proposalContract.contractInstance.getProposalEventId(proposalId!)
-      const eventData = computeEventData([..._answers.values()].map(Number))
+      const eventData = computeEventData([...votes.values()].map(Number))
 
-      const inputs: QueryProofParams = {
+      const params: QueryProofParams = {
         eventId: String(eventId),
         eventData,
         identityCountUpper: String(identityCountUpper),
@@ -179,7 +168,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
         timestampLower: '0',
       }
 
-      const proof = await circuitParams.prove(inputs)
+      const proof = await circuitParams.prove(params)
 
       // CALLDATA
       // ------------------------------------------------------------------------------------
@@ -189,7 +178,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
         [
           proposalId,
           // votes mask
-          Array.from(_answers.values()).map(v => 1 << Number(v)),
+          Array.from(votes.values()).map(v => 1 << Number(v)),
           // User payload: (nullifier, citizenship, timestampUpperbound)
           ['0x' + proof.pub_signals[0], '0x' + proof.pub_signals[6], '0x' + proof.pub_signals[15]],
         ],
@@ -211,48 +200,62 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
     } catch (error) {
       console.error('Proof generation failed:', error)
       progress.value = 0
+      setScreenKey('questions')
       bus.emit(DefaultBusEvents.error, { message: 'Proof generation failed. Please try again.' })
     } finally {
       setIsCloseDisabled(false)
     }
   }
 
-  // Handlers
-  const saveAnswerAndNext = (selectedAnswerId: string) => {
-    const newAnswers = new Map(answers)
-    newAnswers.set(currentQuestionIndex, selectedAnswerId)
-    setAnswers(newAnswers)
+  const isLastQuestion = useMemo(
+    () => currentQuestionIndex === (proposalMetadata?.acceptedOptions?.length ?? 0) - 1,
+    [currentQuestionIndex, proposalMetadata?.acceptedOptions?.length],
+  )
 
-    if (currentQuestionIndex === totalQuestions - 1) {
-      setScreenKey('submit')
-      generateProof(newAnswers)
-      return
-    }
-
-    setSelectedAnswerId(null)
-    setCurrentQuestionIndex(idx => idx + 1)
-  }
+  const saveAnswer = useCallback(
+    (id: string) => {
+      setAnswers(prev => {
+        const prevMap = new Map(prev)
+        prevMap.set(currentQuestionIndex, id)
+        return prevMap
+      })
+    },
+    [currentQuestionIndex],
+  )
 
   const goToPreviousQuestion = () => setCurrentQuestionIndex(idx => Math.max(idx - 1, 0))
+
+  const goToNextQuestion = useCallback(() => {
+    if (!selectedAnswerId) return
+    saveAnswer(selectedAnswerId)
+    setSelectedAnswerId(null)
+    setCurrentQuestionIndex(i => i + 1)
+  }, [selectedAnswerId, saveAnswer])
+
+  const submit = useCallback(() => {
+    if (!selectedAnswerId) return
+    saveAnswer(selectedAnswerId)
+    setScreenKey('submit')
+    generateProof(answers)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAnswerId, saveAnswer, answers])
 
   // Loading/Error
   if (parsedProposalError || proposalMetadataError || !proposalId) return <Text>Error</Text>
   if (isParsedProposalLoading || isProposalMetadataLoading || !proposalMetadata || !parsedProposal)
     return <Text>Loading...</Text>
 
-  const totalQuestions = proposalMetadata?.acceptedOptions?.length ?? 0
-
   // Screens map
   const screensMap: Record<ScreenKey, ReactNode> = {
     questions: (
       <QuestionScreen
-        questions={proposalMetadata.acceptedOptions ?? []}
+        questions={proposalMetadata.acceptedOptions}
         currentQuestionIndex={currentQuestionIndex}
         selectedAnswerId={selectedAnswerId}
+        onSelectAnswer={setSelectedAnswerId}
         onBack={goToPreviousQuestion}
         onClose={() => bottomSheet.dismiss()}
-        onSelectAnswer={setSelectedAnswerId}
-        onSubmit={saveAnswerAndNext}
+        onSubmit={isLastQuestion ? submit : goToNextQuestion}
       />
     ),
     submit: (
@@ -280,7 +283,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
             title={proposalMetadata.title}
             subtitle={proposalMetadata.description}
             date={formatDateDMY(parsedProposal?.startTimestamp)}
-            image={`${Config.IPFS_NODE_URL}${proposalMetadata?.imageCid}`}
+            image={`${Config.IPFS_NODE_URL}/${proposalMetadata?.imageCid}`}
           />
         </View>
 
@@ -305,7 +308,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
 
       <UiBottomSheet
         ref={bottomSheet.ref}
-        isCloseDisabled={isCloseDisabled}
+        isCloseDisabled={isSubmitting}
         snapPoints={['100%']}
         headerComponent={<></>}
         enableDynamicSizing={false}

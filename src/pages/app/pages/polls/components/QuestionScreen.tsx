@@ -27,7 +27,7 @@ export default function QuestionScreen({
   onClose,
 }: QuestionScreenProps) {
   const currentQuestion = questions[currentQuestionIndex]
-  const canGoBack = currentQuestionIndex > 0
+  const isCanGoBack = currentQuestionIndex > 0
   const isLast = currentQuestionIndex === questions.length - 1
   const insets = useSafeAreaInsets()
 
@@ -39,117 +39,70 @@ export default function QuestionScreen({
         paddingBottom: insets.bottom,
       }}
     >
-      <Header current={currentQuestionIndex} max={questions.length} onClose={onClose} />
+      <View className='flex-row items-center justify-between'>
+        <Text className='typography-subtitle4 text-textSecondary'>
+          Question: {currentQuestionIndex + 1}/{questions.length}
+        </Text>
+        <Pressable onPress={onClose}>
+          <View className='h-10 w-10 items-center justify-center rounded-full bg-componentPrimary'>
+            <UiIcon customIcon='closeIcon' size={20} className='color-textPrimary' />
+          </View>
+        </Pressable>
+      </View>
 
       <View className='flex-1 gap-3'>
-        <QuestionCard
-          question={currentQuestion.title}
-          answers={currentQuestion.variants}
-          selectedAnswerId={selectedAnswerId}
-          onSelectAnswer={onSelectAnswer}
-        />
+        <UiCard className='w-full justify-center gap-5 p-4'>
+          <Text className='typography-h6 text-center text-textPrimary'>
+            {currentQuestion.title}
+          </Text>
+          <UiHorizontalDivider />
+          <Text className='typography-overline2 text-textSecondary'>PICK YOUR ANSWER</Text>
+
+          <View className='mt-3 gap-3'>
+            {currentQuestion.variants.map((answer, index) => {
+              const id = String(index)
+              return (
+                <UiButton
+                  key={`${answer}-${index}`}
+                  color='primary'
+                  title={answer}
+                  className='w-full'
+                  variant='outlined'
+                  size='medium'
+                  leadingIconProps={
+                    selectedAnswerId === id ? { customIcon: 'checkIcon' } : undefined
+                  }
+                  onPress={() => onSelectAnswer(id)}
+                />
+              )
+            })}
+          </View>
+        </UiCard>
       </View>
 
-      <Footer
-        selectedAnswerId={selectedAnswerId}
-        isLastQuestion={isLast}
-        canGoBack={canGoBack}
-        onBack={onBack}
-        onPress={() => onSubmit(selectedAnswerId!)}
-      />
-    </View>
-  )
-}
+      <>
+        <UiHorizontalDivider />
 
-function Header({ current, max, onClose }: { current: number; max: number; onClose: () => void }) {
-  return (
-    <View className='flex-row items-center justify-between'>
-      <Text className='typography-subtitle4 text-textSecondary'>
-        Question: {current + 1}/{max}
-      </Text>
-      <Pressable onPress={onClose}>
-        <View className='h-10 w-10 items-center justify-center rounded-full bg-componentPrimary'>
-          <UiIcon customIcon='closeIcon' size={20} className='color-textPrimary' />
-        </View>
-      </Pressable>
-    </View>
-  )
-}
-
-function QuestionCard({
-  question,
-  answers,
-  selectedAnswerId,
-  onSelectAnswer,
-}: {
-  question: string
-  answers: string[]
-  selectedAnswerId: string | null
-  onSelectAnswer: (id: string) => void
-}) {
-  return (
-    <UiCard className='w-full justify-center gap-5 p-4'>
-      <Text className='typography-h6 text-center text-textPrimary'>{question}</Text>
-      <UiHorizontalDivider />
-      <Text className='typography-overline2 text-textSecondary'>PICK YOUR ANSWER</Text>
-
-      <View className='mt-3 gap-3'>
-        {answers.map((answer, index) => {
-          const id = String(index)
-          return (
+        <View className='flex-row gap-3'>
+          {isCanGoBack && (
             <UiButton
-              key={`${answer}-${index}`}
-              color='primary'
-              title={answer}
-              className='w-full'
               variant='outlined'
-              size='medium'
-              leadingIconProps={selectedAnswerId === id ? { customIcon: 'checkIcon' } : undefined}
-              onPress={() => onSelectAnswer(id)}
+              title='Previous'
+              className='flex-1'
+              leadingIconProps={{ customIcon: 'arrowLeftIcon' }}
+              onPress={onBack}
             />
-          )
-        })}
-      </View>
-    </UiCard>
-  )
-}
+          )}
 
-function Footer({
-  selectedAnswerId,
-  isLastQuestion,
-  canGoBack,
-  onPress,
-  onBack,
-}: {
-  selectedAnswerId: string | null
-  isLastQuestion: boolean
-  canGoBack: boolean
-  onPress: () => void
-  onBack: () => void
-}) {
-  return (
-    <>
-      <UiHorizontalDivider />
-
-      <View className='flex-row gap-3'>
-        {canGoBack && (
           <UiButton
-            variant='outlined'
-            title='Previous'
+            title={isLast ? 'Finish' : 'Next Question'}
+            trailingIconProps={{ customIcon: 'arrowRightIcon' }}
+            disabled={!selectedAnswerId}
             className='flex-1'
-            leadingIconProps={{ customIcon: 'arrowLeftIcon' }}
-            onPress={onBack}
+            onPress={() => onSubmit(selectedAnswerId!)}
           />
-        )}
-
-        <UiButton
-          title={isLastQuestion ? 'Finish' : 'Next Question'}
-          trailingIconProps={{ customIcon: 'arrowRightIcon' }}
-          disabled={!selectedAnswerId}
-          className='flex-1'
-          onPress={onPress}
-        />
-      </View>
-    </>
+        </View>
+      </>
+    </View>
   )
 }
