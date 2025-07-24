@@ -1,3 +1,4 @@
+import { Time } from '@distributedlab/tools'
 import { useNavigation } from '@react-navigation/native'
 import { useQuery } from '@tanstack/react-query'
 import { AbiCoder, JsonRpcProvider } from 'ethers'
@@ -154,6 +155,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
         skIdentity: `0x${privateKey}`,
         identityCounter: String(identityReissueCounter),
         timestamp: String(issueTimestamp),
+        currentDate: new Time().format('YYMMDD'),
         identityCountLower: '0',
         citizenshipMask: '0',
         timestampLower: '0',
@@ -161,26 +163,47 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
 
       const proof = await circuitParams.prove(inputs)
 
+      console.log('proof', proof)
+
       // CALLDATA
       // ------------------------------------------------------------------------------------
       const registrationRoot = circuitParams.passportRegistrationProof?.root as string
+
+      console.log('registrationRoot', registrationRoot)
+
+      // console.log('_answers', _answers)
+      // console.log(
+      //   '[...answers.values()].map(v => 1 << Number(v))',
+      //   [...answers.values()].map(v => 1 << Number(v)),
+      // )
+
+      const raw = Array.from(_answers.values())
+      const voteArray = raw.map(v => 1 << Number(v))
+
+      console.log('answersMap', _answers)
+      console.log('raw', raw)
+      console.log('voteArray', voteArray)
 
       const abiCode = new AbiCoder()
       const userDataEncoded = abiCode.encode(
         ['uint256', 'uint256[]', 'tuple(uint256,uint256,uint256)'],
         [
           proposalId,
-          [...answers.values()].map(v => 1 << Number(v)),
-          ['0x' + proof.pub_signals[0], '0x' + proof.pub_signals[5], '0x' + proof.pub_signals[16]],
+          voteArray,
+          ['0x' + proof.pub_signals[0], '0x' + proof.pub_signals[6], '0x' + proof.pub_signals[15]],
         ],
       )
 
+      console.log('userDataEncoded', userDataEncoded)
+
       const callData = noirIdVotingContract.contractInterface.encodeFunctionData('executeNoir', [
         registrationRoot,
-        '0x' + proof.pub_signals[14],
+        '0x' + proof.pub_signals[13],
         userDataEncoded,
         '0x' + proof.proof,
       ])
+
+      console.log('callData', callData)
 
       bus.emit(DefaultBusEvents.success, { message: 'Proof generated successfully!' })
       setProgress(100)

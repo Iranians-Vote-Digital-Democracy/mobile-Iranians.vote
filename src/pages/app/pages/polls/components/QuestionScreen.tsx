@@ -93,16 +93,15 @@ function QuestionCard({
       <View className='mt-3 gap-3'>
         {answers.map((answer, index) => {
           const id = String(index)
-          const isSelected = selectedAnswerId === id
           return (
             <UiButton
-              key={id}
+              key={`${answer}-${index}`}
               color='primary'
               title={answer}
               className='w-full'
               variant='outlined'
               size='medium'
-              leadingIconProps={isSelected ? { customIcon: 'checkIcon' } : undefined}
+              leadingIconProps={selectedAnswerId === id ? { customIcon: 'checkIcon' } : undefined}
               onPress={() => onSelectAnswer(id)}
             />
           )

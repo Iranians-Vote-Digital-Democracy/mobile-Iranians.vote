@@ -64,6 +64,8 @@ export class EIDBasedQueryIdentityCircuit {
       ...params,
     })
 
+    console.log('inputs', inputs)
+
     const proof = await this.circuitParams.prove(JSON.stringify(inputs), byteCode)
 
     if (!proof) {
@@ -105,6 +107,7 @@ export class EIDBasedQueryIdentityCircuit {
       sk_identity: fmt(params.skIdentity, '0'),
       pk_passport_hash: fmt(params.pkPassportHash, '0'),
       dg1: formatArray(params.dg1),
+      current_date: fmt(params.currentDate, '000000'),
       siblings: formatArray(params.siblings),
     }
   }

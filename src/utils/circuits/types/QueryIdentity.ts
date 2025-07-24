@@ -104,6 +104,7 @@ export interface QueryProofParams {
   citizenshipMask?: string
   skIdentity?: string
   pkPassportHash?: string
+  currentDate?: string
   dg1?: string[] // array of byte values as strings
   siblings?: string[] // array of branch nodes
 }
