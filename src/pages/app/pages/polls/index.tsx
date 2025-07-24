@@ -1,7 +1,7 @@
 import { Time } from '@distributedlab/tools'
 import { useNavigation } from '@react-navigation/native'
 import { useQuery } from '@tanstack/react-query'
-import { AbiCoder, JsonRpcProvider } from 'ethers'
+import { AbiCoder, hexlify, JsonRpcProvider, toUtf8Bytes } from 'ethers'
 import { useMemo, useState } from 'react'
 import { Text, View } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
@@ -155,7 +155,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
         skIdentity: `0x${privateKey}`,
         identityCounter: String(identityReissueCounter),
         timestamp: String(issueTimestamp),
-        currentDate: new Time().format('YYMMDD'),
+        currentDate: hexlify(toUtf8Bytes(new Time().format('YYMMDD'))),
         identityCountLower: '0',
         citizenshipMask: '0',
         timestampLower: '0',
