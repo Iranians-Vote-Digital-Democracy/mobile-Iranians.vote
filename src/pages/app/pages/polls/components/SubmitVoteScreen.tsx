@@ -3,7 +3,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { UiButton, UiHorizontalDivider, UiIcon } from '@/ui'
 
-// Screens enum
 export enum Step {
   SendProof,
   Finish,
