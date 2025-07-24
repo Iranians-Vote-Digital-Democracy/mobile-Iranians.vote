@@ -2,7 +2,7 @@ import { Time } from '@distributedlab/tools'
 import { useNavigation } from '@react-navigation/native'
 import { useQuery } from '@tanstack/react-query'
 import { AbiCoder, hexlify, JsonRpcProvider, toUtf8Bytes } from 'ethers'
-import { useMemo, useState } from 'react'
+import { ReactNode, useMemo, useState } from 'react'
 import { Image, Pressable, Text, View } from 'react-native'
 import { useSharedValue, withTiming } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -243,7 +243,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
   const totalQuestions = proposalMetadata?.acceptedOptions?.length ?? 0
 
   // Screens map
-  const screensMap: Record<ScreenKey, JSX.Element> = {
+  const screensMap: Record<ScreenKey, ReactNode> = {
     questions: (
       <QuestionScreen
         questions={proposalMetadata.acceptedOptions ?? []}
