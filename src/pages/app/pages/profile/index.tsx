@@ -1,9 +1,12 @@
 import { identicon } from '@dicebear/collection'
 import { createAvatar } from '@dicebear/core'
 import { BottomSheetView } from '@gorhom/bottom-sheet'
+import WheelPicker from '@quidone/react-native-wheel-picker'
+import * as Haptics from 'expo-haptics'
 import { version } from 'package.json'
-import { ReactNode, useCallback, useMemo } from 'react'
-import { Pressable, Text, View } from 'react-native'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
+import { Pressable, Text, TouchableOpacity, useColorScheme, View } from 'react-native'
+import { TouchableOpacityProps } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SvgXml } from 'react-native-svg'
 
@@ -18,11 +21,19 @@ import {
   PasscodeStatuses,
   walletStore,
 } from '@/store'
-import { cn, useAppPaddings, useBottomBarOffset, useSelectedTheme } from '@/theme'
+import {
+  cn,
+  ColorSchemeType,
+  useAppPaddings,
+  useAppTheme,
+  useBottomBarOffset,
+  useSelectedTheme,
+} from '@/theme'
 import {
   UiBottomSheet,
   UiButton,
   UiCard,
+  UiHorizontalDivider,
   UiIcon,
   UiScreenScrollable,
   UiSwitcher,
@@ -31,57 +42,43 @@ import {
 
 import AppContainer from '../../components/AppContainer'
 
-function OptionButton({
-  title,
-  isSelected,
-  onPress,
-}: {
-  title: string
-  isSelected: boolean
-  onPress: () => void
-}) {
-  return (
-    <Pressable onPress={onPress}>
-      <View
-        className={cn(
-          'w-full rounded-3xl px-5 py-4',
-          isSelected ? 'border-textPrimary bg-componentPrimary' : 'border-componentPrimary',
-        )}
-      >
-        <Text className='typography-subtitle4 text-center text-textPrimary'>{title}</Text>
-      </View>
-    </Pressable>
-  )
-}
-
 function ProfileButton({
+  leadingIcon,
+  trailingIcon,
+
   title,
-  icon,
-  selectedVariant,
-  onPress,
+  trailingContent,
+
+  className,
+  ...rest
 }: {
+  leadingIcon: ReactNode
+  trailingIcon?: ReactNode
   title: string
-  icon?: ReactNode
-  selectedVariant?: string
-  onPress: () => void
-}) {
+  trailingContent?: ReactNode
+} & Omit<TouchableOpacityProps, 'children'>) {
   return (
-    <Pressable onPress={onPress}>
-      <View className={cn('w-full flex-row items-center justify-between rounded-3xl px-5 py-4')}>
-        <View className='flex-row items-center gap-4'>
-          {icon}
-          <Text className='typography-subtitle4 text-textPrimary'>{title}</Text>
-        </View>
-
-        <View className='flex-row items-center gap-2'>
-          {selectedVariant && (
-            <Text className='typography-body2 text-textSecondary'>{selectedVariant}</Text>
-          )}
-
-          <UiIcon customIcon='caretRightIcon' className='text-textSecondary' size={20} />
-        </View>
+    <TouchableOpacity
+      {...rest}
+      className={cn('flex w-full flex-row items-center gap-2 py-2', className)}
+    >
+      <View className='flex aspect-square size-8 items-center justify-center rounded-full bg-componentPrimary'>
+        {leadingIcon}
       </View>
-    </Pressable>
+
+      <Text className={cn('typography-buttonMedium mr-auto text-textPrimary')}>{title}</Text>
+
+      {trailingContent}
+
+      {trailingIcon || (
+        <UiIcon
+          libIcon='FontAwesome'
+          name='chevron-right'
+          className='ml-2 text-textSecondary'
+          size={3 * 4}
+        />
+      )}
+    </TouchableOpacity>
   )
 }
 
@@ -169,46 +166,65 @@ function LangCard() {
   // TODO: reload app after change language
   const { language, setLanguage } = useSelectedLanguage()
   const languageBottomSheet = useUiBottomSheet()
-  const insets = useSafeAreaInsets()
   const appPaddings = useAppPaddings()
-
+  const [value, setValue] = useState<string>(language)
+  const { palette } = useAppTheme()
   return (
     <>
       <View className='flex w-full flex-col gap-4'>
         <ProfileButton
           title='Language'
-          icon={<UiIcon customIcon='earthLineIcon' className='text-textPrimary' size={24} />}
+          leadingIcon={<UiIcon customIcon='earthLineIcon' className='text-textPrimary' size={24} />}
           onPress={languageBottomSheet.present}
-          selectedVariant={`${language}`}
+          trailingContent={<Text className='typography-body2 text-textSecondary'>{language}</Text>}
         />
       </View>
       <UiBottomSheet
-        title={`Current language: ${language}`}
+        title='Select Theme'
         ref={languageBottomSheet.ref}
         detached={true}
         enableDynamicSizing={false}
-        snapPoints={['30%']}
+        snapPoints={['20%']}
+        enableContentPanningGesture={false}
+        headerComponent={
+          <View className='flex-row items-center justify-center py-0'>
+            <UiButton variant='text' title='Cancel' onPress={languageBottomSheet.dismiss} />
+            <UiHorizontalDivider className='mx-auto h-3 w-14 rounded-full' />
+            <UiButton
+              variant='text'
+              title='Submit'
+              onPress={() => {
+                setLanguage(value as Language)
+              }}
+            />
+          </View>
+        }
       >
         <BottomSheetView
-          className='mt-3 w-full gap-2'
+          className='w-full'
           style={{
-            paddingBottom: insets.bottom + 20,
-
             paddingLeft: appPaddings.left,
             paddingRight: appPaddings.right,
           }}
         >
-          {Object.keys(resources).map(el => (
-            <OptionButton
-              key={el}
-              title={el}
-              isSelected={language === el}
-              onPress={() => {
-                setLanguage(el as Language)
-                languageBottomSheet.dismiss()
-              }}
+          <View className={cn('justify-top flex gap-2')}>
+            <WheelPicker
+              data={Object.keys(resources).map(el => ({
+                label: {
+                  en: 'English',
+                  ar: 'العربية',
+                  uk: 'Українська',
+                }[el],
+                value: el,
+              }))}
+              itemTextStyle={{ color: palette.textPrimary }}
+              value={value}
+              onValueChanged={({ item: { value } }) => setValue(value)}
+              onValueChanging={Haptics.selectionAsync}
+              enableScrollByTapOnItem
+              itemHeight={25}
             />
-          ))}
+          </View>
         </BottomSheetView>
       </UiBottomSheet>
     </>
@@ -216,61 +232,124 @@ function LangCard() {
 }
 
 function ThemeCard() {
-  const { selectedTheme, setSelectedTheme } = useSelectedTheme()
-  const themeBottomSheet = useUiBottomSheet()
   const appPaddings = useAppPaddings()
-  const insets = useSafeAreaInsets()
+
+  const bottomSheet = useUiBottomSheet()
+
+  const { selectedTheme, setSelectedTheme } = useSelectedTheme()
+  const colorSchemeName = useColorScheme()
 
   return (
     <>
-      <View className='flex w-full flex-col gap-4'>
-        <ProfileButton
-          title='Theme'
-          onPress={themeBottomSheet.present}
-          selectedVariant={`${selectedTheme}`}
-          icon={<UiIcon customIcon='paletteIcon' className='text-textPrimary' size={24} />}
-        />
-      </View>
+      <ProfileButton
+        leadingIcon={(() => {
+          if (!colorSchemeName) {
+            return (
+              <UiIcon
+                libIcon='FontAwesome'
+                name='paint-brush'
+                className='text-textPrimary'
+                size={4 * 4}
+              />
+            )
+          }
+
+          return {
+            light: (
+              <UiIcon
+                libIcon='Fontisto'
+                name='day-sunny'
+                className='text-textPrimary'
+                size={4.5 * 4}
+              />
+            ),
+            dark: (
+              <UiIcon
+                libIcon='Fontisto'
+                name='night-clear'
+                className='text-textPrimary'
+                size={4.5 * 4}
+              />
+            ),
+          }[colorSchemeName]
+        })()}
+        title='Theme'
+        trailingContent={
+          <Text className='typography-body4 capitalize text-textSecondary'>{selectedTheme}</Text>
+        }
+        onPress={bottomSheet.present}
+      />
+
       <UiBottomSheet
-        title={`Current theme: ${selectedTheme}`}
-        ref={themeBottomSheet.ref}
+        title='Select Theme'
+        ref={bottomSheet.ref}
         detached={true}
         enableDynamicSizing={false}
-        snapPoints={['30%']}
+        snapPoints={['20%']}
+        headerComponent={
+          <>
+            <UiHorizontalDivider className='mx-auto my-4 mb-0 h-3 w-14 rounded-full' />
+          </>
+        }
       >
         <BottomSheetView
-          className='mt-3 gap-3'
+          className='mt-3 flex size-full gap-2 pt-6'
           style={{
-            paddingBottom: insets.bottom + 20,
             paddingLeft: appPaddings.left,
             paddingRight: appPaddings.right,
           }}
         >
-          <View className={cn('flex flex-col gap-2')}>
-            <OptionButton
-              title='Light'
-              isSelected={selectedTheme === 'light'}
-              onPress={() => {
-                setSelectedTheme('light')
-                themeBottomSheet.dismiss()
-              }}
-            />
-            <OptionButton
-              title='Dark'
-              isSelected={selectedTheme === 'dark'}
-              onPress={() => {
-                setSelectedTheme('dark')
-                themeBottomSheet.dismiss()
-              }}
-            />
-            <OptionButton
-              title='System'
-              isSelected={selectedTheme === 'system'}
-              onPress={() => {
-                setSelectedTheme('system')
-                themeBottomSheet.dismiss()
-              }}
-            />
+          <View className={cn('flex flex-row justify-center gap-4')}>
+            {[
+              {
+                title: 'light',
+                value: 'light',
+                icon: (
+                  <UiIcon
+                    libIcon='Fontisto'
+                    name='day-sunny'
+                    size={6 * 4}
+                    className='text-textPrimary'
+                  />
+                ),
+              },
+              {
+                title: 'dark',
+                value: 'dark',
+                icon: (
+                  <UiIcon
+                    libIcon='Fontisto'
+                    name='night-clear'
+                    size={6 * 4}
+                    className='text-textPrimary'
+                  />
+                ),
+              },
+              {
+                title: 'system',
+                value: 'system',
+                icon: (
+                  <UiIcon
+                    libIcon='Entypo'
+                    name='mobile'
+                    size={6 * 4}
+                    className='text-textPrimary'
+                  />
+                ),
+              },
+            ].map(({ value, title, icon }, idx) => (
+              <TouchableOpacity
+                key={idx}
+                className={cn(
+                  'flex w-1/4 items-center gap-4 rounded-lg border-2 border-componentPrimary p-3',
+                  selectedTheme === value ? 'border-primaryMain' : 'border-componentPrimary',
+                )}
+                onPress={() => setSelectedTheme(value as ColorSchemeType)}
+              >
+                {icon}
+                <Text className='typography-caption1 capitalize text-textSecondary'>{title}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </BottomSheetView>
       </UiBottomSheet>
@@ -330,8 +409,10 @@ function LocalAuthMethodCard() {
       <View className='flex w-full flex-col gap-4'>
         <ProfileButton
           title='Auth methods'
+          leadingIcon={
+            <UiIcon customIcon='shieldCheckIcon' className='text-textPrimary' size={24} />
+          }
           onPress={authMethodBottomSheet.present}
-          icon={<UiIcon customIcon='shieldCheckIcon' className='text-textPrimary' size={24} />}
         />
       </View>
       <UiBottomSheet
