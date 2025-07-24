@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { apiClient } from '@/api/client'
 import { RARIMO_CHAINS } from '@/api/modules/rarimo'
+import { relayerVerification } from '@/api/modules/verification/relayer'
 import { Config } from '@/config'
 import { bus, DefaultBusEvents } from '@/core'
 import {
@@ -172,33 +173,30 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
 
       // CALLDATA
       // ------------------------------------------------------------------------------------
-      const registrationRoot = circuitParams.passportRegistrationProof?.root as string
-
-      console.log('registrationRoot', registrationRoot)
-
-      const raw = Array.from(_answers.values())
-      const voteArray = raw.map(v => 1 << Number(v))
-
       const abiCode = new AbiCoder()
       const userDataEncoded = abiCode.encode(
         ['uint256', 'uint256[]', 'tuple(uint256,uint256,uint256)'],
         [
           proposalId,
-          voteArray,
+          // votes mask
+          Array.from(_answers.values()).map(v => 1 << Number(v)),
+          // User payload: (nullifier, citizenship, timestampUpperbound)
           ['0x' + proof.pub_signals[0], '0x' + proof.pub_signals[6], '0x' + proof.pub_signals[15]],
         ],
       )
 
       console.log('userDataEncoded', userDataEncoded)
 
-      const callData = noirIdVotingContract.contractInterface.encodeFunctionData('executeNoir', [
-        registrationRoot,
+      const callDataHex = noirIdVotingContract.contractInterface.encodeFunctionData('executeNoir', [
+        circuitParams.passportRegistrationProof?.root as string,
         '0x' + proof.pub_signals[13],
         userDataEncoded,
         '0x' + proof.proof,
       ])
 
-      console.log('callData', callData)
+      console.log('callDataHex', callDataHex)
+
+      await relayerVerification(callDataHex, Config.NOIR_ID_VOTING_CONTRACT)
 
       bus.emit(DefaultBusEvents.success, { message: 'Proof generated successfully!' })
       setProgress(100)
@@ -243,9 +241,9 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
       <QuestionScreen
         questions={proposalMetadata.acceptedOptions ?? []}
         currentQuestionIndex={currentQuestionIndex}
-        onClose={() => bottomSheet.dismiss()}
-        onBack={goToPreviousQuestion}
         selectedAnswerId={selectedAnswerId}
+        onBack={goToPreviousQuestion}
+        onClose={() => bottomSheet.dismiss()}
         onSelectAnswer={setSelectedAnswerId}
         onSubmit={saveAnswerAndNext}
       />

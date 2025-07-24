@@ -269,8 +269,6 @@ export abstract class RegistrationStrategy {
         slaveMaster,
       )
 
-      // FIXME: failed here
-      console.log('Config.REGISTRATION_CONTRACT_ADDRESS', Config.REGISTRATION_CONTRACT_ADDRESS)
       const { data } = await relayerRegister(callData, Config.REGISTRATION_CONTRACT_ADDRESS)
 
       const tx = await RegistrationStrategy.rmoEvmJsonRpcProvider.getTransaction(data.tx_hash)
@@ -312,7 +310,6 @@ export abstract class RegistrationStrategy {
   }
 
   public static async requestRelayerRegisterMethod(registerCallData: string): Promise<void> {
-    console.log('here?')
     const { data } = await relayerRegister(registerCallData, Config.REGISTRATION_CONTRACT_ADDRESS)
 
     const tx = await RegistrationStrategy.rmoEvmJsonRpcProvider.getTransaction(data.tx_hash)
