@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -11,6 +10,8 @@ interface Question {
 interface QuestionScreenProps {
   questions: Question[]
   currentQuestionIndex: number
+  selectedAnswerId: string | null
+  onSelectAnswer: (id: string) => void
   onSubmit: (id: string) => void
   onBack: () => void
   onClose: () => void
@@ -18,12 +19,13 @@ interface QuestionScreenProps {
 
 export default function QuestionScreen({
   questions,
+  selectedAnswerId,
+  onSelectAnswer,
   currentQuestionIndex,
   onSubmit,
   onBack,
   onClose,
 }: QuestionScreenProps) {
-  const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null)
   const currentQuestion = questions[currentQuestionIndex]
   const canGoBack = currentQuestionIndex > 0
   const isLast = currentQuestionIndex === questions.length - 1
@@ -31,6 +33,7 @@ export default function QuestionScreen({
 
   return (
     <View
+      key={currentQuestionIndex}
       className='h-full gap-3 bg-backgroundPrimary p-4'
       style={{
         paddingBottom: insets.bottom,
@@ -43,7 +46,7 @@ export default function QuestionScreen({
           question={currentQuestion.title}
           answers={currentQuestion.variants}
           selectedAnswerId={selectedAnswerId}
-          onSelectAnswer={setSelectedAnswerId}
+          onSelectAnswer={onSelectAnswer}
         />
       </View>
 

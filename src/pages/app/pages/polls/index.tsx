@@ -53,6 +53,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
   const [screenKey, setScreenKey] = useState<ScreenKey>('questions')
   const [step, setStep] = useState<Step>(Step.SendProof)
   const [progress, setProgress] = useState(0)
+  const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null)
 
   const proposalId = route.params?.proposalId
 
@@ -127,20 +128,24 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
       const identityReissueCounter = passportInfo_.identityReissueCounter
       const issueTimestamp = identityInfo_.issueTimestamp
 
-      let identityCountUpper = BigInt(MAX_UINT_32_HEX)
-      const ROOT_VALIDITY = await registrationPoseidonSMTContract.contractInstance.ROOT_VALIDITY()
+      const ROOT_VALIDITY = BigInt(
+        await registrationPoseidonSMTContract.contractInstance.ROOT_VALIDITY(),
+      )
       let timestampUpper = BigInt(whitelistData.identityCreationTimestampUpperBound) - ROOT_VALIDITY
+      let identityCountUpper = BigInt(MAX_UINT_32_HEX)
 
-      if (issueTimestamp > timestampUpper) {
+      if (issueTimestamp > 0n) {
+        timestampUpper = issueTimestamp
+
         identityCountUpper = BigInt(whitelistData.identityCounterUpperBound)
-        timestampUpper = issueTimestamp + 1n
-        if (identityReissueCounter > whitelistData.identityCounterUpperBound) {
+
+        if (identityReissueCounter > BigInt(whitelistData.identityCounterUpperBound)) {
           throw new Error('Identity registered more than allowed, after voting start')
         }
       }
 
       const eventId = await proposalContract.contractInstance.getProposalEventId(proposalId!)
-      const eventData = computeEventData([...answers.values()].map(Number))
+      const eventData = computeEventData([..._answers.values()].map(Number))
 
       const inputs: QueryProofParams = {
         eventId: String(eventId),
@@ -171,18 +176,8 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
 
       console.log('registrationRoot', registrationRoot)
 
-      // console.log('_answers', _answers)
-      // console.log(
-      //   '[...answers.values()].map(v => 1 << Number(v))',
-      //   [...answers.values()].map(v => 1 << Number(v)),
-      // )
-
       const raw = Array.from(_answers.values())
       const voteArray = raw.map(v => 1 << Number(v))
-
-      console.log('answersMap', _answers)
-      console.log('raw', raw)
-      console.log('voteArray', voteArray)
 
       const abiCode = new AbiCoder()
       const userDataEncoded = abiCode.encode(
@@ -229,6 +224,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
       return
     }
 
+    setSelectedAnswerId(null)
     setCurrentQuestionIndex(idx => idx + 1)
   }
 
@@ -249,6 +245,8 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
         currentQuestionIndex={currentQuestionIndex}
         onClose={() => bottomSheet.dismiss()}
         onBack={goToPreviousQuestion}
+        selectedAnswerId={selectedAnswerId}
+        onSelectAnswer={setSelectedAnswerId}
         onSubmit={saveAnswerAndNext}
       />
     ),
