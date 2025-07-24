@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useQuery } from '@tanstack/react-query'
 import { JsonRpcProvider } from 'ethers'
 import { useMemo, useState } from 'react'
-import { Text, View } from 'react-native'
+import { Image, Text, View } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -116,6 +116,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
             title={proposalMetadata.data.title}
             subtitle={proposalMetadata.data.description}
             date={formatDateDMY(parsedProposal?.startTimestamp)}
+            image={`${Config.IPFS_NODE_URL}${proposalMetadata?.data.imageCid}`}
           />
         </View>
 
@@ -123,9 +124,15 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
 
         {/* TODO: Implement criterias */}
         <View className='gap-3'>
-          <CriteriaRow title='Test criteria 1' status='approved' />
-          <CriteriaRow title='Test criteria 2' status='approved' />
-          <CriteriaRow title='Test criteria 3' status='approved' />
+          <CriteriaRow title='Citizen of IRAN' status='approved' />
+          <CriteriaRow
+            title={`After ${formatDateDMY(parsedProposal.startTimestamp)}`}
+            status='approved'
+          />
+          <CriteriaRow
+            title={`Before ${formatDateDMY(parsedProposal.startTimestamp + parsedProposal.duration)}`}
+            status='approved'
+          />
         </View>
 
         <View className='w-full flex-1 justify-end'>
@@ -193,16 +200,21 @@ const PollsHeader = ({
   title,
   subtitle,
   date,
+  image,
 }: {
   title: string
   subtitle: string
   date: string
+  image: string
 }) => (
   <View className='gap-6 overflow-hidden rounded-3xl'>
-    <UiCard className='p-6'>
+    <UiCard className='gap-4 p-6'>
       <View className='flex-col gap-2'>
         <Text className='typography-h6 text-textPrimary'>{title}</Text>
         <Text className='typography-body3 text-textSecondary'>{subtitle}</Text>
+      </View>
+      <View>
+        <Image source={{ uri: image }} className='h-48 w-full' />
       </View>
       <View className='mt-6 flex-row items-center justify-between'>
         <View className='flex-row items-center gap-2'>

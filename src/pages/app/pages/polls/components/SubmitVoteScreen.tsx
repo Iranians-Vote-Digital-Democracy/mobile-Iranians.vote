@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Text, View } from 'react-native'
+import { StyleProp, Text, View, ViewStyle } from 'react-native'
+import Animated, {
+  AnimatedStyle,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { bus, DefaultBusEvents } from '@/core'
@@ -34,9 +40,26 @@ export default function SubmitVoteScreen({
 }: SubmitVoteScreenProps) {
   const insets = useSafeAreaInsets()
   const [step, setStep] = useState<Step>(Step.SendProof)
-  const [progress, setProgress] = useState(0)
   const identities = identityStore.useIdentityStore(state => state.identities)
   const privateKey = walletStore.useWalletStore(state => state.privateKey)
+
+  const progress = useSharedValue(0)
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      width: `${progress.value}%`, // Assuming a max width of 200 for the container
+    }
+  })
+
+  const startProgress = () => {
+    progress.value = withTiming(97, { duration: 36_000 })
+  }
+
+  useEffect(() => {
+    startProgress()
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     onStart()
@@ -67,7 +90,7 @@ export default function SubmitVoteScreen({
           message: 'Proof generated successfully!',
         })
 
-        setProgress(100)
+        progress.value = withTiming(100, { duration: 100 })
         setStep(Step.Finish)
         await sleep(5_000)
         onFinish()
@@ -80,7 +103,7 @@ export default function SubmitVoteScreen({
     }
 
     generateProof()
-  }, [identities, onFinish, onStart, parsedProposal, privateKey])
+  }, [identities, onFinish, onStart, parsedProposal, privateKey, progress])
 
   return (
     <View
@@ -90,26 +113,31 @@ export default function SubmitVoteScreen({
         paddingTop: insets.top,
       }}
     >
-      {step === Step.SendProof ? <SendProofStep progress={progress} /> : <FinishStep />}
+      {step === Step.SendProof ? <SendProofStep animatedStyle={animatedStyle} /> : <FinishStep />}
     </View>
   )
 }
 
-function SendProofStep({ progress }: { progress: number }) {
+function SendProofStep({ animatedStyle }: { animatedStyle: { width: string } }) {
   return (
     <View className='w-full items-center gap-6'>
       <View className='mb-4 flex-row items-center justify-center rounded-full bg-warningLight'>
-        <UiIcon customIcon='dotsThreeOutlineIcon' size={64} className='mb-4 color-warningMain' />
+        <UiIcon customIcon='dotsThreeOutlineIcon' size={64} className='color-warningMain' />
       </View>
 
       <Text className='typography-h5 mb-2 text-textPrimary'>Please wait</Text>
       <Text className='typography-body3 mb-6 text-textSecondary'>Anonymizing your vote</Text>
 
       <View className='mb-4 h-2 w-4/5 rounded-full bg-componentPrimary'>
-        <View className='h-full rounded-full bg-primaryMain' style={{ width: `${progress}%` }} />
+        <Animated.View
+          className='h-full rounded-full bg-primaryMain'
+          style={
+            {
+              width: animatedStyle.width,
+            } as StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>
+          }
+        />
       </View>
-
-      <Text className='typography-caption2 mb-8 text-primaryMain'>{progress.toFixed(0)}%</Text>
 
       <UiHorizontalDivider />
 
@@ -125,17 +153,16 @@ function SendProofStep({ progress }: { progress: number }) {
 
 function FinishStep() {
   return (
-    <View className='w-full items-center gap-6'>
-      <View className='mb-4 flex-row items-center justify-center rounded-full bg-successLight'>
-        <UiIcon customIcon='checkIcon' size={64} className='mb-4 color-successMain' />
+    <View className='w-full flex-1 items-center'>
+      <View className='w-full flex-1 items-center justify-center gap-6 px-4'>
+        <View className='mb-4 flex-row items-center justify-center rounded-full bg-successLight'>
+          <UiIcon customIcon='checkIcon' size={64} className='color-successMain' />
+        </View>
+        <Text className='typography-h5 mb-2 text-textPrimary'>Poll finished</Text>
+        <Text className='typography-body3 mb-6 text-textSecondary'>Thanks for participation!</Text>
+        <UiHorizontalDivider />
       </View>
-
-      <Text className='typography-h5 mb-2 text-textPrimary'>Poll finished</Text>
-      <Text className='typography-body3 mb-6 text-textSecondary'>Thanks for participation!</Text>
-
-      <UiHorizontalDivider />
-
-      <View className='absolute bottom-0 mb-4 w-full px-4'>
+      <View className='absolute inset-x-0 bottom-0 p-4'>
         <UiButton title='Go Back' onPress={() => {}} className='w-full' />
       </View>
     </View>
