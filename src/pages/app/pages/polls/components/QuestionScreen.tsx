@@ -1,39 +1,39 @@
-import { useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { cn } from '@/theme/utils'
 import { UiButton, UiCard, UiHorizontalDivider, UiIcon } from '@/ui'
 
 interface Question {
   title: string
   variants: string[]
 }
-
 interface QuestionScreenProps {
   questions: Question[]
   currentQuestionIndex: number
-  onClose: () => void
+  selectedAnswerId: string | null
+  onSelectAnswer: (id: string) => void
+  onSubmit: (id: string) => void
   onBack: () => void
-  onSubmit: (selectedAnswerId: string) => void
+  onClose: () => void
 }
 
 export default function QuestionScreen({
   questions,
+  selectedAnswerId,
+  onSelectAnswer,
   currentQuestionIndex,
   onSubmit,
   onBack,
   onClose,
 }: QuestionScreenProps) {
-  const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null)
   const currentQuestion = questions[currentQuestionIndex]
-  const isLastQuestion = currentQuestionIndex === questions.length - 1
-  const insets = useSafeAreaInsets()
-
   const canGoBack = currentQuestionIndex > 0
+  const isLast = currentQuestionIndex === questions.length - 1
+  const insets = useSafeAreaInsets()
 
   return (
     <View
+      key={currentQuestionIndex}
       className='h-full gap-3 bg-backgroundPrimary p-4'
       style={{
         paddingBottom: insets.bottom,
@@ -46,13 +46,13 @@ export default function QuestionScreen({
           question={currentQuestion.title}
           answers={currentQuestion.variants}
           selectedAnswerId={selectedAnswerId}
-          onSelectAnswer={setSelectedAnswerId}
+          onSelectAnswer={onSelectAnswer}
         />
       </View>
 
       <Footer
         selectedAnswerId={selectedAnswerId}
-        isLastQuestion={isLastQuestion}
+        isLastQuestion={isLast}
         canGoBack={canGoBack}
         onBack={onBack}
         onPress={() => onSubmit(selectedAnswerId!)}
@@ -88,19 +88,23 @@ function QuestionCard({
   onSelectAnswer: (id: string) => void
 }) {
   return (
-    <UiCard className='w-full justify-center gap-5'>
+    <UiCard className='w-full justify-center gap-5 p-4'>
       <Text className='typography-h6 text-center text-textPrimary'>{question}</Text>
       <UiHorizontalDivider />
       <Text className='typography-overline2 text-textSecondary'>PICK YOUR ANSWER</Text>
 
-      <View className='gap-3'>
+      <View className='mt-3 gap-3'>
         {answers.map((answer, index) => {
           const id = String(index)
           return (
-            <AnswerButton
-              key={id}
-              answer={answer}
-              isSelected={selectedAnswerId === id}
+            <UiButton
+              key={`${answer}-${index}`}
+              color='primary'
+              title={answer}
+              className='w-full'
+              variant='outlined'
+              size='medium'
+              leadingIconProps={selectedAnswerId === id ? { customIcon: 'checkIcon' } : undefined}
               onPress={() => onSelectAnswer(id)}
             />
           )
@@ -110,37 +114,19 @@ function QuestionCard({
   )
 }
 
-function AnswerButton({
-  answer,
-  isSelected,
+function Footer({
+  selectedAnswerId,
+  isLastQuestion,
+  canGoBack,
   onPress,
+  onBack,
 }: {
-  answer: string
-  isSelected: boolean
-  onPress: () => void
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      className={cn(
-        'rounded-lg border px-5 py-4',
-        isSelected ? 'border-textPrimary bg-componentPrimary' : 'border-componentPrimary',
-      )}
-    >
-      <Text className='typography-subtitle4 text-center text-textPrimary'>{answer}</Text>
-    </Pressable>
-  )
-}
-
-interface FooterProps {
   selectedAnswerId: string | null
   isLastQuestion: boolean
   canGoBack: boolean
   onPress: () => void
   onBack: () => void
-}
-
-function Footer({ onPress, onBack, selectedAnswerId, isLastQuestion, canGoBack }: FooterProps) {
+}) {
   return (
     <>
       <UiHorizontalDivider />

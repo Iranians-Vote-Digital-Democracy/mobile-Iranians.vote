@@ -87,6 +87,10 @@ export class NoirEIDRegistration extends RegistrationStrategy {
 
     const identityItem = new NoirEIDIdentity(eDocument, registrationProof)
 
+    if (registrationProof) {
+      return identityItem
+    }
+
     // const passportInfo = await identityItem.getPassportInfo()
 
     // const currentIdentityKey = publicKeyHash

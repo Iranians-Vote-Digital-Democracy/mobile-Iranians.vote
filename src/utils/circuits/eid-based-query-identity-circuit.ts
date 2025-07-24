@@ -1,14 +1,11 @@
 import { NoirCircuitParams } from '@modules/noir'
-import NoirModule from '@modules/noir/src/NoirModule'
 import { AsnConvert } from '@peculiar/asn1-schema'
 import { Platform } from 'react-native'
 
+import { DEFAULT_MASK_HEX, PRIME } from '@/pages/app/pages/polls/constants'
 import { NoirEIDIdentity } from '@/store/modules/identity/Identity'
 
 import { QueryProofParams } from './types/QueryIdentity'
-
-const PRIME = '21888242871839275222246405745257275088548364400416034343698204186575808495617'
-const DEFAULT_MASK_HEX = '0x20000000000000000000000000' // Iran mask
 
 /**
  * Builds and proves the Query Identity circuit.
@@ -16,6 +13,10 @@ const DEFAULT_MASK_HEX = '0x20000000000000000000000000' // Iran mask
 export class EIDBasedQueryIdentityCircuit {
   public circuitParams: NoirCircuitParams
   public currentIdentity: NoirEIDIdentity
+
+  private _passportRegistrationProof: Awaited<
+    ReturnType<NoirEIDIdentity['getPassportRegistrationProof']>
+  > | null = null
 
   constructor(identity: NoirEIDIdentity) {
     this.currentIdentity = identity
@@ -48,12 +49,10 @@ export class EIDBasedQueryIdentityCircuit {
       currentIdentity.pkIdentityHash, // registrationProof.pub_signals[3] (IdentityKey)
     )
 
-    const [passportInfo_, identityInfo_] = await currentIdentity.getPassportInfo()
-    const identityReissueCounter = passportInfo_.identityReissueCounter.toString()
-    const issueTimestamp = identityInfo_.issueTimestamp.toString()
-
     const passportRegistrationProof =
       await currentIdentity.getPassportRegistrationProof(passportProofIndexHex)
+
+    this._passportRegistrationProof = passportRegistrationProof
 
     const dg1 = Array.from(this.getDg1(rawTbsCertBytes)).map(String)
 
@@ -62,12 +61,10 @@ export class EIDBasedQueryIdentityCircuit {
       dg1,
       pkPassportHash: `0x${currentIdentity.passportHash}`,
       siblings: passportRegistrationProof.siblings,
-      identityCounter: identityReissueCounter,
-      timestamp: issueTimestamp,
       ...params,
     })
 
-    const proof = await NoirModule.provePlonk(setupUri, JSON.stringify(inputs), byteCode)
+    const proof = await this.circuitParams.prove(JSON.stringify(inputs), byteCode)
 
     if (!proof) {
       throw new Error(`Proof generation failed for circuit ${this.circuitParams.name}`)
@@ -108,6 +105,7 @@ export class EIDBasedQueryIdentityCircuit {
       sk_identity: fmt(params.skIdentity, '0'),
       pk_passport_hash: fmt(params.pkPassportHash, '0'),
       dg1: formatArray(params.dg1),
+      current_date: fmt(params.currentDate, '000000'),
       siblings: formatArray(params.siblings),
     }
   }
@@ -231,5 +229,12 @@ export class EIDBasedQueryIdentityCircuit {
       surname,
       common_name,
     }
+  }
+
+  /**
+   * Returns the last retrieved passport registration proof after `prove()` has been called.
+   */
+  public get passportRegistrationProof() {
+    return this._passportRegistrationProof
   }
 }

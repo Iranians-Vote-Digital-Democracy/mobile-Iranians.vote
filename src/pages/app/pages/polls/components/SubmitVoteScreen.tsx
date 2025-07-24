@@ -1,124 +1,45 @@
-import { useEffect, useState } from 'react'
-import { StyleProp, Text, View, ViewStyle } from 'react-native'
-import Animated, {
-  AnimatedStyle,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated'
+import { Text, View } from 'react-native'
+import Animated, { SharedValue, useAnimatedStyle } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { bus, DefaultBusEvents } from '@/core'
-import { sleep } from '@/helpers'
-import { identityStore, walletStore } from '@/store'
-import { NoirEIDIdentity } from '@/store/modules/identity/Identity'
 import { UiButton, UiHorizontalDivider, UiIcon } from '@/ui'
-import { EIDBasedQueryIdentityCircuit } from '@/utils/circuits/eid-based-query-identity-circuit'
-import { QueryProofParams } from '@/utils/circuits/types/QueryIdentity'
 
-import { ParsedContractProposal } from '../types'
-
-enum Step {
+export enum Step {
   SendProof,
   Finish,
 }
 
 interface SubmitVoteScreenProps {
-  answers: Map<number, string>
-  parsedProposal: ParsedContractProposal
-  onStart: () => void
-  onFinish: () => void
+  animatedValue: SharedValue<number>
+  step: Step
+  onGoBack: () => void
 }
 
-// TODO: Use `answers` somehow
-export default function SubmitVoteScreen({
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  answers,
-  parsedProposal,
-  onFinish,
-  onStart,
-}: SubmitVoteScreenProps) {
+export default function SubmitVoteScreen({ animatedValue, step, onGoBack }: SubmitVoteScreenProps) {
   const insets = useSafeAreaInsets()
-  const [step, setStep] = useState<Step>(Step.SendProof)
-  const identities = identityStore.useIdentityStore(state => state.identities)
-  const privateKey = walletStore.useWalletStore(state => state.privateKey)
-
-  const progress = useSharedValue(0)
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      width: `${progress.value}%`, // Assuming a max width of 200 for the container
-    }
-  })
-
-  const startProgress = () => {
-    progress.value = withTiming(97, { duration: 36_000 })
-  }
-
-  useEffect(() => {
-    startProgress()
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
-    onStart()
-    const generateProof = async () => {
-      try {
-        if (!identities.length) throw new Error("Your identity hasn't registered yet!")
-
-        const currentIdentity = identities[identities.length - 1]
-        if (!currentIdentity) throw new Error("Identity doesn't exist")
-        if (!(currentIdentity instanceof NoirEIDIdentity))
-          throw new Error('Identity is not NoirEIDIdentity')
-
-        const circuitParams = new EIDBasedQueryIdentityCircuit(currentIdentity)
-        const whitelistData = parsedProposal.votingWhitelistData
-
-        const inputs: QueryProofParams = {
-          selector: String(whitelistData.selector),
-          // FIXME: Fails with identityCounterUpperBound from whitelistData
-          // identityCounter: String(whitelistData.identityCounterUpperBound),
-          skIdentity: `0x${privateKey}`,
-        }
-
-        await circuitParams.prove(inputs)
-        // const proof = await circuitParams.prove(inputs)
-        // console.log('proof', proof)
-
-        bus.emit(DefaultBusEvents.success, {
-          message: 'Proof generated successfully!',
-        })
-
-        progress.value = withTiming(100, { duration: 100 })
-        setStep(Step.Finish)
-        await sleep(5_000)
-        onFinish()
-      } catch (error) {
-        console.error('Proof generation failed:', error)
-        bus.emit(DefaultBusEvents.error, {
-          message: 'Proof generation failed. Please try again.',
-        })
-      }
-    }
-
-    generateProof()
-  }, [identities, onFinish, onStart, parsedProposal, privateKey, progress])
 
   return (
     <View
       className='h-full justify-center gap-3 bg-backgroundPrimary p-4'
       style={{
-        paddingBottom: insets.bottom,
         paddingTop: insets.top,
+        paddingBottom: insets.bottom,
       }}
     >
-      {step === Step.SendProof ? <SendProofStep animatedStyle={animatedStyle} /> : <FinishStep />}
+      {step === Step.SendProof ? (
+        <SendProofStep animatedValue={animatedValue} />
+      ) : (
+        <FinishStep onGoBack={onGoBack} />
+      )}
     </View>
   )
 }
 
-function SendProofStep({ animatedStyle }: { animatedStyle: { width: string } }) {
+function SendProofStep({ animatedValue }: { animatedValue: SharedValue<number> }) {
+  const barStyle = useAnimatedStyle(() => ({
+    width: `${animatedValue.value}%`,
+  }))
+
   return (
     <View className='w-full items-center gap-6'>
       <View className='mb-4 flex-row items-center justify-center rounded-full bg-warningLight'>
@@ -129,14 +50,7 @@ function SendProofStep({ animatedStyle }: { animatedStyle: { width: string } }) 
       <Text className='typography-body3 mb-6 text-textSecondary'>Anonymizing your vote</Text>
 
       <View className='mb-4 h-2 w-4/5 rounded-full bg-componentPrimary'>
-        <Animated.View
-          className='h-full rounded-full bg-primaryMain'
-          style={
-            {
-              width: animatedStyle.width,
-            } as StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>
-          }
-        />
+        <Animated.View className='h-full rounded-full bg-primaryMain' style={barStyle} />
       </View>
 
       <UiHorizontalDivider />
@@ -151,7 +65,7 @@ function SendProofStep({ animatedStyle }: { animatedStyle: { width: string } }) 
   )
 }
 
-function FinishStep() {
+function FinishStep({ onGoBack }: { onGoBack: () => void }) {
   return (
     <View className='w-full flex-1 items-center'>
       <View className='w-full flex-1 items-center justify-center gap-6 px-4'>
@@ -163,7 +77,7 @@ function FinishStep() {
         <UiHorizontalDivider />
       </View>
       <View className='absolute inset-x-0 bottom-0 p-4'>
-        <UiButton title='Go Back' onPress={() => {}} className='w-full' />
+        <UiButton title='Go Back' onPress={onGoBack} className='w-full' />
       </View>
     </View>
   )

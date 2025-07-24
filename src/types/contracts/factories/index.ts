@@ -3,6 +3,7 @@
 
 export { BaseVoting__factory } from './BaseVoting__factory'
 export { BioPassportVoting__factory } from './BioPassportVoting__factory'
+export { NoirIdVoting__factory } from './NoirIdVoting__factory'
 export { PoseidonSMT__factory } from './PoseidonSMT__factory'
 export { ProposalState__factory } from './ProposalState__factory'
 export { Registration__factory } from './Registration__factory'
