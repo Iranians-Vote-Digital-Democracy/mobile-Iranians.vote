@@ -64,8 +64,6 @@ export class EIDBasedQueryIdentityCircuit {
       ...params,
     })
 
-    console.log('inputs', inputs)
-
     const proof = await this.circuitParams.prove(JSON.stringify(inputs), byteCode)
 
     if (!proof) {

@@ -3,8 +3,8 @@ import { useNavigation } from '@react-navigation/native'
 import { useQuery } from '@tanstack/react-query'
 import { AbiCoder, hexlify, JsonRpcProvider, toUtf8Bytes } from 'ethers'
 import { useMemo, useState } from 'react'
-import { Text, View } from 'react-native'
-import { Pressable } from 'react-native-gesture-handler'
+import { Image, Pressable, Text, View } from 'react-native'
+import { useSharedValue, withTiming } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { apiClient } from '@/api/client'
@@ -35,14 +35,20 @@ import { EIDBasedQueryIdentityCircuit } from '@/utils/circuits/eid-based-query-i
 import { QueryProofParams } from '@/utils/circuits/types/QueryIdentity'
 
 import QuestionScreen from './components/QuestionScreen'
-import SubmitVoteScreen, { ScreenKey, Step } from './components/SubmitVoteScreen'
+import SubmitVoteScreen, { Step } from './components/SubmitVoteScreen'
 import { MAX_UINT_32_HEX, ZERO_DATE_HEX } from './constants'
 import { ProposalMetadata } from './types'
 import { computeEventData, parseProposalFromContract } from './utils'
 
+export enum SendProofStep {
+  SendProof,
+  Finish,
+}
+
+type ScreenKey = 'questions' | 'submit'
+
 export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
   const insets = useSafeAreaInsets()
-  const navigation = useNavigation()
   const bottomSheet = useUiBottomSheet()
 
   const identities = identityStore.useIdentityStore(state => state.identities)
@@ -53,10 +59,15 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
   const [isCloseDisabled, setIsCloseDisabled] = useState(false)
   const [screenKey, setScreenKey] = useState<ScreenKey>('questions')
   const [step, setStep] = useState<Step>(Step.SendProof)
-  const [progress, setProgress] = useState(0)
   const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null)
 
+  const progress = useSharedValue(0)
+
   const proposalId = route.params?.proposalId
+
+  const startProgress = () => {
+    progress.value = withTiming(99, { duration: 5_000 })
+  }
 
   const rmoProvider = useMemo(
     () => new JsonRpcProvider(RARIMO_CHAINS[Config.RMO_CHAIN_ID].rpcEvm),
@@ -113,6 +124,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
 
   const generateProof = async (_answers: Map<number, string>) => {
     setIsCloseDisabled(true)
+    startProgress()
     try {
       if (!identities.length) throw new Error("Your identity hasn't registered yet!")
       const currentIdentity = identities[identities.length - 1]
@@ -169,8 +181,6 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
 
       const proof = await circuitParams.prove(inputs)
 
-      console.log('proof', proof)
-
       // CALLDATA
       // ------------------------------------------------------------------------------------
       const abiCode = new AbiCoder()
@@ -185,8 +195,6 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
         ],
       )
 
-      console.log('userDataEncoded', userDataEncoded)
-
       const callDataHex = noirIdVotingContract.contractInterface.encodeFunctionData('executeNoir', [
         circuitParams.passportRegistrationProof?.root as string,
         '0x' + proof.pub_signals[13],
@@ -194,16 +202,15 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
         '0x' + proof.proof,
       ])
 
-      console.log('callDataHex', callDataHex)
-
       await relayerVerification(callDataHex, Config.NOIR_ID_VOTING_CONTRACT)
 
       bus.emit(DefaultBusEvents.success, { message: 'Proof generated successfully!' })
-      setProgress(100)
+      progress.value = withTiming(100, { duration: 100 })
       setStep(Step.Finish)
       await sleep(5_000)
     } catch (error) {
       console.error('Proof generation failed:', error)
+      progress.value = 0
       bus.emit(DefaultBusEvents.error, { message: 'Proof generation failed. Please try again.' })
     } finally {
       setIsCloseDisabled(false)
@@ -250,7 +257,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
     ),
     submit: (
       <SubmitVoteScreen
-        progress={progress}
+        animatedValue={progress}
         step={step}
         onGoBack={() => {
           bottomSheet.dismiss()
@@ -262,29 +269,37 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
 
   return (
     <>
-      <UiScreenScrollable style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
-        <View className='flex-row justify-end p-4'>
-          <Pressable onPress={() => navigation.navigate('App', { screen: 'Tabs' })}>
-            <View className='h-10 w-10 items-center justify-center rounded-full bg-componentPrimary'>
-              <UiIcon customIcon='closeIcon' size={20} className='color-textPrimary' />
-            </View>
-          </Pressable>
+      <UiScreenScrollable
+        style={{
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        }}
+      >
+        <View className='flex-row p-4'>
+          <PollsHeader
+            title={proposalMetadata.title}
+            subtitle={proposalMetadata.description}
+            date={formatDateDMY(parsedProposal?.startTimestamp)}
+            image={`${Config.IPFS_NODE_URL}${proposalMetadata?.imageCid}`}
+          />
         </View>
-        <UiCard className='m-4 rounded-3xl p-6'>
-          <Text className='typography-h6 text-textPrimary'>{proposalMetadata.title}</Text>
-          <Text className='typography-body3 mt-2 text-textSecondary'>
-            {proposalMetadata.description}
-          </Text>
-          <View className='mt-4 flex-row items-center gap-2'>
-            <UiIcon customIcon='calendarBlankIcon' size={20} className='color-textSecondary' />
-            <Text className='typography-subtitle5 text-textSecondary'>
-              {formatDateDMY(parsedProposal.startTimestamp)}
-            </Text>
-          </View>
-        </UiCard>
-        <UiHorizontalDivider />
-        <View className='flex-1 justify-end p-4'>
-          <UiButton title='Vote' onPress={bottomSheet.present} />
+
+        <UiHorizontalDivider className='my-5' />
+
+        <View className='gap-3 px-6'>
+          <CriteriaRow title='Citizen of IRAN' status='approved' />
+          <CriteriaRow
+            title={`After ${formatDateDMY(parsedProposal.startTimestamp)}`}
+            status='approved'
+          />
+          <CriteriaRow
+            title={`Before ${formatDateDMY(parsedProposal.startTimestamp + parsedProposal.duration)}`}
+            status='approved'
+          />
+        </View>
+
+        <View className='w-full flex-1 justify-end px-4 pb-4'>
+          <UiButton title='Vote' onPress={bottomSheet.present} className='mt-8 w-full' />
         </View>
       </UiScreenScrollable>
 
@@ -299,5 +314,74 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
         {screensMap[screenKey]}
       </UiBottomSheet>
     </>
+  )
+}
+
+export type CriteriaStatus = 'approved' | 'needVerification' | 'notVerified'
+
+const statusMeta = {
+  approved: {
+    icon: <UiIcon customIcon='checkIcon' size={20} className='color-successMain' />,
+    textColor: 'text-textPrimary',
+  },
+  needVerification: {
+    icon: <UiIcon customIcon='questionIcon' size={20} className='color-warningMain' />,
+    textColor: 'text-textPrimary',
+  },
+  notVerified: {
+    icon: <UiIcon customIcon='closeIcon' size={20} className='color-errorMain' />,
+    textColor: 'text-errorMain',
+  },
+}
+
+const CriteriaRow = ({ title, status }: { title: string; status: CriteriaStatus }) => {
+  const { icon, textColor } = statusMeta[status]
+  return (
+    <View className='flex-row items-center gap-2'>
+      {icon}
+      <Text className={`typography-subtitle4 ${textColor}`}>{title}</Text>
+    </View>
+  )
+}
+
+const PollsHeader = ({
+  title,
+  subtitle,
+  date,
+  image,
+}: {
+  title: string
+  subtitle: string
+  date: string
+  image: string
+}) => {
+  const navigation = useNavigation()
+  return (
+    <View className='relative w-full gap-6 overflow-hidden rounded-3xl'>
+      <UiCard className='flex-1 gap-4 p-6'>
+        <View className='flex-col gap-2'>
+          <Text className='typography-h6 text-textPrimary'>{title}</Text>
+          <Text className='typography-body3 text-textSecondary'>{subtitle}</Text>
+        </View>
+        <View>
+          <Image source={{ uri: image }} className='h-48 w-full' />
+        </View>
+        <View className='mt-6 flex-row items-center justify-between'>
+          <View className='flex-row items-center gap-2'>
+            <UiIcon customIcon='calendarBlankIcon' size={20} className='color-textSecondary' />
+            <Text className='typography-subtitle5 text-textSecondary'>{date}</Text>
+          </View>
+        </View>
+
+        <Pressable
+          className='absolute right-[15px] top-[15px]'
+          onPress={() => navigation.navigate('App', { screen: 'Tabs' })}
+        >
+          <View className='h-10 w-10 items-center justify-center rounded-full bg-componentPrimary'>
+            <UiIcon customIcon='closeIcon' size={20} className='color-textPrimary' />
+          </View>
+        </Pressable>
+      </UiCard>
+    </View>
   )
 }
