@@ -17916,13 +17916,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-wheel-picker@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "react-native-wheel-picker@npm:1.2.0"
-  checksum: 10/d6e66498114dafad935c6b0be389131369e0832649a44420e3094696f32b1d1608dc93ea4e8f5fbc6986f45721738821429ddc5b73d718e89feacb8397cfbe2f
-  languageName: node
-  linkType: hard
-
 "react-native-worklets-core@npm:1.5.0":
   version: 1.5.0
   resolution: "react-native-worklets-core@npm:1.5.0"
@@ -20230,7 +20223,6 @@ __metadata:
     react-native-toast-message: "npm:^2.2.0"
     react-native-vision-camera: "npm:4.6.3"
     react-native-vision-camera-text-recognition: "npm:^3.1.1"
-    react-native-wheel-picker: "npm:^1.2.0"
     react-native-worklets-core: "npm:1.5.0"
     react-native-zip-archive: "npm:^7.0.1"
     readable-stream: "npm:^4.5.2"
