@@ -10,8 +10,10 @@ export const relayerVerification = async (
     tx_hash: string
   }>('/integrations/proof-verification-relayer/v2/vote', {
     data: {
-      tx_data: callDataHex,
-      destination: destinationContractAddress,
+      attributes: {
+        tx_data: callDataHex,
+        destination: destinationContractAddress,
+      },
     },
   })
 }
