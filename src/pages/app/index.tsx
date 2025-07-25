@@ -13,8 +13,6 @@ import { UiIcon } from '@/ui'
 import BottomTabBar from './components/BottomTabBarTabBar'
 import DocumentScanScreen from './pages/document-scan'
 import DocumentsScreen from './pages/documents'
-import HomeScreen from './pages/home'
-import PassportTests from './pages/passport-tests'
 import PollScreen from './pages/poll'
 import ProfileScreen from './pages/profile'
 
@@ -33,9 +31,9 @@ function AppTabs({}: AppStackScreenProps<'Tabs'>) {
           left: 0,
         },
       }}
-      initialRouteName='Home'
+      initialRouteName='Documents'
     >
-      <Tab.Screen
+      {/* <Tab.Screen
         name='Home'
         component={HomeScreen}
         options={{
@@ -44,7 +42,7 @@ function AppTabs({}: AppStackScreenProps<'Tabs'>) {
             <UiIcon libIcon='FontAwesome' name='home' size={size} color={color} />
           ),
         }}
-      />
+      /> */}
       <Tab.Screen
         name='Documents'
         component={DocumentsScreen}
@@ -62,16 +60,6 @@ function AppTabs({}: AppStackScreenProps<'Tabs'>) {
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <UiIcon customIcon='userIcon' size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name='PassportTests'
-        component={PassportTests}
-        options={{
-          headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <UiIcon libIcon='MaterialCommunityIcons' name='test-tube' size={size} color={color} />
           ),
         }}
       />
