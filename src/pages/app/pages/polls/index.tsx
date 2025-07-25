@@ -216,10 +216,11 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
     [currentQuestionIndex, proposalMetadata?.acceptedOptions?.length],
   )
 
-  if (parsedProposalError || proposalMetadataError || !route.params?.proposalId)
-    return <ErrorScreen />
   if (isParsedProposalLoading || isProposalMetadataLoading || !proposalMetadata || !parsedProposal)
     return <LoadingScreen />
+
+  if (parsedProposalError || proposalMetadataError || !route.params?.proposalId)
+    return <ErrorScreen />
 
   // Screens map
   const screensMap: Record<Screen, ReactNode> = {
