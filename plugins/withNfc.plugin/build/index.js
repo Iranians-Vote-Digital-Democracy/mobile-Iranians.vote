@@ -35,7 +35,7 @@ function addValuesToArray(
   }
   return obj
 }
-function withIosNfcEntitlement(c, { includeNdefEntitlement }) {
+function withIosNfcEntitlement(c, { includeNdefEntitlement = false }) {
   return (0, config_plugins_2.withEntitlementsPlist)(c, config => {
     // Add the required formats
     let entitlements = ['NDEF', 'TAG']
