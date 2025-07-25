@@ -5,13 +5,7 @@ import {
 } from '@/pages/app/pages/document-scan/ScanProvider'
 import { DocType } from '@/utils/e-document'
 
-import {
-  DocumentPreviewStep,
-  GenerateProofStep,
-  RevocationStep,
-  ScanNfcStep,
-  SuccessStep,
-} from './components'
+import { DocumentPreviewStep, GenerateProofStep, RevocationStep, ScanNfcStep } from './components'
 
 export default function DocumentScanScreen() {
   return (
@@ -33,7 +27,6 @@ function DocumentScanContent() {
         [Steps.DocumentPreviewStep]: () => <DocumentPreviewStep />,
         [Steps.GenerateProofStep]: () => <GenerateProofStep />,
         [Steps.RevocationStep]: () => <RevocationStep />, //TODO
-        [Steps.FinishStep]: () => <SuccessStep />, //TODO  meybe delete because in generate proof we have similar display
       }[currentStep]()}
     </>
   )

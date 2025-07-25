@@ -15,6 +15,7 @@ export default function ScanNfcStep() {
   const { setTempEDoc } = useDocumentScanContext()
 
   const [busy, setBusy] = useState(false)
+  const [isScanning, setIsScanning] = useState(false)
 
   // start NFC once, right after mount
   useEffect(() => {
@@ -24,21 +25,9 @@ export default function ScanNfcStep() {
   const onReadPress = useCallback(async () => {
     setBusy(true)
     try {
-      // const signingCertHex = await readSigningCertificate()
-
-      // if (!signingCertHex) throw new Error('Signing certificate not found')
-
-      // console.log(AsnConvert.parse(Buffer.from(signingCertHex, 'hex'), Certificate))
-
-      // await sleep(2_000)
-
-      // const authCertHex = await readAuthenticationCertificate()
-
-      // if (!authCertHex) throw new Error('Authentication certificate not found')
-
-      // console.log(AsnConvert.parse(Buffer.from(authCertHex, 'hex'), Certificate))
-
-      const { signingCert, authCert } = await readSigningAndAuthCertificates()
+      const { signingCert, authCert } = await readSigningAndAuthCertificates(() => {
+        setIsScanning(true)
+      })
 
       if (!signingCert) throw new Error('Signing certificate not found')
 
@@ -60,6 +49,7 @@ export default function ScanNfcStep() {
     }
 
     setBusy(false)
+    setIsScanning(false)
   }, [setTempEDoc])
 
   // const pk = walletStore.useWalletStore(state => state.privateKey)
@@ -69,6 +59,11 @@ export default function ScanNfcStep() {
     <View className='mb-19 mt-10 flex-1 justify-center p-6'>
       <Text className='typography-h5 mb-2 text-textPrimary'>NFC Reader</Text>
       <Text className='typography-body3 mb-6 text-textSecondary'>Reading personal data</Text>
+      {isScanning && (
+        <Text className='typography-body2 mb-6 rounded-xl border-componentPrimary bg-componentPrimary p-4 text-center text-textPrimary'>
+          Scanning NFC tag... Please hold your passport close to the phone.
+        </Text>
+      )}
       <Image
         source={require('@assets/images/passport-scan-example.png')}
         style={{

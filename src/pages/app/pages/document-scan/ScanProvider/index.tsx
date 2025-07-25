@@ -19,9 +19,15 @@ export enum Steps {
   ScanNfcStep,
   DocumentPreviewStep,
   GenerateProofStep,
-  FinishStep,
 
   RevocationStep,
+}
+
+export enum GenProofSteps {
+  DownloadCircuit,
+  GenerateProof,
+  CreateProfile,
+  Final,
 }
 
 type DocumentScanContext = {
@@ -29,6 +35,8 @@ type DocumentScanContext = {
 
   currentStep: Steps
   setCurrentStep: (step: Steps) => void
+
+  creatingIdentityStep: GenProofSteps
 
   docType?: DocType
   setDocType: (docType: DocType) => void
@@ -54,6 +62,8 @@ const documentScanContext = createContext<DocumentScanContext>({
   setCurrentStep: () => {
     throw new Error('setCurrentStep not implemented')
   },
+
+  creatingIdentityStep: GenProofSteps.DownloadCircuit,
 
   docType: undefined,
   setDocType: () => {
@@ -96,6 +106,8 @@ export function ScanContextProvider({
   const addIdentity = identityStore.useIdentityStore(state => state.addIdentity)
 
   const [currentStep, setCurrentStep] = useState<Steps>(Steps.ScanNfcStep)
+  const [creatingIdentityStep, setCreatingIdentityStep] = useState(GenProofSteps.DownloadCircuit)
+
   const [selectedDocType, setSelectedDocType] = useState(docType)
 
   const [tempMRZ, setTempMRZ] = useState<FieldRecords>()
@@ -127,7 +139,17 @@ export function ScanContextProvider({
     setCurrentStep(Steps.GenerateProofStep)
 
     const [identityItem, registrationError] = await tryCatch(
-      registrationStrategy.createIdentity(tempEDoc as EPassport, privateKey, publicKeyHash),
+      registrationStrategy.createIdentity(tempEDoc as EPassport, privateKey, publicKeyHash, {
+        onDownloading: () => {
+          setCreatingIdentityStep(GenProofSteps.DownloadCircuit)
+        },
+        onGenerateProof: () => {
+          setCreatingIdentityStep(GenProofSteps.GenerateProof)
+        },
+        onRegister: () => {
+          setCreatingIdentityStep(GenProofSteps.CreateProfile)
+        },
+      }),
     )
     if (registrationError) {
       ErrorHandler.processWithoutFeedback(registrationError)
@@ -147,7 +169,8 @@ export function ScanContextProvider({
 
     addIdentity(identityItem)
     setIdentity(identityItem)
-    setCurrentStep(Steps.FinishStep)
+
+    setCreatingIdentityStep(GenProofSteps.Final)
   }, [addIdentity, privateKey, publicKeyHash, tempEDoc])
 
   // ---------------------------------------------------------------------------------------------
@@ -176,6 +199,8 @@ export function ScanContextProvider({
 
         currentStep,
         setCurrentStep,
+
+        creatingIdentityStep,
 
         docType: selectedDocType,
         setDocType: handleSetSelectedDocType,
