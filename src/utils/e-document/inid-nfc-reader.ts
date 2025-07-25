@@ -191,11 +191,13 @@ export async function initNfc() {
   log('initNfc -> started')
 }
 
-export async function readSigningAndAuthCertificates(): Promise<{
+export async function readSigningAndAuthCertificates(onScanStarted?: () => void): Promise<{
   signingCert: string | null
   authCert: string | null
 }> {
   return withIsoDep('Reading Signing & Auth Certificates', async () => {
+    onScanStarted?.()
+
     log('Reading Signing Certificate...')
     const signingCert = await readSigningCertificate()
     log('Signing Certificate:', signingCert)

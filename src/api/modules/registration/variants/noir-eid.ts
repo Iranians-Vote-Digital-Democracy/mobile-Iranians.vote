@@ -58,8 +58,16 @@ export class NoirEIDRegistration extends RegistrationStrategy {
     _eDocument: EDocument,
     privateKey: string,
     _: Uint8Array,
+    opts?: {
+      onDownloading?: () => void
+      onRegisterCertificate?: () => void
+      onGenerateProof?: () => void
+      onRegister?: () => void
+    },
   ): Promise<IdentityItem> => {
     const eDocument = _eDocument as EID
+
+    opts?.onDownloading?.()
 
     const CSCACertBytes = await RegistrationStrategy.retrieveCSCAFromPem()
 
@@ -70,12 +78,16 @@ export class NoirEIDRegistration extends RegistrationStrategy {
     )
 
     if (!slaveCertSmtProof.existence) {
+      opts?.onRegisterCertificate?.()
+
       await RegistrationStrategy.registerCertificate(
         CSCACertBytes,
         eDocument.authCertificate,
         slaveMaster,
       )
     }
+
+    opts?.onGenerateProof?.()
 
     const circuit = new NoirEIDBasedRegistrationCircuit(eDocument)
 
@@ -100,6 +112,8 @@ export class NoirEIDRegistration extends RegistrationStrategy {
     //   passportInfo?.passportInfo_.activeIdentity === currentIdentityKeyHex
 
     // if (isPassportNotRegistered) {
+
+    opts?.onRegister?.()
     const registerCallData = await this.buildRegisterCallData(
       identityItem,
       slaveCertSmtProof,

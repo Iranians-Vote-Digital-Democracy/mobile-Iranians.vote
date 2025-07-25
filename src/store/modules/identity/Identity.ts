@@ -13,6 +13,8 @@ import { EDocument, EID, EPassport } from '@/utils/e-document/e-document'
 
 // TODO: add checking if the passport need to be revoked
 export abstract class IdentityItem {
+  public identityType: string = ''
+
   constructor(
     public document: EDocument,
     public registrationProof: CircomZKProof | NoirZKProof,
@@ -20,14 +22,27 @@ export abstract class IdentityItem {
 
   serialize() {
     return SuperJSON.stringify({
+      identityType: this.identityType,
       document: this.document.serialize(),
       registrationProof: this.registrationProof,
     })
   }
 
-  // eslint-disable-next-line unused-imports/no-unused-vars
   static deserialize(serialized: string): IdentityItem {
-    throw new Error('Implement deserialize in derived classes')
+    const deserialized = SuperJSON.parse<{
+      identityType: string
+    }>(serialized)
+
+    switch (deserialized.identityType) {
+      case 'NoirEIDIdentity':
+        return NoirEIDIdentity.deserialize(serialized)
+      case 'NoirEpassportIdentity':
+        return NoirEpassportIdentity.deserialize(serialized)
+      case 'CircomEpassportIdentity':
+        return CircomEpassportIdentity.deserialize(serialized)
+      default:
+        throw new Error(`Unknown identity type: ${deserialized.identityType}`)
+    }
   }
 
   static get stateKeeperContract() {
@@ -70,6 +85,8 @@ export abstract class IdentityItem {
 }
 
 export class NoirEIDIdentity extends IdentityItem {
+  public identityType = 'NoirEIDIdentity'
+
   constructor(
     public document: EID,
     public registrationProof: NoirZKProof,
@@ -86,6 +103,7 @@ export class NoirEIDIdentity extends IdentityItem {
 
   serialize() {
     return SuperJSON.stringify({
+      identityType: this.identityType,
       document: this.document.serialize(),
       registrationProof: this.registrationProof,
     })
@@ -149,6 +167,8 @@ export class NoirEIDIdentity extends IdentityItem {
 
 // TODO: add checking if the passport need to be revoked
 export class NoirEpassportIdentity extends IdentityItem {
+  public identityType = 'NoirEpassportIdentity'
+
   constructor(
     public document: EPassport,
     public registrationProof: NoirZKProof,
@@ -158,6 +178,7 @@ export class NoirEpassportIdentity extends IdentityItem {
 
   serialize() {
     return SuperJSON.stringify({
+      identityType: this.identityType,
       document: this.document.serialize(),
       registrationProof: this.registrationProof,
     })
@@ -194,6 +215,8 @@ export class NoirEpassportIdentity extends IdentityItem {
 
 // TODO: add checking if the passport need to be revoked
 export class CircomEpassportIdentity extends IdentityItem {
+  public identityType = 'CircomEpassportIdentity'
+
   constructor(
     public document: EPassport,
     public registrationProof: CircomZKProof,
@@ -203,6 +226,7 @@ export class CircomEpassportIdentity extends IdentityItem {
 
   serialize() {
     return SuperJSON.stringify({
+      identityType: this.identityType,
       document: this.document.serialize(),
       registrationProof: this.registrationProof,
     })
