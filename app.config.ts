@@ -29,7 +29,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     "infoPlist": {
       "ITSAppUsesNonExemptEncryption": false
-    }
+    },
+    bitcode: false
   },
   android: {
     adaptiveIcon: {
@@ -125,18 +126,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
       ios: {
         deploymentTarget: '17.5',
-        extraPods: [
-          {
-            name: "OpenSSL-Universal",
-            configurations: ["Release", "Debug"],
-            modular_headers: true,
-          },
-          {
-            name: 'NFCPassportReader',
-            git: 'https://github.com/rarimo/NFCPassportReader.git',
-            commit: '4c463a687f59eb6cc5c7955af854c7d41295d54f',
-          },
-        ]
       },
     }],
     [

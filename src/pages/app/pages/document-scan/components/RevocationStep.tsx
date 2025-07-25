@@ -1,9 +1,4 @@
-import {
-  EDocumentModuleEvents,
-  EDocumentModuleListener,
-  EDocumentModuleRemoveAllListeners,
-} from '@modules/e-document'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Text, View } from 'react-native'
 
 import { UiButton, UiIcon } from '@/ui'
@@ -12,50 +7,9 @@ import { useDocumentScanContext } from '../ScanProvider'
 
 export default function RevocationStep() {
   const { revokeIdentity } = useDocumentScanContext()
-  const [isScanning, setIsScanning] = useState(false)
+  const [isScanning] = useState(false)
 
-  const [title, setTitle] = useState('Scan NFC')
-
-  useEffect(() => {
-    EDocumentModuleListener(EDocumentModuleEvents.ScanStarted, () => {
-      setTitle('ScanStarted')
-      setIsScanning(true)
-    })
-    EDocumentModuleListener(EDocumentModuleEvents.RequestPresentPassport, () => {
-      setTitle('RequestPresentPassport')
-    })
-    EDocumentModuleListener(EDocumentModuleEvents.AuthenticatingWithPassport, () => {
-      setTitle('AuthenticatingWithPassport')
-    })
-    EDocumentModuleListener(EDocumentModuleEvents.ReadingDataGroupProgress, () => {
-      setTitle('ReadingDataGroupProgress')
-    })
-    EDocumentModuleListener(EDocumentModuleEvents.ActiveAuthentication, () => {
-      setTitle('ActiveAuthentication')
-    })
-    EDocumentModuleListener(EDocumentModuleEvents.SuccessfulRead, () => {
-      setTitle('SuccessfulRead')
-    })
-    EDocumentModuleListener(EDocumentModuleEvents.ScanError, () => {
-      setTitle('ScanError')
-      setIsScanning(false)
-    })
-    EDocumentModuleListener(EDocumentModuleEvents.ScanStopped, () => {
-      setTitle('ScanStopped')
-      setIsScanning(false)
-    })
-
-    return () => {
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ScanStarted)
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.RequestPresentPassport)
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.AuthenticatingWithPassport)
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ReadingDataGroupProgress)
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ActiveAuthentication)
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.SuccessfulRead)
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ScanError)
-      EDocumentModuleRemoveAllListeners(EDocumentModuleEvents.ScanStopped)
-    }
-  }, [])
+  const [title] = useState('Scan NFC')
 
   return (
     <View className='flex flex-1 flex-col justify-center'>
