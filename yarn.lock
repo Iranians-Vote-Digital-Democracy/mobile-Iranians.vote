@@ -10710,16 +10710,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-status-bar@npm:~2.0.1":
-  version: 2.0.1
-  resolution: "expo-status-bar@npm:2.0.1"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 10/0b0e51bd847eac163d6d14c4589115dd83d93424c06e4729de5a773ec6c5ef074ad2d3221fa42daf4f2103b02f42a208371a282b7bfd39d9f7511d21982e0015
-  languageName: node
-  linkType: hard
-
 "expo-structured-headers@npm:~4.0.0":
   version: 4.0.0
   resolution: "expo-structured-headers@npm:4.0.0"
@@ -20191,7 +20181,6 @@ __metadata:
     expo-secure-store: "npm:~14.0.0"
     expo-sharing: "npm:~13.0.1"
     expo-splash-screen: "npm:^0.29.24"
-    expo-status-bar: "npm:~2.0.1"
     expo-system-ui: "npm:~4.0.6"
     expo-updates: "npm:~0.27.4"
     expo-web-browser: "npm:~14.0.1"
