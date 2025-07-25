@@ -27,6 +27,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'com.apple.developer.kernel.increased-memory-limit': true,
       'com.apple.developer.kernel.extended-virtual-addressing': true
     },
+    "infoPlist": {
+      "ITSAppUsesNonExemptEncryption": false
+    }
   },
   android: {
     adaptiveIcon: {

@@ -26,7 +26,7 @@
     },
     "staging": {
       "channel": "staging",
-      "distribution": "internal",
+      "distribution": "store",
       "yarn": "1.22.22",
       "ios": {
         "image": "latest"
@@ -85,6 +85,11 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {},
+    "staging": {
+      "ios": {
+        "ascAppId": "6749164437"
+      }
+    }
   }
 }

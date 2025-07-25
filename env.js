@@ -34,8 +34,8 @@ require('dotenv').config({
 
 // TODO: Replace these values with your own
 
-const BUNDLE_ID = 'com.inid.app' // ios bundle id
-const PACKAGE = 'com.inid.app' // android package name
+const BUNDLE_ID = 'com.transnationalcommunityfederation.inid.app' // ios bundle id
+const PACKAGE = 'com.transnationalcommunityfederation.inid.app' // android package name
 const NAME = 'Inid App' // app name
 const SLUG = 'inid-app' // app name
 const EXPO_ACCOUNT_OWNER = 'dl-expo' // expo account owner
