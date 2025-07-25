@@ -10710,16 +10710,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-status-bar@npm:~2.0.1":
-  version: 2.0.1
-  resolution: "expo-status-bar@npm:2.0.1"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 10/0b0e51bd847eac163d6d14c4589115dd83d93424c06e4729de5a773ec6c5ef074ad2d3221fa42daf4f2103b02f42a208371a282b7bfd39d9f7511d21982e0015
-  languageName: node
-  linkType: hard
-
 "expo-structured-headers@npm:~4.0.0":
   version: 4.0.0
   resolution: "expo-structured-headers@npm:4.0.0"
@@ -17696,6 +17686,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-edge-to-edge@npm:^1.6.2":
+  version: 1.6.2
+  resolution: "react-native-edge-to-edge@npm:1.6.2"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10/224dc2517f1208c19a3fe944858f04f086d68c728d70b5232ef4dbb909bce67c1c5e8d93f2c841fa63ba47a1c9da09a6466b65632cfe3cf2527892e7bd3d79cb
+  languageName: node
+  linkType: hard
+
 "react-native-gesture-handler@npm:2.21.2":
   version: 2.21.2
   resolution: "react-native-gesture-handler@npm:2.21.2"
@@ -20181,7 +20181,6 @@ __metadata:
     expo-secure-store: "npm:~14.0.0"
     expo-sharing: "npm:~13.0.1"
     expo-splash-screen: "npm:^0.29.24"
-    expo-status-bar: "npm:~2.0.1"
     expo-system-ui: "npm:~4.0.6"
     expo-updates: "npm:~0.27.4"
     expo-web-browser: "npm:~14.0.1"
@@ -20207,6 +20206,7 @@ __metadata:
     react-hook-form: "npm:^7.52.1"
     react-i18next: "npm:^14.1.2"
     react-native: "npm:0.76.9"
+    react-native-edge-to-edge: "npm:^1.6.2"
     react-native-gesture-handler: "npm:2.21.2"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-keyboard-controller: "npm:^1.17.5"

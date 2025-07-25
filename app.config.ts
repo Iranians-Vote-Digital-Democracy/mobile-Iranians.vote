@@ -86,6 +86,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
       }
     ],
+    [
+        "react-native-edge-to-edge",
+        {
+          "android": {
+            "parentTheme": "Material3.Dynamic",
+            "enforceNavigationBarContrast": false
+          }
+        }
+    ],
     // TEMP: since "modules/e-document" uses custom pod,
     // we need to use `withBuildProperties` in module's plugin
     // in order to incapsulate per module configuration.
