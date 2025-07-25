@@ -58,7 +58,7 @@ export default function ScanNfcStep() {
 
   return (
     <View
-      style={{ paddingBottom: insets.bottom }}
+      style={{ paddingBottom: insets.bottom, paddingTop: insets.top }}
       className='mb-19 mt-10 flex-1 justify-center p-6'
     >
       <Text className='typography-h5 mb-2 text-textPrimary'>NFC Reader</Text>
