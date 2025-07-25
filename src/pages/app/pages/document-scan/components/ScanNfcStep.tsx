@@ -59,7 +59,7 @@ export default function ScanNfcStep() {
   return (
     <View
       style={{ paddingBottom: insets.bottom, paddingTop: insets.top }}
-      className='mb-19 mt-10 flex-1 justify-center p-6'
+      className='flex-1 justify-center p-6'
     >
       <Text className='typography-h5 mb-2 text-textPrimary'>NFC Reader</Text>
       <Text className='typography-body3 mb-6 text-textSecondary'>Reading personal data</Text>
@@ -78,9 +78,7 @@ export default function ScanNfcStep() {
           marginTop: 24,
         }}
       />
-      <Text className='typography-body3 mb-6 text-textSecondary'>
-        {translate('tabs.scan-nfc.tip')}
-      </Text>
+      <Text className='typography-body3 text-textSecondary'>{translate('tabs.scan-nfc.tip')}</Text>
       {busy && <ActivityIndicator className='my-4' />}
       {/* {error && <Text className='mt-4 text-errorMain typography-body2'>{error}</Text>} */}
       <UiButton
