@@ -104,7 +104,7 @@ export default function App(props: RootStackScreenProps<'App'>) {
       />
 
       <Stack.Screen
-        name='Polls'
+        name='Poll'
         options={{
           headerShown: false,
         }}

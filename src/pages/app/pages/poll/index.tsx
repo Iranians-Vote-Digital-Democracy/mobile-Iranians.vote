@@ -58,7 +58,7 @@ const voteSchema = zod.object({
 const rmoProvider = new JsonRpcProvider(RARIMO_CHAINS[Config.RMO_CHAIN_ID].rpcEvm)
 const proposalContract = createProposalContract(Config.PROPOSAL_STATE_CONTRACT_ADDRESS, rmoProvider)
 
-export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
+export default function PollScreen({ route }: AppStackScreenProps<'Poll'>) {
   const insets = useSafeAreaInsets()
   const bottomSheet = useUiBottomSheet()
   const navigation = useNavigation()

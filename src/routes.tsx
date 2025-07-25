@@ -22,7 +22,7 @@ const linking: LinkingOptions<RootStackParamList> = {
       LocalAuth: 'local-auth',
       App: {
         screens: {
-          Polls: 'polls/:proposalId',
+          Poll: 'polls/:proposalId',
         },
       },
     },
