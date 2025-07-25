@@ -286,16 +286,16 @@ export class EID implements EDocument {
 
   serialize(): string {
     return superjson.stringify({
-      sigCertificate: AsnConvert.serialize(this.sigCertificate.certificate),
-      authCertificate: AsnConvert.serialize(this.authCertificate.certificate),
+      sigCertificate: new Uint8Array(AsnConvert.serialize(this.sigCertificate.certificate)),
+      authCertificate: new Uint8Array(AsnConvert.serialize(this.authCertificate.certificate)),
     })
   }
 
   static deserialize(serialized: string): EID {
     try {
       const parsed = superjson.parse<{
-        sigCertificate: ArrayBuffer
-        authCertificate: ArrayBuffer
+        sigCertificate: Uint8Array
+        authCertificate: Uint8Array
       }>(serialized)
 
       const sigCert = AsnConvert.parse(parsed.sigCertificate, Certificate)
