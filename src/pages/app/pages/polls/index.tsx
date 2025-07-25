@@ -72,7 +72,6 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
   const [screen, setScreen] = useState<Screen>(Screen.Questions)
 
   const progress = useSharedValue(0)
-  const proposalId = route.params?.proposalId as string
 
   const startProgress = useCallback(() => {
     progress.value = withTiming(99, { duration: 5_000 })
@@ -84,12 +83,16 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
     isLoading: isParsedProposalLoading,
     error: parsedProposalError,
   } = useQuery({
-    queryKey: ['contractProposal', proposalId],
+    queryKey: ['contractProposal', route.params?.proposalId],
     queryFn: async () => {
-      const raw = await proposalContract.contractInstance.getProposalInfo(BigInt(proposalId))
+      if (!route.params?.proposalId) throw new Error('proposalId is not defined')
+
+      const raw = await proposalContract.contractInstance.getProposalInfo(
+        BigInt(route.params?.proposalId ?? 0),
+      )
       return parseProposalFromContract(raw)
     },
-    enabled: Boolean(proposalId),
+    enabled: Boolean(route.params?.proposalId),
   })
 
   // Fetch proposal metadata from IPFS
@@ -141,6 +144,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
     setScreen(Screen.Submitting)
     startProgress()
     try {
+      if (!route.params?.proposalId) throw new Error('proposalId is not defined')
       if (!identities.length) throw new Error("Your identity hasn't registered yet!")
       const currentIdentity = identities[identities.length - 1]
 
@@ -161,6 +165,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
         identityCounter,
       })
 
+      const proposalId = route.params?.proposalId
       const eventId = await circuitParams.getEventId(proposalId)
       const eventData = circuitParams.getEventData(votes)
 
@@ -211,7 +216,8 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
     [currentQuestionIndex, proposalMetadata?.acceptedOptions?.length],
   )
 
-  if (parsedProposalError || proposalMetadataError || !proposalId) return <ErrorScreen />
+  if (parsedProposalError || proposalMetadataError || !route.params?.proposalId)
+    return <ErrorScreen />
   if (isParsedProposalLoading || isProposalMetadataLoading || !proposalMetadata || !parsedProposal)
     return <LoadingScreen />
 
@@ -251,7 +257,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
                   {proposalMetadata.description}
                 </Text>
               </View>
-              <View>
+              <View className='overflow-hidden rounded-md'>
                 <Image
                   source={{ uri: `${Config.IPFS_NODE_URL}/${proposalMetadata?.imageCid}` }}
                   className='h-48 w-full'
