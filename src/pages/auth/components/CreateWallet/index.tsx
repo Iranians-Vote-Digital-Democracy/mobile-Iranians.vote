@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ErrorHandler, translate } from '@/core'
 import { useCopyToClipboard, useForm, useLoading } from '@/hooks'
 import type { AuthStackScreenProps } from '@/route-types'
-import { authStore, walletStore } from '@/store'
+import { walletStore } from '@/store'
 import { cn } from '@/theme'
 import { UiButton, UiCard, UiHorizontalDivider, UiIcon, UiScreenScrollable } from '@/ui'
 import { ControlledUiInput } from '@/ui/UiInput'
@@ -18,7 +18,6 @@ type Props = ViewProps & AuthStackScreenProps<'CreateWallet'>
 export default function CreateWallet({ route }: Props) {
   const generatePrivateKey = walletStore.useGeneratePrivateKey()
   const setPrivateKey = walletStore.useWalletStore(state => state.setPrivateKey)
-  const login = authStore.useLogin()
 
   const isImporting = useMemo(() => {
     return route?.params?.isImporting
@@ -51,13 +50,13 @@ export default function CreateWallet({ route }: Props) {
     disableForm()
     try {
       setPrivateKey(formState.privateKey)
-      await login(formState.privateKey)
+      // await login(formState.privateKey)
     } catch (error) {
       // TODO: network inspector
       ErrorHandler.process(error)
     }
     enableForm()
-  }, [disableForm, enableForm, formState.privateKey, login, setPrivateKey])
+  }, [disableForm, enableForm, formState.privateKey, setPrivateKey])
 
   // eslint-disable-next-line unused-imports/no-unused-vars
   const pasteFromClipboard = useCallback(async () => {

@@ -71,9 +71,9 @@ const useAuthStore = create(
 )
 
 const useIsAuthorized = () => {
-  const accessToken = useAuthStore(state => state.accessToken)
+  const privateKey = walletStore.useWalletStore(state => state.privateKey)
 
-  return accessToken !== ''
+  return privateKey !== ''
 }
 
 const useAuthProof = (opts?: { byFilePath?: boolean }) => {
