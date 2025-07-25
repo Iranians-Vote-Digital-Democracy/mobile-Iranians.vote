@@ -132,7 +132,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
           identityCounter,
         })
 
-        const eventId = circuitParams.getEventId(proposalId)
+        const eventId = await circuitParams.getEventId(proposalId)
         const eventData = circuitParams.getEventData(votes)
 
         const params: QueryProofParams = {
@@ -372,19 +372,32 @@ function QuestionScreen({
           <View className='mt-3 gap-3'>
             {currentQuestion.variants.map((answer, index) => {
               const id = Number(index)
+              const isSelected = currentVoteIndex === id
+
               return (
                 <UiButton
                   key={`${answer}-${index}`}
                   color='primary'
-                  title={answer}
-                  className='w-full'
                   variant='outlined'
                   size='medium'
-                  leadingIconProps={
-                    currentVoteIndex === id ? { customIcon: 'checkIcon' } : undefined
-                  }
                   onPress={() => onSelectVote(id)}
-                />
+                >
+                  <View className='relative w-full flex-row items-center justify-between'>
+                    <Text
+                      className='flex-1 truncate pr-6 text-sm text-textPrimary'
+                      numberOfLines={1}
+                      ellipsizeMode='tail'
+                    >
+                      {answer}
+                    </Text>
+
+                    {isSelected && (
+                      <View className='absolute right-0'>
+                        <UiIcon customIcon='checkIcon' size={20} className='color-successMain' />
+                      </View>
+                    )}
+                  </View>
+                </UiButton>
               )
             })}
           </View>
@@ -456,15 +469,18 @@ function FinishScreen({ onGoBack }: { onGoBack: () => void }) {
       style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
       <View className='w-full flex-1 items-center justify-center gap-6 px-4'>
-        <View className='mb-4 flex-row items-center justify-center rounded-full bg-successLight'>
-          <UiIcon customIcon='checkIcon' size={64} className='color-successMain' />
+        <View className='mb-4 size-[80px] flex-row items-center justify-center rounded-full bg-successLight'>
+          <UiIcon customIcon='checkIcon' size={40} className='color-successMain' />
         </View>
-        <Text className='typography-h5 mb-2 text-textPrimary'>Poll finished</Text>
-        <Text className='typography-body3 mb-6 text-textSecondary'>Thanks for participation!</Text>
-        <UiHorizontalDivider />
-      </View>
-      <View className='absolute inset-x-0 bottom-0 p-4'>
-        <UiButton title='Go Back' onPress={onGoBack} className='w-full' />
+        <View className='items-center'>
+          <Text className='typography-h5 mb-2 text-textPrimary'>Poll finished</Text>
+          <Text className='typography-body3 mb-6 text-textSecondary'>
+            Thanks for participation!
+          </Text>
+        </View>
+        <View className='absolute inset-x-0 bottom-0 p-4'>
+          <UiButton title='Go Back' onPress={onGoBack} className='w-full' />
+        </View>
       </View>
     </View>
   )

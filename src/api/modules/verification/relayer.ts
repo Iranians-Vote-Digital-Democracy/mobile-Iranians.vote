@@ -5,7 +5,7 @@ export const relayerVote = async (callDataHex: string, destinationContractAddres
     id: string
     type: 'txs'
     tx_hash: string
-  }>('/integrations/proof-verification-relayer/v2/vote', {
+  }>('/integrations/proof-verification-relayer/v3/vote', {
     data: {
       attributes: {
         tx_data: callDataHex,
