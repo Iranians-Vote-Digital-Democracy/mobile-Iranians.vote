@@ -1,26 +1,23 @@
 import { Time } from '@distributedlab/tools'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { poseidon } from '@iden3/js-crypto'
 import { useNavigation } from '@react-navigation/native'
 import { useQuery } from '@tanstack/react-query'
 import { hexlify, JsonRpcProvider, toUtf8Bytes } from 'ethers'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native'
-import Animated, {
-  SharedValue,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated'
+import { Image, Pressable, Text, View } from 'react-native'
+import { useSharedValue, withTiming } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { z as zod } from 'zod'
 
-import { apiClient } from '@/api/client'
+import { apiClient, queryClient } from '@/api/client'
 import { RARIMO_CHAINS } from '@/api/modules/rarimo'
 import { Config } from '@/config'
 import { bus, DefaultBusEvents } from '@/core'
-import { createProposalContract, sleep } from '@/helpers'
+import { createPoseidonSMTContract, createProposalContract, sleep } from '@/helpers'
 import { formatDateDMY } from '@/helpers/formatters'
+import { tryCatch } from '@/helpers/try-catch'
 import { AppStackScreenProps } from '@/route-types'
 import { identityStore, walletStore } from '@/store'
 import { NoirEIDIdentity } from '@/store/modules/identity/Identity'
@@ -36,6 +33,7 @@ import {
 import { EIDBasedQueryIdentityCircuit } from '@/utils/circuits/eid-based-query-identity-circuit'
 import { QueryProofParams } from '@/utils/circuits/types/QueryIdentity'
 
+import PollStateScreen from './components/PollStateScreen'
 import { ZERO_DATE_HEX } from './constants'
 import { DecodedWhitelistData, ProposalMetadata } from './types'
 import { parseProposalFromContract } from './utils'
@@ -110,6 +108,40 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
       return result.data
     },
     enabled: Boolean(parsedProposal),
+  })
+
+  const {
+    data: isVoted,
+    isLoading: isVotedLoading,
+    error: isVotedError,
+  } = useQuery({
+    queryKey: ['isVoted', route.params?.proposalId],
+    queryFn: async () => {
+      const [isVoted] = await tryCatch(
+        (async () => {
+          if (!route.params?.proposalId) throw new Error('proposalId is not defined')
+          const proposalId = route.params?.proposalId
+          const privateKeyBigInt = BigInt(`0x${privateKey}`)
+          const eventId = await proposalContract.contractInstance.getProposalEventId(proposalId)
+
+          const pkHash = poseidon.hash([privateKeyBigInt])
+
+          const nullifier = poseidon.hash([privateKeyBigInt, pkHash, eventId])
+          const proposalInfo = await proposalContract.contractInstance.getProposalInfo(proposalId)
+          const proposalSmtContractAddress = proposalInfo.proposalSMT
+          const poseidonSmtContract = createPoseidonSMTContract(
+            proposalSmtContractAddress,
+            rmoProvider,
+          )
+          const proof = await poseidonSmtContract.contractInstance.getProof(
+            '0x' + nullifier.toString(16).padStart(64, '0'),
+          )
+          return proof.existence
+        })(),
+      )
+      return isVoted
+    },
+    enabled: Boolean(route.params?.proposalId),
   })
 
   const {
@@ -216,11 +248,26 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
     [currentQuestionIndex, proposalMetadata?.acceptedOptions?.length],
   )
 
-  if (isParsedProposalLoading || isProposalMetadataLoading || !proposalMetadata || !parsedProposal)
-    return <LoadingScreen />
+  const isLoading =
+    isParsedProposalLoading ||
+    isProposalMetadataLoading ||
+    isVotedLoading ||
+    !proposalMetadata ||
+    !parsedProposal
 
-  if (parsedProposalError || proposalMetadataError || !route.params?.proposalId)
-    return <ErrorScreen />
+  const isError =
+    parsedProposalError || proposalMetadataError || !route.params?.proposalId || isVotedError
+
+  if (isLoading) return <PollStateScreen.Loading />
+  if (isError) return <PollStateScreen.Error />
+  if (isVoted)
+    return (
+      <PollStateScreen.AlreadyVoted
+        onGoBack={() => {
+          navigation.navigate('App', { screen: 'Tabs' })
+        }}
+      />
+    )
 
   // Screens map
   const screensMap: Record<Screen, ReactNode> = {
@@ -235,11 +282,14 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
         onSubmit={isLastQuestion ? submit : goToNextQuestion}
       />
     ),
-    [Screen.Submitting]: <SubmittingScreen animatedValue={progress} />,
+    [Screen.Submitting]: <PollStateScreen.Submitting animatedValue={progress} />,
     [Screen.Finish]: (
-      <FinishScreen
+      <PollStateScreen.Finished
         onGoBack={() => {
           bottomSheet.dismiss()
+          queryClient.invalidateQueries({
+            queryKey: ['isVoted', route.params?.proposalId],
+          })
           setScreen(Screen.Questions)
         }}
       />
@@ -439,76 +489,3 @@ function QuestionScreen({
     </View>
   )
 }
-
-function SubmittingScreen({ animatedValue }: { animatedValue: SharedValue<number> }) {
-  const barStyle = useAnimatedStyle(() => ({ width: `${animatedValue.value}%` }))
-  const insets = useSafeAreaInsets()
-
-  return (
-    <View
-      className='h-full justify-center gap-3 bg-backgroundPrimary p-4'
-      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-    >
-      <View className='w-full items-center gap-6'>
-        <View className='mb-4 size-[80px] flex-row items-center justify-center rounded-full bg-warningLight'>
-          <ActivityIndicator className='size-[40px] color-warningMain' />
-        </View>
-        <Text className='typography-h5 mb-2 text-textPrimary'>Please wait</Text>
-        <Text className='typography-body3 mb-6 text-textSecondary'>Anonymizing your vote</Text>
-        <View className='mb-4 h-2 w-4/5 rounded-full bg-componentPrimary'>
-          <Animated.View className='h-full rounded-full bg-primaryMain' style={barStyle} />
-        </View>
-        <UiHorizontalDivider />
-        <View className='w-full flex-row items-center rounded-lg bg-warningLight p-3'>
-          <UiIcon customIcon='infoIcon' size={18} className='mr-2 color-warningMain' />
-          <Text className='typography-body4 flex-1 text-warningMain'>
-            Please don't close the app, or your answers won't be included.
-          </Text>
-        </View>
-      </View>
-    </View>
-  )
-}
-
-function FinishScreen({ onGoBack }: { onGoBack: () => void }) {
-  const insets = useSafeAreaInsets()
-  return (
-    <View
-      className='h-full justify-center gap-3 bg-backgroundPrimary p-4'
-      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-    >
-      <View className='w-full flex-1 items-center justify-center gap-6 px-4'>
-        <View className='mb-4 size-[80px] flex-row items-center justify-center rounded-full bg-successLight'>
-          <UiIcon customIcon='checkIcon' size={40} className='color-successMain' />
-        </View>
-        <View className='items-center'>
-          <Text className='typography-h5 mb-2 text-textPrimary'>Poll finished</Text>
-          <Text className='typography-body3 mb-6 text-textSecondary'>
-            Thanks for participation!
-          </Text>
-        </View>
-        <View className='absolute inset-x-0 bottom-0 p-4'>
-          <UiButton title='Go Back' onPress={onGoBack} className='w-full' />
-        </View>
-      </View>
-    </View>
-  )
-}
-
-const LoadingScreen = () => (
-  <View className='h-full items-center justify-center bg-backgroundPrimary'>
-    <ActivityIndicator size='large' color='#6366f1' />
-    <Text className='typography-body3 mt-4 text-textSecondary'>Loading...</Text>
-  </View>
-)
-
-const ErrorScreen = ({ message, onRetry }: { message?: string; onRetry?: () => void }) => (
-  <View className='h-full items-center justify-center bg-backgroundPrimary px-6'>
-    <UiIcon customIcon='warningIcon' size={48} className='mb-4 color-errorMain' />
-    <Text className='typography-h6 mb-2 text-errorMain'>Something went wrong</Text>
-    <Text className='typography-body3 mb-6 text-center text-textSecondary'>
-      {message || 'Please try again later.'}
-    </Text>
-    {onRetry && <UiButton title='Try Again' onPress={onRetry} />}
-  </View>
-)

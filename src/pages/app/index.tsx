@@ -15,7 +15,7 @@ import DocumentScanScreen from './pages/document-scan'
 import DocumentsScreen from './pages/documents'
 import HomeScreen from './pages/home'
 import PassportTests from './pages/passport-tests'
-import PollScreen from './pages/polls'
+import PollScreen from './pages/poll'
 import ProfileScreen from './pages/profile'
 
 const Stack = createNativeStackNavigator<AppStackParamsList>()
