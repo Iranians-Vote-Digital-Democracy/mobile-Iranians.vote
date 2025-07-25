@@ -90,7 +90,7 @@ function FinishScreen({ onGoBack }: { onGoBack: () => void }) {
           <UiIcon customIcon='checkIcon' size={40} className='color-successMain' />
         </View>
         <View className='w-full items-center text-center'>
-          <Text className='typography-h5 mb-2 w-full text-textPrimary'>Poll finished</Text>
+          <Text className='typography-h5 mb-2 text-textPrimary'>Poll finished</Text>
           <Text className='typography-body3 mb-6 text-textSecondary'>
             Thanks for participation!
           </Text>
