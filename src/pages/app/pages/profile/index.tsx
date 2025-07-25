@@ -5,7 +5,7 @@ import WheelPicker from '@quidone/react-native-wheel-picker'
 import * as Haptics from 'expo-haptics'
 import { version } from 'package.json'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
-import { Pressable, Text, TouchableOpacity, useColorScheme, View } from 'react-native'
+import { Text, TouchableOpacity, useColorScheme, View } from 'react-native'
 import { TouchableOpacityProps } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SvgXml } from 'react-native-svg'
@@ -101,63 +101,106 @@ export default function ProfileScreen({}: AppTabScreenProps<'Profile'>) {
         <View className='flex flex-1 flex-col gap-4'>
           <ProfileCard />
           <SettingsCard />
+          <UiCard className='flex gap-4'>
+            <AdvancedCard />
+          </UiCard>
           <AppVersionCard />
         </View>
       </UiScreenScrollable>
     </AppContainer>
   )
 }
-
-function ProfileCard() {
+function AdvancedCard() {
   const privateKey = walletStore.useWalletStore(state => state.privateKey)
-  const publicKeyHash = walletStore.usePublicKeyHash().toString()
+  const logout = authStore.useLogout()
   const { isCopied, copy } = useCopyToClipboard()
+  const appPaddings = useAppPaddings()
+  const bottomSheet = useUiBottomSheet()
+  return (
+    <>
+      <View className='flex w-full flex-col gap-4'>
+        <ProfileButton
+          leadingIcon={
+            <UiIcon libIcon='Entypo' name='cog' className='text-textPrimary' size={5 * 4} />
+          }
+          title='Advanced'
+          onPress={bottomSheet.present}
+        />
+      </View>
+      <UiBottomSheet
+        title='Advanced'
+        ref={bottomSheet.ref}
+        detached
+        enableDynamicSizing={false}
+        snapPoints={['30%']}
+        headerComponent={
+          <>
+            <UiHorizontalDivider className='mx-auto my-4 mb-0 h-3 w-14 rounded-full' />
+          </>
+        }
+      >
+        <BottomSheetView
+          className='mt-3 flex size-full gap-2 pb-6'
+          style={{
+            paddingLeft: appPaddings.left,
+            paddingRight: appPaddings.right,
+          }}
+        >
+          <View className={cn('flex size-full flex-1 gap-2')}>
+            <Text className='typography-caption2 ml-4 font-semibold text-textPrimary'>
+              Secret key
+            </Text>
+            <UiCard className='flex-row bg-backgroundPrimary py-6'>
+              <Text className='typography-body3 line-clamp-1 w-9/12 truncate whitespace-nowrap text-textPrimary'>
+                {privateKey}
+              </Text>
+
+              <TouchableOpacity className='ml-auto'>
+                <UiIcon
+                  customIcon={isCopied ? 'checkIcon' : 'copySimpleIcon'}
+                  className='text-textSecondary'
+                  size={5 * 4}
+                  onPress={() => copy(privateKey)}
+                />
+              </TouchableOpacity>
+            </UiCard>
+
+            <ProfileButton
+              className='mt-auto rounded-full bg-componentPrimary p-3 px-4'
+              leadingIcon={
+                <UiIcon
+                  libIcon='MaterialCommunityIcons'
+                  name='logout'
+                  className='text-errorMain'
+                  size={4 * 4}
+                />
+              }
+              trailingIcon={<></>}
+              title='Log out'
+              onPress={logout}
+            />
+          </View>
+        </BottomSheetView>
+      </UiBottomSheet>
+    </>
+  )
+}
+function ProfileCard() {
+  const publicKeyHash = walletStore.usePublicKeyHash().toString()
 
   const avatar = createAvatar(identicon, {
     seed: publicKeyHash,
   }).toString()
 
-  const bottomSheet = useUiBottomSheet()
-
   return (
     <>
-      <Pressable onPress={bottomSheet.present} className='w-full items-center'>
-        <View className='w-full items-center justify-center'>
-          <View className='size-[85px] items-center overflow-hidden rounded-full bg-componentPrimary'>
-            <SvgXml height={80} width={80} xml={avatar} />
-          </View>
-
-          <Text className='typography-body1 mt-2 text-center text-textPrimary'>Stranger</Text>
+      <View className='w-full items-center justify-center'>
+        <View className='size-[85px] items-center overflow-hidden rounded-full bg-componentPrimary'>
+          <SvgXml height={80} width={80} xml={avatar} />
         </View>
-      </Pressable>
 
-      <UiBottomSheet
-        title='Profile'
-        detached={true}
-        ref={bottomSheet.ref}
-        enableDynamicSizing={false}
-        snapPoints={['40%']}
-      >
-        <BottomSheetView className='w-full gap-3'>
-          <UiCard className='rounded-3xl'>
-            <Text className='typography-body2 text-textPrimary'>Your private key:</Text>
-            <UiCard className='mt-2 rounded-3xl bg-backgroundPrimary'>
-              <Text className='typography-body3 text-textPrimary'>{privateKey}</Text>
-            </UiCard>
-
-            <UiButton
-              variant='text'
-              color='text'
-              leadingIconProps={{
-                customIcon: isCopied ? 'checkIcon' : 'copySimpleIcon',
-              }}
-              title='Copy to Clipboard'
-              onPress={() => copy(privateKey)}
-            />
-          </UiCard>
-          <LogoutCard />
-        </BottomSheetView>
-      </UiBottomSheet>
+        <Text className='typography-body1 mt-2 text-center text-textPrimary'>Stranger</Text>
+      </View>
     </>
   )
 }
@@ -472,24 +515,6 @@ function LocalAuthMethodCard() {
         </BottomSheetView>
       </UiBottomSheet>
     </>
-  )
-}
-
-function LogoutCard() {
-  const logout = authStore.useLogout()
-
-  return (
-    <UiCard className='rounded-3xl'>
-      <UiButton
-        color='error'
-        title='delete account'
-        trailingIconProps={{
-          customIcon: 'trashSimpleIcon',
-        }}
-        onPress={logout}
-        className='rounded-3xl'
-      />
-    </UiCard>
   )
 }
 
