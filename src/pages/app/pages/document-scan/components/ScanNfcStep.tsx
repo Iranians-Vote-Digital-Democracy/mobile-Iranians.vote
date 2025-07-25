@@ -3,6 +3,7 @@ import { Certificate } from '@peculiar/asn1-x509'
 import { Image } from 'expo-image'
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Text, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { translate } from '@/core'
 import { useDocumentScanContext } from '@/pages/app/pages/document-scan/ScanProvider'
@@ -13,7 +14,7 @@ import { initNfc, readSigningAndAuthCertificates } from '@/utils/e-document/inid
 
 export default function ScanNfcStep() {
   const { setTempEDoc } = useDocumentScanContext()
-
+  const insets = useSafeAreaInsets()
   const [busy, setBusy] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
 
@@ -56,7 +57,10 @@ export default function ScanNfcStep() {
   // const registrationChallenge = walletStore.useRegistrationChallenge()
 
   return (
-    <View className='mb-19 mt-10 flex-1 justify-center p-6'>
+    <View
+      style={{ paddingBottom: insets.bottom, paddingTop: insets.top }}
+      className='flex-1 justify-center p-6'
+    >
       <Text className='typography-h5 mb-2 text-textPrimary'>NFC Reader</Text>
       <Text className='typography-body3 mb-6 text-textSecondary'>Reading personal data</Text>
       {isScanning && (
@@ -74,9 +78,7 @@ export default function ScanNfcStep() {
           marginTop: 24,
         }}
       />
-      <Text className='typography-body3 mb-6 text-textSecondary'>
-        {translate('tabs.scan-nfc.tip')}
-      </Text>
+      <Text className='typography-body3 text-textSecondary'>{translate('tabs.scan-nfc.tip')}</Text>
       {busy && <ActivityIndicator className='my-4' />}
       {/* {error && <Text className='mt-4 text-errorMain typography-body2'>{error}</Text>} */}
       <UiButton
