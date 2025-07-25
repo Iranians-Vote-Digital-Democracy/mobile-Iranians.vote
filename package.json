@@ -139,6 +139,7 @@
     "react-hook-form": "^7.52.1",
     "react-i18next": "^14.1.2",
     "react-native": "0.76.9",
+    "react-native-edge-to-edge": "^1.6.2",
     "react-native-gesture-handler": "2.21.2",
     "react-native-get-random-values": "^1.11.0",
     "react-native-keyboard-controller": "^1.17.5",
