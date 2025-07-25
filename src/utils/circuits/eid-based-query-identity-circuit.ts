@@ -82,7 +82,7 @@ export class EIDBasedQueryIdentityCircuit {
 
     const dg1 = Array.from(this.getDg1(rawTbsCertBytes)).map(String)
 
-    const inputs = this._buildQueryProofParams({
+    const inputs = this._normalizeQueryProofParams({
       idStateRoot: passportRegistrationProof.root,
       dg1,
       pkPassportHash: `0x${currentIdentity.passportHash}`,
@@ -292,7 +292,7 @@ export class EIDBasedQueryIdentityCircuit {
   /**
    * Constructs circuit inputs in the correct format for the current platform.
    */
-  private _buildQueryProofParams(params: QueryProofParams = {}) {
+  private _normalizeQueryProofParams(params: QueryProofParams = {}) {
     const useHex = Platform.OS === 'android'
     const toHex = (v: string) => this._ensureHexPrefix(BigInt(v).toString(16))
     const toDec = (v: string) => BigInt(v).toString(10)
