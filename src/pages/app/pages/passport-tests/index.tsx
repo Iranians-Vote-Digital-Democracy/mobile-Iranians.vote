@@ -4,13 +4,17 @@ import { parseLdifString } from '@lukachi/rn-csca'
 import { AsnConvert } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
+import { JsonRpcProvider } from 'ethers'
 import { Asset } from 'expo-asset'
 import * as FileSystem from 'expo-file-system'
 import { useCallback, useState } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { RARIMO_CHAINS } from '@/api/modules/rarimo'
 import { NoirEIDRegistration } from '@/api/modules/registration/variants/noir-eid'
+import { Config } from '@/config'
+import { createProposalContract } from '@/helpers'
 import AppContainer from '@/pages/app/components/AppContainer'
 import { identityStore } from '@/store'
 import { NoirEIDIdentity } from '@/store/modules/identity/Identity'
@@ -40,6 +44,9 @@ const getIcaoPkdLdifFile = async () => {
 }
 
 const eIDRegistration = new NoirEIDRegistration()
+
+const rmoProvider = new JsonRpcProvider(RARIMO_CHAINS[Config.RMO_CHAIN_ID].rpcEvm)
+const proposalContract = createProposalContract(Config.PROPOSAL_STATE_CONTRACT_ADDRESS, rmoProvider)
 
 export default function PassportTests() {
   const privateKey = walletStore.useWalletStore(state => state.privateKey)
@@ -127,7 +134,10 @@ export default function PassportTests() {
 
     if (!currentIdentity) throw new Error("Identity doesn't exist")
 
-    const circuitParams = new EIDBasedQueryIdentityCircuit(currentIdentity)
+    const circuitParams = new EIDBasedQueryIdentityCircuit(
+      currentIdentity,
+      proposalContract.contractInstance,
+    )
 
     const inputs = {
       skIdentity: `0x${privateKey}`,

@@ -1,0 +1,16 @@
+import { apiClient } from '@/api/client'
+
+export const relayerVote = async (callDataHex: string, destinationContractAddress: string) => {
+  return apiClient.post<{
+    id: string
+    type: 'txs'
+    tx_hash: string
+  }>('/integrations/proof-verification-relayer/v3/vote', {
+    data: {
+      attributes: {
+        tx_data: callDataHex,
+        destination: destinationContractAddress,
+      },
+    },
+  })
+}

@@ -1,6 +1,12 @@
 import type { Provider, Signer } from 'ethers'
 
-import { PoseidonSMT__factory, Registration__factory, StateKeeper__factory } from '@/types'
+import {
+  NoirIdVoting__factory,
+  PoseidonSMT__factory,
+  ProposalState__factory,
+  Registration__factory,
+  StateKeeper__factory,
+} from '@/types/contracts'
 
 type AbstractFactoryClass = {
   connect: (address: string, signerOrProvider: Signer | Provider) => unknown
@@ -60,6 +66,32 @@ export const createRegistrationContract = (address: string, rawProvider: RawProv
     address,
     rawProvider,
     Registration__factory,
+  )
+
+  return {
+    contractInstance,
+    contractInterface,
+  }
+}
+
+export const createProposalContract = (address: string, rawProvider: RawProvider) => {
+  const { contractInstance, contractInterface } = createContract(
+    address,
+    rawProvider,
+    ProposalState__factory,
+  )
+
+  return {
+    contractInstance,
+    contractInterface,
+  }
+}
+
+export const createNoirIdVotingContract = (address: string, rawProvider: RawProvider) => {
+  const { contractInstance, contractInterface } = createContract(
+    address,
+    rawProvider,
+    NoirIdVoting__factory,
   )
 
   return {

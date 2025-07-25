@@ -41,8 +41,7 @@ export type AppStackParamsList = {
   InviteOthers?: {
     tag?: string
   }
-  QueryProof?: { proposalId?: string }
-
+  Poll?: { proposalId?: string }
   Scan?: {
     documentType?: DocType
   }
