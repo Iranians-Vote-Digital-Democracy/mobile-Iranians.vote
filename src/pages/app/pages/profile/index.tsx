@@ -429,23 +429,23 @@ function LocalAuthMethodCard() {
             paddingRight: appPaddings.right,
             paddingTop: 20,
           }}
-          className='gap-6'
+          className='gap-2'
         >
-          <View className='w-full flex-row gap-2 rounded-3xl border border-componentPrimary px-3 py-4'>
+          <View className='w-full flex-row items-center gap-2 rounded-3xl border border-componentPrimary px-3 py-2'>
             <UiIcon className='color-textPrimary' customIcon='passwordIcon' />
             <Text className='typography-body2 text-textPrimary'>Passcode</Text>
+            <View className='flex-1' />
             <UiSwitcher
               value={isPasscodeEnabled}
               onValueChange={handleChangePasscodeStatus}
               style={{
                 transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
-                marginLeft: 150,
               }}
             />
           </View>
 
           {isBiometricsEnrolled && (
-            <View className='w-full flex-row gap-2 rounded-3xl border border-componentPrimary px-3 py-4'>
+            <View className='w-full flex-row items-center gap-2 rounded-3xl border border-componentPrimary px-3 py-2'>
               <UiIcon
                 className={!isPasscodeEnabled ? 'color-textSecondary' : 'color-textPrimary'}
                 customIcon='fingerprintIcon'
@@ -458,13 +458,13 @@ function LocalAuthMethodCard() {
               >
                 Biometric
               </Text>
+              <View className='flex-1' />
               <UiSwitcher
                 value={isBiometricsEnabled}
                 onValueChange={handleChangeBiometricStatus}
                 disabled={!isPasscodeEnabled}
                 style={{
                   transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
-                  marginLeft: 150,
                 }}
               />
             </View>

@@ -105,7 +105,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ['expo-build-properties', {
       android: {
         minSdkVersion: 27,
-        targetSdkVersion: 34,
+        compileSdkVersion : 35,
+        targetSdkVersion: 35,
         // TODO to test builded apk release
         ndk: {
           abiFilters: ['arm64-v8a'],
