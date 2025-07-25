@@ -1,8 +1,10 @@
 import { Time } from '@distributedlab/tools'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigation } from '@react-navigation/native'
 import { useQuery } from '@tanstack/react-query'
 import { hexlify, JsonRpcProvider, toUtf8Bytes } from 'ethers'
-import { ReactNode, useCallback, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native'
 import Animated, {
   SharedValue,
@@ -11,6 +13,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { z as zod } from 'zod'
 
 import { apiClient } from '@/api/client'
 import { RARIMO_CHAINS } from '@/api/modules/rarimo'
@@ -43,6 +46,17 @@ enum Screen {
   Finish = 'finish',
 }
 
+const voteSchema = zod.object({
+  votes: zod
+    .array(
+      zod
+        .number()
+        .nullable()
+        .refine(v => v !== null, 'You must answer this question'),
+    )
+    .nonempty('At least one vote required'),
+})
+
 const rmoProvider = new JsonRpcProvider(RARIMO_CHAINS[Config.RMO_CHAIN_ID].rpcEvm)
 const proposalContract = createProposalContract(Config.PROPOSAL_STATE_CONTRACT_ADDRESS, rmoProvider)
 
@@ -55,10 +69,6 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
   const privateKey = walletStore.useWalletStore(state => state.privateKey)
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [selectedVotes, setSelectedVotes] = useState<number[]>([])
-  const [currentVoteIndex, setCurrentVoteIndex] = useState<number | null>(null)
-
-  const [isSubmitting, setIsCloseDisabled] = useState(false)
   const [screen, setScreen] = useState<Screen>(Screen.Questions)
 
   const progress = useSharedValue(0)
@@ -99,116 +109,108 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
     enabled: Boolean(parsedProposal),
   })
 
+  const {
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<zod.infer<typeof voteSchema>>({
+    resolver: zodResolver(voteSchema),
+    defaultValues: { votes: [] },
+  })
+
+  const votes = watch('votes')
+
+  const submit = (vote: number) => {
+    selectVote(currentQuestionIndex, vote)
+    handleSubmit(generateProof)()
+  }
+
+  const goToNextQuestion = (vote: number) => {
+    selectVote(currentQuestionIndex, vote)
+    setCurrentQuestionIndex(prev => prev + 1)
+  }
+
+  const selectVote = (index: number, vote: number) => {
+    setValue(`votes.${index}`, vote)
+  }
+
+  const generateProof = async ({ votes }: { votes: number[] }) => {
+    progress.value = 0
+    setScreen(Screen.Submitting)
+    startProgress()
+    try {
+      if (!identities.length) throw new Error("Your identity hasn't registered yet!")
+      const currentIdentity = identities[identities.length - 1]
+
+      if (!currentIdentity) throw new Error("Identity doesn't exist")
+      if (!(currentIdentity instanceof NoirEIDIdentity))
+        throw new Error('Identity is not NoirEIDIdentity')
+
+      const circuitParams = new EIDBasedQueryIdentityCircuit(
+        currentIdentity,
+        proposalContract.contractInstance,
+      )
+      const whitelistData = parsedProposal?.votingWhitelistData as DecodedWhitelistData
+
+      const { timestamp, identityCounter } = await circuitParams.getPassportInfo()
+      const { timestampUpper, identityCountUpper } = await circuitParams.getVotingBounds({
+        whitelistData,
+        timestamp,
+        identityCounter,
+      })
+
+      const eventId = await circuitParams.getEventId(proposalId)
+      const eventData = circuitParams.getEventData(votes)
+
+      const params: QueryProofParams = {
+        eventId: String(eventId),
+        eventData,
+        identityCountUpper: String(identityCountUpper),
+        timestampUpper: String(timestampUpper),
+        selector: String(whitelistData.selector),
+        expirationDateLower: String(whitelistData.expirationDateLowerBound),
+        expirationDateUpper: ZERO_DATE_HEX,
+        birthDateLower: String(whitelistData.birthDateLowerbound),
+        birthDateUpper: String(whitelistData.birthDateUpperbound),
+        skIdentity: `0x${privateKey}`,
+        identityCounter: String(identityCounter),
+        timestamp: String(timestamp),
+        currentDate: hexlify(toUtf8Bytes(new Time().format('YYMMDD'))),
+        identityCountLower: '0',
+        citizenshipMask: '0',
+        timestampLower: '0',
+      }
+
+      const proof = await circuitParams.prove(params)
+      await circuitParams.submitVote({ proof, votes, proposalId })
+
+      bus.emit(DefaultBusEvents.success, { message: 'Proof generated successfully!' })
+      progress.value = withTiming(100, { duration: 100 })
+      setScreen(Screen.Finish)
+      reset()
+      await sleep(5_000)
+    } catch (error) {
+      console.error('Proof generation failed:', error)
+      progress.value = 0
+      setScreen(Screen.Questions)
+      bus.emit(DefaultBusEvents.error, { message: 'Proof generation failed. Please try again.' })
+    }
+  }
+
+  // Initialize form votes array when metadata arrives
+  useEffect(() => {
+    if (proposalMetadata?.acceptedOptions?.length) {
+      reset({ votes: Array(proposalMetadata.acceptedOptions.length).fill(null) })
+    }
+  }, [proposalMetadata?.acceptedOptions?.length, reset])
+
   const isLastQuestion = useMemo(
     () => currentQuestionIndex === (proposalMetadata?.acceptedOptions?.length ?? 0) - 1,
     [currentQuestionIndex, proposalMetadata?.acceptedOptions?.length],
   )
 
-  const generateProof = useCallback(
-    async (votes: number[]) => {
-      progress.value = 0
-      setIsCloseDisabled(true)
-      setScreen(Screen.Submitting)
-      startProgress()
-      try {
-        if (!identities.length) throw new Error("Your identity hasn't registered yet!")
-        const currentIdentity = identities[identities.length - 1]
-
-        if (!currentIdentity) throw new Error("Identity doesn't exist")
-
-        if (!(currentIdentity instanceof NoirEIDIdentity))
-          throw new Error('Identity is not NoirEIDIdentity')
-
-        const circuitParams = new EIDBasedQueryIdentityCircuit(
-          currentIdentity,
-          proposalContract.contractInstance,
-        )
-        const whitelistData = parsedProposal?.votingWhitelistData as DecodedWhitelistData
-
-        const { timestamp, identityCounter } = await circuitParams.getPassportInfo()
-        const { timestampUpper, identityCountUpper } = await circuitParams.getVotingBounds({
-          whitelistData,
-          timestamp,
-          identityCounter,
-        })
-
-        const eventId = await circuitParams.getEventId(proposalId)
-        const eventData = circuitParams.getEventData(votes)
-
-        const params: QueryProofParams = {
-          eventId: String(eventId),
-          eventData,
-          identityCountUpper: String(identityCountUpper),
-          timestampUpper: String(timestampUpper),
-          selector: String(whitelistData.selector),
-          expirationDateLower: String(whitelistData.expirationDateLowerBound),
-          expirationDateUpper: ZERO_DATE_HEX,
-          birthDateLower: String(whitelistData.birthDateLowerbound),
-          birthDateUpper: String(whitelistData.birthDateUpperbound),
-          skIdentity: `0x${privateKey}`,
-          identityCounter: String(identityCounter),
-          timestamp: String(timestamp),
-          currentDate: hexlify(toUtf8Bytes(new Time().format('YYMMDD'))),
-          identityCountLower: '0',
-          citizenshipMask: '0',
-          timestampLower: '0',
-        }
-
-        const proof = await circuitParams.prove(params)
-        await circuitParams.submitVote({ proof, votes, proposalId })
-
-        bus.emit(DefaultBusEvents.success, { message: 'Proof generated successfully!' })
-        progress.value = withTiming(100, { duration: 100 })
-        setScreen(Screen.Finish)
-        await sleep(5_000)
-      } catch (error) {
-        console.error('Proof generation failed:', error)
-        progress.value = 0
-        setScreen(Screen.Questions)
-        bus.emit(DefaultBusEvents.error, { message: 'Proof generation failed. Please try again.' })
-      } finally {
-        setIsCloseDisabled(false)
-      }
-    },
-    [
-      identities,
-      parsedProposal?.votingWhitelistData,
-      privateKey,
-      progress,
-      proposalId,
-      startProgress,
-    ],
-  )
-
-  const updateVotes = useCallback(
-    (vote: number) => {
-      setSelectedVotes(prev => {
-        const updated = [...prev]
-        updated[currentQuestionIndex] = vote
-        return updated
-      })
-      setCurrentVoteIndex(vote)
-    },
-    [currentQuestionIndex],
-  )
-
-  const goToPreviousQuestion = () => setCurrentQuestionIndex(idx => Math.max(idx - 1, 0))
-
-  const goToNextQuestion = useCallback(() => {
-    if (currentVoteIndex === null) return
-    updateVotes(currentVoteIndex)
-    setCurrentVoteIndex(null)
-    setCurrentQuestionIndex(i => i + 1)
-  }, [currentVoteIndex, updateVotes])
-
-  const submit = useCallback(() => {
-    if (!currentVoteIndex) return
-
-    updateVotes(currentVoteIndex)
-    generateProof([...selectedVotes.slice(0, currentQuestionIndex), currentVoteIndex])
-  }, [currentQuestionIndex, currentVoteIndex, generateProof, selectedVotes, updateVotes])
-
-  // Loading/Error
   if (parsedProposalError || proposalMetadataError || !proposalId) return <ErrorScreen />
   if (isParsedProposalLoading || isProposalMetadataLoading || !proposalMetadata || !parsedProposal)
     return <LoadingScreen />
@@ -219,9 +221,9 @@ export default function PollScreen({ route }: AppStackScreenProps<'Polls'>) {
       <QuestionScreen
         questions={proposalMetadata.acceptedOptions}
         currentQuestionIndex={currentQuestionIndex}
-        currentVoteIndex={currentVoteIndex}
-        onSelectVote={updateVotes}
-        onBack={goToPreviousQuestion}
+        currentVoteIndex={votes[currentQuestionIndex]}
+        onSelectVote={vote => selectVote(currentQuestionIndex, vote)}
+        onBack={() => setCurrentQuestionIndex(i => Math.max(i - 1, 0))}
         onClose={() => bottomSheet.dismiss()}
         onSubmit={isLastQuestion ? submit : goToNextQuestion}
       />
