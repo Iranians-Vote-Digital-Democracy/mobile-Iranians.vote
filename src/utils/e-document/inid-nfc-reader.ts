@@ -200,11 +200,9 @@ export async function readSigningAndAuthCertificates(onScanStarted?: () => void)
 
     log('Reading Signing Certificate...')
     const signingCert = await readSigningCertificate()
-    log('Signing Certificate:', signingCert)
 
     log('Reading Authentication Certificate...')
     const authCert = await readAuthenticationCertificate()
-    log('Authentication Certificate:', authCert)
 
     return { signingCert, authCert }
   })
