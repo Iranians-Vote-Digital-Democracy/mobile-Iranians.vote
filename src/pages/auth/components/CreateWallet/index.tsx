@@ -43,7 +43,7 @@ export default function CreateWallet({ route }: Props) {
             if (!value) return false
             const normalizedValue = value.startsWith('0x') ? value : `0x${value}`
 
-            if (!isHexString(normalizedValue)) return false
+            if (!isHexString(normalizedValue, 32)) return false
             return value.length <= 64
           }),
         }),
