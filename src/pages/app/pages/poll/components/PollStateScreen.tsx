@@ -22,6 +22,33 @@ const PollErrorScreen = ({ message, onRetry }: { message?: string; onRetry?: () 
   </View>
 )
 
+const PollNoIdentity = ({ onGoBack }: { onGoBack: () => void }) => {
+  const insets = useSafeAreaInsets()
+
+  return (
+    <View
+      className='h-full justify-center gap-3 bg-backgroundPrimary p-4'
+      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+    >
+      <View className='w-full flex-1 items-center justify-center gap-6 px-4'>
+        <View className='mb-4 size-[80px] flex-row items-center justify-center rounded-full bg-warningLight'>
+          <UiIcon customIcon='infoIcon' size={40} className='color-warningMain' />
+        </View>
+        <View className='items-center'>
+          <Text className='typography-h5 mb-2 text-center text-textPrimary'>
+            You've don`t have digital identity
+          </Text>
+          <Text className='typography-body3 mb-6 text-textSecondary'>
+            Create your digital identity first
+          </Text>
+        </View>
+        <View className='absolute inset-x-0 bottom-0 p-4'>
+          <UiButton title='To Create Digital Identity' onPress={onGoBack} className='w-full' />
+        </View>
+      </View>
+    </View>
+  )
+}
 const PollAlreadyVotedScreen = ({ onGoBack }: { onGoBack: () => void }) => {
   const insets = useSafeAreaInsets()
 
@@ -105,6 +132,7 @@ function FinishScreen({ onGoBack }: { onGoBack: () => void }) {
 
 const PollStateScreen = {
   Loading: PollLoadingScreen,
+  NoIdentity: PollNoIdentity,
   Error: PollErrorScreen,
   Submitting: SubmittingScreen,
   AlreadyVoted: PollAlreadyVotedScreen,
