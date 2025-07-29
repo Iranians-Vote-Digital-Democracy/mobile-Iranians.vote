@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ErrorHandler, translate } from '@/core'
 import { useCopyToClipboard, useForm, useLoading } from '@/hooks'
 import type { AuthStackScreenProps } from '@/route-types'
-import { walletStore } from '@/store'
+import { localAuthStore, walletStore } from '@/store'
 import { cn } from '@/theme'
 import { UiButton, UiCard, UiHorizontalDivider, UiIcon, UiScreenScrollable } from '@/ui'
 import { ControlledUiInput } from '@/ui/UiInput'
@@ -46,17 +46,21 @@ export default function CreateWallet({ route }: Props) {
         }),
     )
 
+  const setIsFirstEnter = localAuthStore.useLocalAuthStore(state => state.setIsFirstEnter)
+
   const submit = useCallback(async () => {
     disableForm()
     try {
       setPrivateKey(formState.privateKey)
       // await login(formState.privateKey)
+
+      setIsFirstEnter(false)
     } catch (error) {
       // TODO: network inspector
       ErrorHandler.process(error)
     }
     enableForm()
-  }, [disableForm, enableForm, formState.privateKey, setPrivateKey])
+  }, [disableForm, enableForm, formState.privateKey, setIsFirstEnter, setPrivateKey])
 
   // eslint-disable-next-line unused-imports/no-unused-vars
   const pasteFromClipboard = useCallback(async () => {
