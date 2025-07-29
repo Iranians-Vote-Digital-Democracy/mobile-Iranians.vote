@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native'
+import { isHexString } from 'ethers'
 import { useCallback, useMemo } from 'react'
 import type { ViewProps } from 'react-native'
 import { Text, View } from 'react-native'
@@ -38,10 +39,10 @@ export default function CreateWallet({ route }: Props) {
         yup.object().shape({
           privateKey: yup.string().test('is-valid-pk', 'Invalid Private Key', value => {
             if (!isImporting) return true
-
             if (!value) return false
-
-            return value.length <= 64
+            const normalizedValue = value.startsWith('0x') ? value : `0x${value}`
+            if (!isHexString(normalizedValue, 32)) return false
+            return true
           }),
         }),
     )
@@ -51,8 +52,11 @@ export default function CreateWallet({ route }: Props) {
   const submit = useCallback(async () => {
     disableForm()
     try {
-      setPrivateKey(formState.privateKey)
-      // await login(formState.privateKey)
+      const privateKey = formState.privateKey.startsWith('0x')
+        ? formState.privateKey.substring(2)
+        : formState.privateKey
+      setPrivateKey(privateKey)
+      // await login(privateKey)
 
       setIsFirstEnter(false)
     } catch (error) {
@@ -60,7 +64,7 @@ export default function CreateWallet({ route }: Props) {
       ErrorHandler.process(error)
     }
     enableForm()
-  }, [disableForm, enableForm, formState.privateKey, setIsFirstEnter, setPrivateKey])
+  }, [disableForm, enableForm, formState, setIsFirstEnter, setPrivateKey])
 
   // eslint-disable-next-line unused-imports/no-unused-vars
   const pasteFromClipboard = useCallback(async () => {
