@@ -268,7 +268,15 @@ export default function PollScreen({ route }: AppStackScreenProps<'Poll'>) {
         }}
       />
     )
-
+  if (!identities.length) {
+    return (
+      <PollStateScreen.NoIdentity
+        onGoBack={() => {
+          navigation.navigate('App', { screen: 'Tabs' })
+        }}
+      />
+    )
+  }
   // Screens map
   const screensMap: Record<Screen, ReactNode> = {
     [Screen.Questions]: (
