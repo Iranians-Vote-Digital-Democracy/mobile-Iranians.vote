@@ -290,7 +290,7 @@ export default function PollScreen({ route }: AppStackScreenProps<'Poll'>) {
           queryClient.invalidateQueries({
             queryKey: ['isVoted', route.params?.proposalId],
           })
-          setScreen(Screen.Questions)
+          navigation.navigate('App', { screen: 'Tabs' })
         }}
       />
     ),
