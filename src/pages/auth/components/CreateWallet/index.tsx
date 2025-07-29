@@ -37,23 +37,13 @@ export default function CreateWallet({ route }: Props) {
       },
       yup =>
         yup.object().shape({
-          privateKey: yup
-            .string()
-            .test('is-valid-pk', 'Invalid Private Key', value => {
-              if (!isImporting) return true
-
-              if (!value) return false
-              const normalizedValue = value.startsWith('0x') ? value : `0x${value}`
-
-              if (!isHexString(normalizedValue, 32)) return false
-              return true
-            })
-            .transform((value: string | undefined): string | undefined => {
-              if (typeof value === 'string' && value.startsWith('0x')) {
-                return value.substring(2)
-              }
-              return value
-            }),
+          privateKey: yup.string().test('is-valid-pk', 'Invalid Private Key', value => {
+            if (!isImporting) return true
+            if (!value) return false
+            const normalizedValue = value.startsWith('0x') ? value : `0x${value}`
+            if (!isHexString(normalizedValue, 32)) return false
+            return true
+          }),
         }),
     )
 
@@ -62,6 +52,9 @@ export default function CreateWallet({ route }: Props) {
   const submit = useCallback(async () => {
     disableForm()
     try {
+      if (formState.privateKey.startsWith('0x')) {
+        formState.privateKey = formState.privateKey.substring(2)
+      }
       setPrivateKey(formState.privateKey)
       // await login(formState.privateKey)
 
@@ -71,7 +64,7 @@ export default function CreateWallet({ route }: Props) {
       ErrorHandler.process(error)
     }
     enableForm()
-  }, [disableForm, enableForm, formState.privateKey, setIsFirstEnter, setPrivateKey])
+  }, [disableForm, enableForm, formState, setIsFirstEnter, setPrivateKey])
 
   // eslint-disable-next-line unused-imports/no-unused-vars
   const pasteFromClipboard = useCallback(async () => {
