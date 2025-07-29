@@ -52,11 +52,11 @@ export default function CreateWallet({ route }: Props) {
   const submit = useCallback(async () => {
     disableForm()
     try {
-      if (formState.privateKey.startsWith('0x')) {
-        formState.privateKey = formState.privateKey.substring(2)
-      }
-      setPrivateKey(formState.privateKey)
-      // await login(formState.privateKey)
+      const privateKey = formState.privateKey.startsWith('0x')
+        ? formState.privateKey.substring(2)
+        : formState.privateKey
+      setPrivateKey(privateKey)
+      // await login(privateKey)
 
       setIsFirstEnter(false)
     } catch (error) {
