@@ -35,7 +35,7 @@ const PollNoIdentity = ({ onGoBack }: { onGoBack: () => void }) => {
           <UiIcon customIcon='infoIcon' size={40} className='color-warningMain' />
         </View>
         <View className='items-center'>
-          <Text className='typography-h5 mb-2 text-textPrimary'>
+          <Text className='typography-h5 mb-2 text-center text-textPrimary'>
             You've don`t have digital identity
           </Text>
           <Text className='typography-body3 mb-6 text-textSecondary'>
