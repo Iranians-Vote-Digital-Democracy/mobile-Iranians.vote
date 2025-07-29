@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native'
+import { isHexString } from 'ethers'
 import { useCallback, useMemo } from 'react'
 import type { ViewProps } from 'react-native'
 import { Text, View } from 'react-native'
@@ -40,7 +41,7 @@ export default function CreateWallet({ route }: Props) {
             if (!isImporting) return true
 
             if (!value) return false
-
+            if (!isHexString(value)) return false
             return value.length <= 64
           }),
         }),
