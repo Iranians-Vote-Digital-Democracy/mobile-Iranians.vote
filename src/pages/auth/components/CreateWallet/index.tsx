@@ -37,15 +37,23 @@ export default function CreateWallet({ route }: Props) {
       },
       yup =>
         yup.object().shape({
-          privateKey: yup.string().test('is-valid-pk', 'Invalid Private Key', value => {
-            if (!isImporting) return true
+          privateKey: yup
+            .string()
+            .test('is-valid-pk', 'Invalid Private Key', value => {
+              if (!isImporting) return true
 
-            if (!value) return false
-            const normalizedValue = value.startsWith('0x') ? value : `0x${value}`
+              if (!value) return false
+              const normalizedValue = value.startsWith('0x') ? value : `0x${value}`
 
-            if (!isHexString(normalizedValue, 32)) return false
-            return value.length <= 64
-          }),
+              if (!isHexString(normalizedValue, 32)) return false
+              return true
+            })
+            .transform((value: string | undefined): string | undefined => {
+              if (typeof value === 'string' && value.startsWith('0x')) {
+                return value.substring(2)
+              }
+              return value
+            }),
         }),
     )
 
