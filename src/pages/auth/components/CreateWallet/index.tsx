@@ -37,7 +37,7 @@ export default function CreateWallet({ route }: Props) {
       },
       yup =>
         yup.object().shape({
-          privateKey: yup.string().test('is-valid-pk', 'Invalid Private Key', value => {
+          privateKey: yup.string().test('is-valid-pk', 'Invalid private key', value => {
             if (!isImporting) return true
             if (!value) return false
             const normalizedValue = value.startsWith('0x') ? value : `0x${value}`
