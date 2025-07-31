@@ -59,7 +59,14 @@ export default function UiNumPad({ value, setValue, className, extra, ...rest }:
                   key={i + j}
                   className='flex flex-1 items-center justify-center rounded-xl bg-backgroundContainer'
                 >
-                  <UiIcon customIcon='backspaceIcon' size={30} color={palette.textPrimary} />
+                  <Pressable
+                    className='rounded-xl'
+                    onPress={() => {
+                      handlePress(num)
+                    }}
+                  >
+                    <UiIcon customIcon='backspaceIcon' size={30} color={palette.textPrimary} />
+                  </Pressable>
                 </View>
               )
             }
