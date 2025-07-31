@@ -227,7 +227,7 @@ function LangCard() {
         ref={languageBottomSheet.ref}
         detached={true}
         enableDynamicSizing={false}
-        snapPoints={['20%']}
+        snapPoints={['25%']}
         enableContentPanningGesture={false}
         headerComponent={
           <View className='flex-row items-center justify-center py-0'>
@@ -265,7 +265,7 @@ function LangCard() {
               onValueChanged={({ item: { value } }) => setValue(value)}
               onValueChanging={Haptics.selectionAsync}
               enableScrollByTapOnItem
-              itemHeight={25}
+              itemHeight={30}
             />
           </View>
         </BottomSheetView>
