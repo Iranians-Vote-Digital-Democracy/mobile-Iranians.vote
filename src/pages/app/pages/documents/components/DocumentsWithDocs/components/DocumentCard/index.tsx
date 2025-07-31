@@ -318,6 +318,8 @@ export default function DocumentCard({ identity }: Props) {
                     <UiSwitcher
                       value={documentCardUi.personalDetailsShown?.includes(el)}
                       onValueChange={() => togglePersonalDetailsVisibility(el)}
+                      trackColor={{ false: 'textSecondary', true: 'textSecondary' }}
+                      thumbColor='#FFFFFF'
                     />
                   </View>
                 ))}
