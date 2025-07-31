@@ -2,7 +2,9 @@ import type { ReactNode } from 'react'
 import { useCallback, useMemo } from 'react'
 import { Pressable, Text, View, type ViewProps } from 'react-native'
 
-import { cn } from '@/theme'
+import { cn, useAppTheme } from '@/theme'
+
+import UiIcon from './UiIcon'
 
 type Props = {
   value: string
@@ -11,6 +13,7 @@ type Props = {
 } & ViewProps
 
 export default function UiNumPad({ value, setValue, className, extra, ...rest }: Props) {
+  const { palette } = useAppTheme()
   const numArray = useMemo(() => {
     return [
       ['1', '2', '3'],
@@ -49,6 +52,16 @@ export default function UiNumPad({ value, setValue, className, extra, ...rest }:
               }
 
               return <View key={i + j} className='flex flex-1 items-center justify-center' />
+            }
+            if (num === '<-') {
+              return (
+                <View
+                  key={i + j}
+                  className='flex flex-1 items-center justify-center rounded-xl bg-backgroundContainer'
+                >
+                  <UiIcon customIcon='backspaceIcon' size={30} color={palette.textPrimary} />
+                </View>
+              )
             }
 
             return (
