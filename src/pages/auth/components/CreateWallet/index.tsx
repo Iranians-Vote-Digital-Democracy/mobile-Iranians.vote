@@ -107,7 +107,7 @@ export default function CreateWallet({ route }: Props) {
         <View className='flex flex-1 flex-col px-5'>
           <View className='flex flex-col items-center gap-5'>
             <UiIcon customIcon='keyIcon' className='size-[200px] justify-center text-primaryMain' />
-            <Text className='typography-h4 text-textPrimary'>Your keys</Text>
+            <Text className='typography-h4 text-textPrimary'>Your key</Text>
           </View>
           {isImporting ? (
             <View className='flex flex-1 flex-col items-center justify-center gap-4'>
