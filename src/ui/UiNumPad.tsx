@@ -44,7 +44,7 @@ export default function UiNumPad({ value, setValue, className, extra, ...rest }:
                 return (
                   <View
                     key={i + j}
-                    className='flex flex-1 items-center justify-center rounded-xl bg-backgroundContainer'
+                    className='h-full w-full flex-1 rounded-xl bg-backgroundContainer'
                   >
                     {extra}
                   </View>

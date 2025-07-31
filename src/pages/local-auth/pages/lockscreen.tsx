@@ -165,8 +165,13 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
                 setValue={handleSetPasscode}
                 // TODO: is it necessary? The BiometricsLockScreen will handle it
                 extra={
-                  <TouchableOpacity onPress={unlockWithBiometrics}>
-                    <BiometricsIcon size={32} />
+                  <TouchableOpacity
+                    className='flex-1 items-center justify-center'
+                    onPress={() => unlockWithBiometrics()}
+                  >
+                    <View className='mt-1 flex-1 items-center justify-center'>
+                      <BiometricsIcon size={32} />
+                    </View>
                   </TouchableOpacity>
                 }
               />
