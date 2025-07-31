@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react'
 import { useCallback, useMemo } from 'react'
-import { Pressable, Text, View, type ViewProps } from 'react-native'
+import { Text, View, type ViewProps } from 'react-native'
+import { TouchableOpacity } from 'react-native-gesture-handler'
 
-import { cn, useAppTheme } from '@/theme'
+import { cn } from '@/theme'
 
 import UiIcon from './UiIcon'
 
@@ -13,7 +14,6 @@ type Props = {
 } & ViewProps
 
 export default function UiNumPad({ value, setValue, className, extra, ...rest }: Props) {
-  const { palette } = useAppTheme()
   const numArray = useMemo(() => {
     return [
       ['1', '2', '3'],
@@ -57,32 +57,28 @@ export default function UiNumPad({ value, setValue, className, extra, ...rest }:
               return (
                 <View
                   key={i + j}
-                  className='flex flex-1 items-center justify-center rounded-xl bg-backgroundContainer'
+                  className='h-full w-full flex-1 rounded-xl bg-backgroundContainer'
                 >
-                  <Pressable
-                    className='rounded-xl'
-                    onPress={() => {
-                      handlePress(num)
-                    }}
+                  <TouchableOpacity
+                    className='flex-1 items-center justify-center'
+                    onPress={() => handlePress(num)}
                   >
-                    <UiIcon customIcon='backspaceIcon' size={30} color={palette.textPrimary} />
-                  </Pressable>
+                    <View className='mt-1 flex-1 items-center justify-center'>
+                      <UiIcon customIcon='backspaceIcon' size={32} className='color-textPrimary' />
+                    </View>
+                  </TouchableOpacity>
                 </View>
               )
             }
 
             return (
-              <View key={i + j} className='flex flex-1 items-center justify-center'>
-                <Pressable
-                  className='w-full rounded-xl'
-                  onPress={() => {
-                    handlePress(num)
-                  }}
+              <View key={i + j} className='flex flex-1 rounded-xl bg-backgroundContainer'>
+                <TouchableOpacity
+                  className='h-full w-full items-center justify-center'
+                  onPress={() => handlePress(num)}
                 >
-                  <View className='flex items-center justify-center rounded-xl bg-backgroundContainer'>
-                    <Text className='typography-h4 text-textPrimary'>{num}</Text>
-                  </View>
-                </Pressable>
+                  <Text className='typography-h4 text-center text-textPrimary'>{num}</Text>
+                </TouchableOpacity>
               </View>
             )
           })}

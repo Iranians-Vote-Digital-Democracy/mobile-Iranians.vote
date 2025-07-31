@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native'
 import { useCallback, useEffect, useState } from 'react'
-import { Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
+import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ErrorHandler, translate } from '@/core'
@@ -164,9 +165,9 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
                 setValue={handleSetPasscode}
                 // TODO: is it necessary? The BiometricsLockScreen will handle it
                 extra={
-                  <Pressable onPress={unlockWithBiometrics}>
+                  <TouchableOpacity onPress={unlockWithBiometrics}>
                     <BiometricsIcon size={32} />
-                  </Pressable>
+                  </TouchableOpacity>
                 }
               />
             ) : (
