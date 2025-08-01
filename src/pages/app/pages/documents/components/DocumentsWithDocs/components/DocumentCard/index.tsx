@@ -165,7 +165,7 @@ export default function DocumentCard({ identity }: Props) {
                   key={idx}
                   labelProps={{
                     ...documentCardUi.foregroundLabels,
-                    children: startCase(el),
+                    children: 'Expiry date',
                   }}
                   valueProps={{
                     ...documentCardUi.foregroundValues,
