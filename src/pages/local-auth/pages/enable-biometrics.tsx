@@ -66,7 +66,7 @@ export default function EnableBiometrics({}: LocalAuthStackScreenProps<'EnableBi
           onPress={tryToEnableBiometrics}
         />
         <UiButton
-          className='typography-buttonMedium bg-transparent text-textSecondary'
+          className='typography-buttonMedium text-textSecondary'
           title={translate('enable-biometrics.skip-btn')}
           onPress={onSkip}
         />
