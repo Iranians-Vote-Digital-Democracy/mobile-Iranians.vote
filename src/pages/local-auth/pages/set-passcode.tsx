@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native'
-import { useCallback, useState } from 'react' // Добавляем useRef
-import { Text, View } from 'react-native' // Добавляем Animated
+import { useCallback, useState } from 'react'
+import { Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ErrorHandler, translate } from '@/core'
