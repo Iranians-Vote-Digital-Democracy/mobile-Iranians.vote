@@ -4,7 +4,6 @@ import { BlurView } from 'expo-blur'
 import { Image } from 'expo-image'
 import { startCase } from 'lodash'
 import get from 'lodash/get'
-import isEqual from 'lodash/isEqual'
 import { type ComponentProps, useCallback, useMemo, useState } from 'react'
 import type { ImageBackgroundProps, PressableProps, TextProps, ViewProps } from 'react-native'
 import { StyleSheet } from 'react-native'
@@ -235,18 +234,27 @@ export default function DocumentCard({ identity }: Props) {
               <ScrollView horizontal={true}>
                 <View className='flex flex-row gap-6'>
                   {uiVariants.map((el, idx) => {
-                    const isActive = isEqual(documentCardUi, el)
+                    const isActive = documentCardUi.title === el.title
 
                     return (
-                      <Pressable key={idx} onPress={() => setDocumentCardUi(el)}>
+                      <Pressable
+                        key={idx}
+                        onPress={() =>
+                          setDocumentCardUi({
+                            ...el,
+                            personalDetailsShown: documentCardUi.personalDetailsShown,
+                            isBlurred: documentCardUi.isBlurred,
+                          })
+                        }
+                      >
                         <View
                           className={cn(
                             'items-center gap-2 rounded-lg border border-solid border-componentPrimary px-[24] py-[16]',
-                            isActive && 'bg-componentHovered',
+                            isActive && 'bg-white',
                           )}
                         >
                           <Container
-                            docCardUI={el}
+                            docCardUI={el as DocumentCardUi}
                             style={{
                               width: 64,
                               height: 48,
@@ -307,7 +315,7 @@ export default function DocumentCard({ identity }: Props) {
 
             <View className={cn('flex flex-col gap-4')}>
               <View className={cn('flex flex-col gap-2')}>
-                <Text className='typography-subtitle4 text-textPrimary'>DATA</Text>
+                <Text className='typography-subtitle4 text-textPrimary'>Data</Text>
                 <Text className='typography-body4 text-textSecondary'>
                   Shows two identifiers on the card
                 </Text>
@@ -316,7 +324,7 @@ export default function DocumentCard({ identity }: Props) {
               <View className='flex flex-col gap-4'>
                 {personalDetailsShownVariants.map((el, idx) => (
                   <View key={idx} className='flex flex-row items-center justify-between'>
-                    <Text className='typography-subtitle4 text-textPrimary'>{el}</Text>
+                    <Text className='typography-subtitle4 text-textPrimary'>{startCase(el)}</Text>
                     <UiSwitcher
                       value={documentCardUi.personalDetailsShown?.includes(el)}
                       onValueChange={() => togglePersonalDetailsVisibility(el)}

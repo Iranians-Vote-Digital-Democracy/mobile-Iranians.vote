@@ -8,6 +8,12 @@ import { zustandStorage } from '@/store/helpers'
 import { useAppTheme } from '@/theme'
 import { PersonDetails } from '@/utils/e-document/e-document'
 
+export type DocumentCardUiPreference = {
+  title: string
+  personalDetailsShown: Partial<keyof PersonDetails>[]
+  isBlurred: boolean
+}
+
 export type DocumentCardUi = {
   title: string
   background: ViewProps | ImageBackgroundProps
@@ -16,17 +22,17 @@ export type DocumentCardUi = {
 
   personalDetailsShown: Partial<keyof PersonDetails>[]
 
-  isBlurred?: boolean
+  isBlurred: boolean
 }
 
 const useUiPreferencesStore = create(
   persist(
     combine(
       {
-        documentsCardUi: {} as Record<string, DocumentCardUi>,
+        documentsCardUi: {} as Record<string, DocumentCardUiPreference>,
       },
       set => ({
-        updateDocumentsCardUi: (value: Record<string, DocumentCardUi>) =>
+        updateDocumentsCardUi: (value: Record<string, DocumentCardUiPreference>) =>
           set(state => ({
             ...state,
             documentsCardUi: value,
@@ -51,12 +57,10 @@ const useDocumentCardUiPreference = (id: string) => {
     documentsCardUi: state.documentsCardUi,
     updateDocumentsCardUi: state.updateDocumentsCardUi,
   }))
-
+  const defaultPersonalDetailsShown = useMemo((): Array<keyof PersonDetails> => ['nationality'], [])
   const { palette } = useAppTheme()
 
-  const uiVariants: DocumentCardUi[] = useMemo(() => {
-    const defaultPersonalDetailsShown: Array<keyof PersonDetails> = ['nationality']
-
+  const uiVariants: Omit<DocumentCardUi, 'personalDetailsShown' | 'isBlurred'>[] = useMemo(() => {
     return [
       {
         title: translate('ui-preferences.primary'),
@@ -75,31 +79,30 @@ const useDocumentCardUiPreference = (id: string) => {
             color: palette.textPrimary,
           },
         },
-
         personalDetailsShown: defaultPersonalDetailsShown,
         isBlurred: true,
       },
-      {
-        title: translate('ui-preferences.secondary'),
-        background: {
-          style: {
-            backgroundColor: palette.baseWhite,
-          },
-        },
-        foregroundLabels: {
-          style: {
-            color: 'rgba(0, 0, 0, 0.56)',
-          },
-        },
-        foregroundValues: {
-          style: {
-            color: palette.baseBlack,
-          },
-        },
+      // {
+      //   title: translate('ui-preferences.secondary'),
+      //   background: {
+      //     style: {
+      //       backgroundColor: palette.baseWhite,
+      //     },
+      //   },
+      //   foregroundLabels: {
+      //     style: {
+      //       color: 'rgba(0, 0, 0, 0.56)',
+      //     },
+      //   },
+      //   foregroundValues: {
+      //     style: {
+      //       color: palette.baseBlack,
+      //     },
+      //   },
 
-        personalDetailsShown: defaultPersonalDetailsShown,
-        isBlurred: true,
-      },
+      //   personalDetailsShown: defaultPersonalDetailsShown,
+      //   isBlurred: true,
+      // },
       {
         title: translate('ui-preferences.tertiary'),
         background: {
@@ -117,9 +120,6 @@ const useDocumentCardUiPreference = (id: string) => {
             color: palette.baseWhite,
           },
         },
-
-        personalDetailsShown: defaultPersonalDetailsShown,
-        isBlurred: true,
       },
       {
         title: translate('ui-preferences.quaternary'),
@@ -142,24 +142,39 @@ const useDocumentCardUiPreference = (id: string) => {
             color: palette.baseWhite,
           },
         },
-
-        personalDetailsShown: defaultPersonalDetailsShown,
-        isBlurred: true,
       },
     ]
   }, [
+    defaultPersonalDetailsShown,
     palette.backgroundContainer,
-    palette.baseBlack,
     palette.baseWhite,
     palette.primaryMain,
     palette.textPrimary,
     palette.textSecondary,
   ])
 
-  const documentCardUi = useMemo<DocumentCardUi>(
-    () => documentsCardUi[id] ?? uiVariants[0],
-    [uiVariants, documentsCardUi, id],
-  )
+  const personalDetailsShownVariants = useMemo((): Array<keyof PersonDetails> => {
+    return ['nationality', 'documentNumber', 'expiryDate']
+  }, [])
+
+  const savedSettings: DocumentCardUiPreference = useMemo(() => {
+    const defaultSettings = {
+      title: uiVariants[0].title,
+      personalDetailsShown: defaultPersonalDetailsShown,
+      isBlurred: true,
+    }
+    return documentsCardUi[id] ?? defaultSettings
+  }, [defaultPersonalDetailsShown, documentsCardUi, id, uiVariants])
+
+  const documentCardUi: DocumentCardUi = useMemo(() => {
+    const selectedVariant =
+      uiVariants.find(variant => variant.title === savedSettings.title) ?? uiVariants[0]
+
+    return {
+      ...selectedVariant,
+      ...savedSettings,
+    }
+  }, [uiVariants, savedSettings])
 
   const setDocumentCardUi = useCallback(
     (
@@ -167,54 +182,34 @@ const useDocumentCardUiPreference = (id: string) => {
       personalDetailsShown?: Array<keyof PersonDetails>,
       isBlurred?: boolean,
     ) => {
+      const newSettings: DocumentCardUiPreference = {
+        title: value.title,
+        personalDetailsShown: personalDetailsShown ?? savedSettings.personalDetailsShown,
+        isBlurred: isBlurred ?? savedSettings.isBlurred,
+      }
+
       updateDocumentsCardUi({
         ...documentsCardUi,
-        [id]: {
-          ...value,
-          isBlurred: isBlurred ?? documentCardUi.isBlurred,
-          personalDetailsShown: personalDetailsShown || documentCardUi.personalDetailsShown,
-        },
+        [id]: newSettings,
       })
     },
-    [
-      documentCardUi.isBlurred,
-      documentCardUi.personalDetailsShown,
-      documentsCardUi,
-      id,
-      updateDocumentsCardUi,
-    ],
+    [documentsCardUi, id, savedSettings, updateDocumentsCardUi],
   )
-
-  const personalDetailsShownVariants = useMemo((): Array<keyof PersonDetails> => {
-    return ['nationality', 'documentNumber', 'expiryDate']
-  }, [])
 
   const togglePersonalDetailsVisibility = useCallback(
     (key: keyof PersonDetails) => {
-      const personalDetailsShown = documentCardUi.personalDetailsShown ?? []
-
+      const personalDetailsShown = documentCardUi.personalDetailsShown
       const newPersonalDetailsShown = personalDetailsShown.includes(key)
         ? personalDetailsShown.filter(item => item !== key)
         : [...personalDetailsShown, key]
 
-      setDocumentCardUi(
-        {
-          ...documentCardUi,
-        },
-        newPersonalDetailsShown,
-      )
+      setDocumentCardUi(documentCardUi, newPersonalDetailsShown)
     },
     [documentCardUi, setDocumentCardUi],
   )
 
   const toggleIsBlurred = useCallback(() => {
-    setDocumentCardUi(
-      {
-        ...documentCardUi,
-      },
-      undefined,
-      !documentCardUi.isBlurred,
-    )
+    setDocumentCardUi(documentCardUi, undefined, !documentCardUi.isBlurred)
   }, [documentCardUi, setDocumentCardUi])
 
   return {
@@ -231,6 +226,5 @@ const useDocumentCardUiPreference = (id: string) => {
 
 export const uiPreferencesStore = {
   useUiPreferencesStore,
-
-  useDocumentCardUiPreference: useDocumentCardUiPreference,
+  useDocumentCardUiPreference,
 }
