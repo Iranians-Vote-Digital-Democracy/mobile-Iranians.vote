@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useAppPaddings } from '@/theme'
 import { UiButton, UiIcon } from '@/ui'
+import UiJumpingDotsLoader from '@/ui/UiJumpingDotsLoader'
 
 import { GenProofSteps, useDocumentScanContext } from '../ScanProvider'
 
@@ -31,11 +32,7 @@ export default function GenerateProofStep() {
             <>
               <View className='mb-8 items-center'>
                 <View className='h-16 w-16 items-center justify-center rounded-full bg-warningLight'>
-                  <UiIcon
-                    customIcon='dotsThreeOutlineIcon'
-                    size={40}
-                    className='color-warningMain'
-                  />
+                  <UiJumpingDotsLoader size={9} color='warningMain' />
                 </View>
                 <Text className='typography-h5 mb-2 text-center text-textPrimary'>Please wait</Text>
                 <Text className='typography-body3 text-center text-textSecondary'>
@@ -54,11 +51,7 @@ export default function GenerateProofStep() {
             <>
               <View className='mb-8 items-center'>
                 <View className='h-16 w-16 items-center justify-center rounded-full bg-warningLight'>
-                  <UiIcon
-                    customIcon='dotsThreeOutlineIcon'
-                    size={40}
-                    className='color-warningMain'
-                  />
+                  <UiJumpingDotsLoader size={9} color='warningMain' />
                 </View>
                 <Text className='typography-h5 mb-2 text-center text-textPrimary'>Please wait</Text>
                 <Text className='typography-body3 text-center text-textSecondary'>
@@ -77,11 +70,7 @@ export default function GenerateProofStep() {
             <>
               <View className='mb-8 items-center'>
                 <View className='h-16 w-16 items-center justify-center rounded-full bg-warningLight'>
-                  <UiIcon
-                    customIcon='dotsThreeOutlineIcon'
-                    size={40}
-                    className='color-warningMain'
-                  />
+                  <UiJumpingDotsLoader size={9} color='warningMain' />
                 </View>
                 <Text className='typography-h5 mb-2 text-center text-textPrimary'>Please wait</Text>
                 <Text className='typography-body3 text-center text-textSecondary'>
@@ -140,34 +129,38 @@ const StepRow = ({
 }: {
   title: string
   status: 'completed' | 'processing' | 'pending'
-}) => (
-  <View className='flex-row items-center justify-between border-b border-componentHovered py-2'>
-    <Text className='typography-body2 text-textPrimary'>{title}</Text>
-    {(() => {
-      if (status === 'pending') {
-        return (
-          <View className='h-9 w-9 items-center justify-center rounded-full bg-componentHovered'>
-            <UiIcon customIcon='dotsThreeOutlineIcon' size={20} className='color-textPrimary' />
-          </View>
-        )
-      }
-
-      if (status === 'completed') {
-        return (
-          <View className='h-9 w-9 items-center justify-center rounded-full bg-successLight'>
-            <UiIcon customIcon='checkIcon' size={20} className='color-successMain' />
-          </View>
-        )
-      }
-
+}) => {
+  const rightContent = (() => {
+    if (status === 'pending') {
       return (
-        <View className='flex flex-row items-center gap-2'>
-          <Text className='text-textPrimary'>Processing...</Text>
-          <View className='h-9 w-9 items-center justify-center rounded-full bg-componentHovered'>
-            <UiIcon customIcon='dotsThreeOutlineIcon' size={20} className='color-textPrimary' />
-          </View>
+        <View className='h-10 w-10 items-center justify-center rounded-full bg-componentHovered'>
+          <UiJumpingDotsLoader size={5} color='primaryMain' />
         </View>
       )
-    })()}
-  </View>
-)
+    }
+
+    if (status === 'completed') {
+      return (
+        <View className='h-9 w-9 items-center justify-center rounded-full bg-successLight'>
+          <UiIcon customIcon='checkIcon' size={20} className='color-successMain' />
+        </View>
+      )
+    }
+
+    return (
+      <View className='flex flex-row items-center gap-2'>
+        <Text className='text-textPrimary'>Processing...</Text>
+        <View className='h-10 w-10 items-center justify-center rounded-full bg-componentHovered'>
+          <UiJumpingDotsLoader size={5} color='primaryMain' />
+        </View>
+      </View>
+    )
+  })()
+
+  return (
+    <View className='flex-row items-center justify-between border-b border-componentHovered py-2'>
+      <Text className='typography-body2 text-textPrimary'>{title}</Text>
+      {rightContent}
+    </View>
+  )
+}
