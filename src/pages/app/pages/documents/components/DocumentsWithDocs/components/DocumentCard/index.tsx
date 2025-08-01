@@ -250,7 +250,7 @@ export default function DocumentCard({ identity }: Props) {
                         <View
                           className={cn(
                             'items-center gap-2 rounded-lg border border-solid border-componentPrimary px-[24] py-[16]',
-                            isActive && 'bg-white',
+                            isActive && 'border-textPrimary',
                           )}
                         >
                           <Container
