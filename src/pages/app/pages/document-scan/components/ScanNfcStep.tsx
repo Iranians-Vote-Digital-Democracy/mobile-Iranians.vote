@@ -81,6 +81,11 @@ export default function ScanNfcStep() {
           Scanning NFC tag... Please hold your passport close to the phone.
         </Text>
       )}
+      {!isScanning && busy && (
+        <Text className='typography-body2 mb-6 rounded-xl border-componentPrimary bg-componentPrimary p-4 text-center text-textPrimary'>
+          Place your Passport/ID to the back of your phone
+        </Text>
+      )}
       <Image
         source={require('@assets/images/passport-scan-example.png')}
         style={{
