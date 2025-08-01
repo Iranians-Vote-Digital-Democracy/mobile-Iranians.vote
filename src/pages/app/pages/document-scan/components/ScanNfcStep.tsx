@@ -1,13 +1,15 @@
 import { AsnConvert } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
+import { useNavigation } from '@react-navigation/core'
 import { Image } from 'expo-image'
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Text, View } from 'react-native'
+import { Pressable } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { translate } from '@/core'
 import { useDocumentScanContext } from '@/pages/app/pages/document-scan/ScanProvider'
-import { UiButton } from '@/ui'
+import { UiButton, UiIcon } from '@/ui'
 import { EID } from '@/utils/e-document'
 import { ExtendedCertificate } from '@/utils/e-document/extended-cert'
 import { initNfc, readSigningAndAuthCertificates } from '@/utils/e-document/inid-nfc-reader'
@@ -17,7 +19,7 @@ export default function ScanNfcStep() {
   const insets = useSafeAreaInsets()
   const [busy, setBusy] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
-
+  const navigation = useNavigation()
   // start NFC once, right after mount
   useEffect(() => {
     initNfc().catch(e => console.warn('NFC init error', e))
@@ -61,7 +63,18 @@ export default function ScanNfcStep() {
       style={{ paddingBottom: insets.bottom, paddingTop: insets.top }}
       className='flex-1 justify-center p-6'
     >
-      <Text className='typography-h5 mb-2 text-textPrimary'>NFC Reader</Text>
+      <View className='flex-row'>
+        <Text className='typography-h5 mb-2 text-textPrimary'>NFC Reader</Text>
+        <View className='flex-1' />
+        <Pressable
+          className='absolute right-[15px] top-[15px]'
+          onPress={() => navigation.navigate('App', { screen: 'Tabs' })}
+        >
+          <View className='h-10 w-10 items-center justify-center rounded-full bg-componentPrimary'>
+            <UiIcon customIcon='closeIcon' size={20} className='color-textPrimary' />
+          </View>
+        </Pressable>
+      </View>
       <Text className='typography-body3 mb-6 text-textSecondary'>Reading personal data</Text>
       {isScanning && (
         <Text className='typography-body2 mb-6 rounded-xl border-componentPrimary bg-componentPrimary p-4 text-center text-textPrimary'>
