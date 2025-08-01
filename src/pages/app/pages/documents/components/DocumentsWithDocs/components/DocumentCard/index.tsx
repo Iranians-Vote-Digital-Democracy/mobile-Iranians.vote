@@ -134,7 +134,9 @@ export default function DocumentCard({ identity }: Props) {
         </View>
         <View className='absolute right-5 top-5 z-20 flex flex-row items-center gap-4'>
           <CardActionIconButton
-            iconComponentNameProps={{ customIcon: 'eyeIcon' }}
+            iconComponentNameProps={{
+              customIcon: documentCardUi.isBlurred ? 'eyeSlashIcon' : 'eyeIcon',
+            }}
             pressableProps={{
               onPress: toggleIsBlurred,
             }}
