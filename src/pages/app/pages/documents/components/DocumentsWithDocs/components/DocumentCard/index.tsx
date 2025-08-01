@@ -131,22 +131,22 @@ export default function DocumentCard({ identity }: Props) {
               )}
             </View>
           </View>
-          <View className='absolute right-5 top-5 z-20 flex flex-row items-center gap-4'>
-            <CardActionIconButton
-              iconComponentNameProps={{ customIcon: 'eyeIcon' }}
-              pressableProps={{
-                onPress: toggleIsBlurred,
-              }}
-            />
-            <CardActionIconButton
-              iconComponentNameProps={{ customIcon: 'dotsThreeOutlineIcon' }}
-              pressableProps={{
-                onPress: () => {
-                  cardUiSettingsBottomSheet.present()
-                },
-              }}
-            />
-          </View>
+        </View>
+        <View className='absolute right-5 top-5 z-20 flex flex-row items-center gap-4'>
+          <CardActionIconButton
+            iconComponentNameProps={{ customIcon: 'eyeIcon' }}
+            pressableProps={{
+              onPress: toggleIsBlurred,
+            }}
+          />
+          <CardActionIconButton
+            iconComponentNameProps={{ customIcon: 'dotsThreeOutlineIcon' }}
+            pressableProps={{
+              onPress: () => {
+                cardUiSettingsBottomSheet.present()
+              },
+            }}
+          />
         </View>
         <UiHorizontalDivider className='mb-6 mt-8' />
 
