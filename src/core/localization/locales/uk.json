@@ -96,7 +96,7 @@
   "tabs": {
     "one": "TAB one",
     "scan-nfc": {
-      "tip": "1. Make sure you remove the case from the device\n2. Place your Passport/ID to the back of your phone and press start\n3. Press Continue"
+      "tip": "1. Make sure you remove the case from the device\n2. Press Start NFC Scan and place your Passport/ID to the back of your phone\n3. Press Generate Proof"
     },
     "two": "TAB two",
     "typography": "Typography"
