@@ -313,15 +313,15 @@ export default function DocumentCard({ identity }: Props) {
 
             <UiHorizontalDivider />
 
-            <View className={cn('flex flex-col gap-4')}>
-              <View className={cn('flex flex-col gap-2')}>
+            <View className={cn('flex flex-col gap-2')}>
+              <View className={cn('flex flex-col gap-1')}>
                 <Text className='typography-subtitle4 text-textPrimary'>Data</Text>
                 <Text className='typography-body4 text-textSecondary'>
                   Shows two identifiers on the card
                 </Text>
               </View>
 
-              <View className='flex flex-col gap-4'>
+              <View className='flex flex-col gap-1'>
                 {personalDetailsShownVariants.map((el, idx) => (
                   <View key={idx} className='flex flex-row items-center justify-between'>
                     <Text className='typography-subtitle4 text-textPrimary'>{startCase(el)}</Text>
