@@ -5,6 +5,7 @@ import { Image } from 'expo-image'
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Text, View } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
+import nfcManager from 'react-native-nfc-manager'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { translate } from '@/core'
@@ -68,7 +69,10 @@ export default function ScanNfcStep() {
         <View className='flex-1' />
         <Pressable
           className='absolute right-[15px] top-[15px]'
-          onPress={() => navigation.navigate('App', { screen: 'Tabs' })}
+          onPress={() => {
+            nfcManager.close()
+            navigation.navigate('App', { screen: 'Tabs' })
+          }}
         >
           <View className='h-10 w-10 items-center justify-center rounded-full bg-componentPrimary'>
             <UiIcon customIcon='closeIcon' size={20} className='color-textPrimary' />

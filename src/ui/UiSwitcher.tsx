@@ -106,6 +106,8 @@ export function ControlledUiSwitcher<T extends FieldValues>({
       }}
       value={field.value}
       errorMessage={fieldState.error?.message}
+      trackColor={{ false: 'textSecondary', true: 'textSecondary' }}
+      thumbColor='#FFFFFF'
       {...rest}
     />
   )
