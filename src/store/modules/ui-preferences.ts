@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import type { ImageBackgroundProps, TextProps, ViewProps } from 'react-native'
+import type { ImageBackgroundProps } from 'react-native'
 import { create } from 'zustand'
 import { combine, createJSONStorage, persist } from 'zustand/middleware'
 
@@ -9,19 +9,8 @@ import { useAppTheme } from '@/theme'
 import { PersonDetails } from '@/utils/e-document/e-document'
 
 export type DocumentCardUiPreference = {
-  title: string
+  key: number
   personalDetailsShown: Partial<keyof PersonDetails>[]
-  isBlurred: boolean
-}
-
-export type DocumentCardUi = {
-  title: string
-  background: ViewProps | ImageBackgroundProps
-  foregroundLabels: TextProps
-  foregroundValues: TextProps
-
-  personalDetailsShown: Partial<keyof PersonDetails>[]
-
   isBlurred: boolean
 }
 
@@ -60,9 +49,10 @@ const useDocumentCardUiPreference = (id: string) => {
   const defaultPersonalDetailsShown = useMemo((): Array<keyof PersonDetails> => ['nationality'], [])
   const { palette } = useAppTheme()
 
-  const uiVariants: Omit<DocumentCardUi, 'personalDetailsShown' | 'isBlurred'>[] = useMemo(() => {
+  const uiVariants = useMemo(() => {
     return [
       {
+        key: 1,
         title: translate('ui-preferences.primary'),
         background: {
           style: {
@@ -82,29 +72,9 @@ const useDocumentCardUiPreference = (id: string) => {
         personalDetailsShown: defaultPersonalDetailsShown,
         isBlurred: true,
       },
-      // {
-      //   title: translate('ui-preferences.secondary'),
-      //   background: {
-      //     style: {
-      //       backgroundColor: palette.baseWhite,
-      //     },
-      //   },
-      //   foregroundLabels: {
-      //     style: {
-      //       color: 'rgba(0, 0, 0, 0.56)',
-      //     },
-      //   },
-      //   foregroundValues: {
-      //     style: {
-      //       color: palette.baseBlack,
-      //     },
-      //   },
-
-      //   personalDetailsShown: defaultPersonalDetailsShown,
-      //   isBlurred: true,
-      // },
       {
-        title: translate('ui-preferences.tertiary'),
+        key: 2,
+        title: translate('ui-preferences.secondary'),
         background: {
           style: {
             backgroundColor: palette.primaryMain,
@@ -122,7 +92,8 @@ const useDocumentCardUiPreference = (id: string) => {
         },
       },
       {
-        title: translate('ui-preferences.quaternary'),
+        key: 3,
+        title: translate('ui-preferences.tertiary'),
         background: {
           source: {
             uri: 'https://docs.expo.dev/static/images/tutorial/background-image.png',
@@ -166,9 +137,9 @@ const useDocumentCardUiPreference = (id: string) => {
     return documentsCardUi[id] ?? defaultSettings
   }, [defaultPersonalDetailsShown, documentsCardUi, id, uiVariants])
 
-  const documentCardUi: DocumentCardUi = useMemo(() => {
+  const documentCardUi = useMemo(() => {
     const selectedVariant =
-      uiVariants.find(variant => variant.title === savedSettings.title) ?? uiVariants[0]
+      uiVariants.find(variant => variant.key === savedSettings.key) ?? uiVariants[0]
 
     return {
       ...selectedVariant,
@@ -178,12 +149,12 @@ const useDocumentCardUiPreference = (id: string) => {
 
   const setDocumentCardUi = useCallback(
     (
-      value: DocumentCardUi,
+      value: DocumentCardUiPreference,
       personalDetailsShown?: Array<keyof PersonDetails>,
       isBlurred?: boolean,
     ) => {
       const newSettings: DocumentCardUiPreference = {
-        title: value.title,
+        key: value.key,
         personalDetailsShown: personalDetailsShown ?? savedSettings.personalDetailsShown,
         isBlurred: isBlurred ?? savedSettings.isBlurred,
       }

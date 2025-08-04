@@ -16,7 +16,6 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { formatDateDMY } from '@/helpers'
-import type { DocumentCardUi } from '@/store'
 import { uiPreferencesStore } from '@/store'
 import { IdentityItem } from '@/store/modules/identity/Identity'
 import { cn, useAppTheme } from '@/theme'
@@ -66,10 +65,7 @@ export default function DocumentCard({ identity }: Props) {
   }, [formattedBirthDate, identity.document.personDetails?.birthDate])
 
   const Container = useCallback(
-    ({
-      docCardUI,
-      ...containerRest
-    }: { docCardUI: DocumentCardUi } & (ViewProps | ImageBackgroundProps)) => {
+    ({ docCardUI, ...containerRest }: { docCardUI } & (ViewProps | ImageBackgroundProps)) => {
       if (get(docCardUI.background, 'source.uri')) {
         const imageBackgroundProps = docCardUI.background as ImageBackgroundProps
 
@@ -254,7 +250,7 @@ export default function DocumentCard({ identity }: Props) {
                           )}
                         >
                           <Container
-                            docCardUI={el as DocumentCardUi}
+                            docCardUI={el}
                             style={{
                               width: 64,
                               height: 48,
