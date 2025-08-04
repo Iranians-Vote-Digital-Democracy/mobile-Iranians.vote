@@ -104,9 +104,9 @@ export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>
             title={translate('set-passcode.submit-btn')}
             onPress={repeatPasscode ? submit : () => setIsRepeatPasscode(true)}
             disabled={
-              repeatPasscode
-                ? passcode.length !== PASSCODE_MAX_LENGTH
-                : repeatPasscode.length !== PASSCODE_MAX_LENGTH
+              isRepeatPasscode
+                ? repeatPasscode.length !== PASSCODE_MAX_LENGTH
+                : passcode.length !== PASSCODE_MAX_LENGTH
             }
           />
 
