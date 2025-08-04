@@ -191,6 +191,11 @@ export async function initNfc() {
   log('initNfc -> started')
 }
 
+export async function stopNfc() {
+  await NfcManager.close()
+  log('initNfc -> closed')
+}
+
 export async function readSigningAndAuthCertificates(onScanStarted?: () => void): Promise<{
   signingCert: string | null
   authCert: string | null

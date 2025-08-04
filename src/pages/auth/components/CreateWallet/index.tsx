@@ -37,7 +37,7 @@ export default function CreateWallet({ route }: Props) {
       },
       yup =>
         yup.object().shape({
-          privateKey: yup.string().test('is-valid-pk', 'Invalid Private Key', value => {
+          privateKey: yup.string().test('is-valid-pk', 'Invalid private key', value => {
             if (!isImporting) return true
             if (!value) return false
             const normalizedValue = value.startsWith('0x') ? value : `0x${value}`
@@ -107,7 +107,7 @@ export default function CreateWallet({ route }: Props) {
         <View className='flex flex-1 flex-col px-5'>
           <View className='flex flex-col items-center gap-5'>
             <UiIcon customIcon='keyIcon' className='size-[200px] justify-center text-primaryMain' />
-            <Text className='typography-h4 text-textPrimary'>Your keys</Text>
+            <Text className='typography-h4 text-textPrimary'>Your key</Text>
           </View>
           {isImporting ? (
             <View className='flex flex-1 flex-col items-center justify-center gap-4'>

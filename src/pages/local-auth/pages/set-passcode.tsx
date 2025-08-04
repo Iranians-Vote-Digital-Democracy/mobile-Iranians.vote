@@ -9,19 +9,35 @@ import { BiometricStatuses, localAuthStore } from '@/store'
 import { cn } from '@/theme'
 import { UiButton, UiNumPad, UiScreenScrollable } from '@/ui'
 
+import HiddenPasscodeView from '../components/HiddenPasscodeView'
+
 // eslint-disable-next-line no-empty-pattern
 export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>) {
   const [passcode, setPasscode] = useState('')
+  const [repeatPasscode, setRepeatPasscode] = useState('')
+
+  const [isRepeatPasscode, setIsRepeatPasscode] = useState(false)
+
+  const [errorMessageVisible, setErrorMessageVisible] = useState(false)
+
   const setPasscodeStore = localAuthStore.useLocalAuthStore(state => state.setPasscode)
   const biometricStatus = localAuthStore.useLocalAuthStore(state => state.biometricStatus)
 
   const navigation = useNavigation()
-
   const insets = useSafeAreaInsets()
 
+  const PASSCODE_MAX_LENGTH = 4
+
   const submit = useCallback(async () => {
-    if (!passcode) return
-    if (passcode.length !== 4) return
+    if (!isRepeatPasscode) return
+
+    if (!repeatPasscode) return
+
+    if (passcode !== repeatPasscode) {
+      setErrorMessageVisible(true)
+      return
+    }
+
     try {
       setPasscodeStore(passcode)
 
@@ -29,18 +45,20 @@ export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>
         navigation.navigate('LocalAuth', {
           screen: 'EnableBiometrics',
         })
-
-        return
       }
     } catch (error) {
       ErrorHandler.processWithoutFeedback(error)
     }
-  }, [biometricStatus, navigation, passcode, setPasscodeStore])
+  }, [isRepeatPasscode, repeatPasscode, passcode, setPasscodeStore, biometricStatus, navigation])
 
-  const handleSetPasscode = useCallback((value: string) => {
-    if (value.length > 4) return
-
+  const handleInputPasscode = useCallback((value: string) => {
+    if (value.length > PASSCODE_MAX_LENGTH) return
     setPasscode(value)
+  }, [])
+
+  const handleInputRepeatPasscode = useCallback((value: string) => {
+    if (value.length > PASSCODE_MAX_LENGTH) return
+    setRepeatPasscode(value)
   }, [])
 
   return (
@@ -53,27 +71,56 @@ export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>
         <View className={cn('my-auto flex w-full items-center gap-4 p-5')}>
           <View>
             <Text className={cn('typography-h4 text-center text-textPrimary')}>
-              {translate('set-passcode.title')}
+              {repeatPasscode === null
+                ? translate('set-passcode.title')
+                : translate('set-passcode.reenter-title')}
             </Text>
-            <Text className={cn('typography-body-3 text-center text-textSecondary')}>
-              {translate('set-passcode.subtitle')}
+            <Text
+              className={cn('typography-body-3 text-center', {
+                'text-errorMain': errorMessageVisible,
+                'text-textSecondary': !errorMessageVisible,
+              })}
+            >
+              {errorMessageVisible
+                ? translate('set-passcode.error-mismatch')
+                : repeatPasscode === null
+                  ? translate('set-passcode.subtitle')
+                  : translate('set-passcode.reenter-subtitle')}
             </Text>
           </View>
 
-          <View className='flex h-[16] flex-row items-center gap-4'>
-            {Array.from({ length: passcode.length }).map((_, i) => (
-              <View key={i} className='size-[16] rounded-full bg-primaryMain' />
-            ))}
-          </View>
+          <HiddenPasscodeView
+            length={isRepeatPasscode ? repeatPasscode.length : passcode.length}
+            maxLenght={PASSCODE_MAX_LENGTH}
+          />
         </View>
 
         <View className={cn('flex w-full gap-6 p-5')}>
-          <UiNumPad value={passcode} setValue={handleSetPasscode} />
+          <UiNumPad
+            value={isRepeatPasscode ? repeatPasscode : passcode}
+            setValue={isRepeatPasscode ? handleInputRepeatPasscode : handleInputPasscode}
+          />
           <UiButton
             title={translate('set-passcode.submit-btn')}
-            onPress={submit}
-            disabled={passcode.length !== 4}
+            onPress={repeatPasscode ? submit : () => setIsRepeatPasscode(true)}
+            disabled={
+              isRepeatPasscode
+                ? repeatPasscode.length !== PASSCODE_MAX_LENGTH
+                : passcode.length !== PASSCODE_MAX_LENGTH
+            }
           />
+
+          {isRepeatPasscode && (
+            <UiButton
+              title='Reset'
+              variant='outlined'
+              onPress={() => {
+                setPasscode('')
+                setRepeatPasscode('')
+                setIsRepeatPasscode(false)
+              }}
+            />
+          )}
         </View>
       </View>
     </UiScreenScrollable>

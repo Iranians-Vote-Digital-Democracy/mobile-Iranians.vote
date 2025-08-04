@@ -4,7 +4,6 @@ import { BlurView } from 'expo-blur'
 import { Image } from 'expo-image'
 import { startCase } from 'lodash'
 import get from 'lodash/get'
-import isEqual from 'lodash/isEqual'
 import { type ComponentProps, useCallback, useMemo, useState } from 'react'
 import type { ImageBackgroundProps, PressableProps, TextProps, ViewProps } from 'react-native'
 import { StyleSheet } from 'react-native'
@@ -17,7 +16,6 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { formatDateDMY } from '@/helpers'
-import type { DocumentCardUi } from '@/store'
 import { uiPreferencesStore } from '@/store'
 import { IdentityItem } from '@/store/modules/identity/Identity'
 import { cn, useAppTheme } from '@/theme'
@@ -67,10 +65,7 @@ export default function DocumentCard({ identity }: Props) {
   }, [formattedBirthDate, identity.document.personDetails?.birthDate])
 
   const Container = useCallback(
-    ({
-      docCardUI,
-      ...containerRest
-    }: { docCardUI: DocumentCardUi } & (ViewProps | ImageBackgroundProps)) => {
+    ({ docCardUI, ...containerRest }: { docCardUI } & (ViewProps | ImageBackgroundProps)) => {
       if (get(docCardUI.background, 'source.uri')) {
         const imageBackgroundProps = docCardUI.background as ImageBackgroundProps
 
@@ -110,10 +105,9 @@ export default function DocumentCard({ identity }: Props) {
               />
             ) : (
               <UiIcon
-                className='color-textPrimary'
                 size={56}
                 customIcon='userIcon'
-                color='textPrimary'
+                color={documentCardUi.foregroundValues.style.color}
               />
             )}
 
@@ -131,22 +125,24 @@ export default function DocumentCard({ identity }: Props) {
               )}
             </View>
           </View>
-          <View className='absolute right-5 top-5 z-20 flex flex-row items-center gap-4'>
-            <CardActionIconButton
-              iconComponentNameProps={{ customIcon: 'eyeIcon' }}
-              pressableProps={{
-                onPress: toggleIsBlurred,
-              }}
-            />
-            <CardActionIconButton
-              iconComponentNameProps={{ customIcon: 'dotsThreeOutlineIcon' }}
-              pressableProps={{
-                onPress: () => {
-                  cardUiSettingsBottomSheet.present()
-                },
-              }}
-            />
-          </View>
+        </View>
+        <View className='absolute right-5 top-5 z-20 flex flex-row items-center gap-4'>
+          <CardActionIconButton
+            iconComponentNameProps={{
+              customIcon: documentCardUi.isBlurred ? 'eyeSlashIcon' : 'eyeIcon',
+            }}
+            pressableProps={{
+              onPress: toggleIsBlurred,
+            }}
+          />
+          <CardActionIconButton
+            iconComponentNameProps={{ customIcon: 'dotsThreeOutlineIcon' }}
+            pressableProps={{
+              onPress: () => {
+                cardUiSettingsBottomSheet.present()
+              },
+            }}
+          />
         </View>
         <UiHorizontalDivider className='mb-6 mt-8' />
 
@@ -163,7 +159,7 @@ export default function DocumentCard({ identity }: Props) {
                   key={idx}
                   labelProps={{
                     ...documentCardUi.foregroundLabels,
-                    children: startCase(el),
+                    children: 'Expiry date',
                   }}
                   valueProps={{
                     ...documentCardUi.foregroundValues,
@@ -233,14 +229,23 @@ export default function DocumentCard({ identity }: Props) {
               <ScrollView horizontal={true}>
                 <View className='flex flex-row gap-6'>
                   {uiVariants.map((el, idx) => {
-                    const isActive = isEqual(documentCardUi, el)
+                    const isActive = documentCardUi.key === el.key
 
                     return (
-                      <Pressable key={idx} onPress={() => setDocumentCardUi(el)}>
+                      <Pressable
+                        key={idx}
+                        onPress={() =>
+                          setDocumentCardUi({
+                            ...el,
+                            personalDetailsShown: documentCardUi.personalDetailsShown,
+                            isBlurred: documentCardUi.isBlurred,
+                          })
+                        }
+                      >
                         <View
                           className={cn(
                             'items-center gap-2 rounded-lg border border-solid border-componentPrimary px-[24] py-[16]',
-                            isActive && 'bg-componentHovered',
+                            isActive && 'border-textPrimary',
                           )}
                         >
                           <Container
@@ -303,18 +308,18 @@ export default function DocumentCard({ identity }: Props) {
 
             <UiHorizontalDivider />
 
-            <View className={cn('flex flex-col gap-4')}>
-              <View className={cn('flex flex-col gap-2')}>
-                <Text className='typography-subtitle4 text-textPrimary'>DATA</Text>
+            <View className={cn('flex flex-col gap-2')}>
+              <View className={cn('flex flex-col gap-1')}>
+                <Text className='typography-subtitle4 text-textPrimary'>Data</Text>
                 <Text className='typography-body4 text-textSecondary'>
                   Shows two identifiers on the card
                 </Text>
               </View>
 
-              <View className='flex flex-col gap-4'>
+              <View className='flex flex-col gap-1'>
                 {personalDetailsShownVariants.map((el, idx) => (
                   <View key={idx} className='flex flex-row items-center justify-between'>
-                    <Text className='typography-subtitle4 text-textPrimary'>{el}</Text>
+                    <Text className='typography-subtitle4 text-textPrimary'>{startCase(el)}</Text>
                     <UiSwitcher
                       value={documentCardUi.personalDetailsShown?.includes(el)}
                       onValueChange={() => togglePersonalDetailsVisibility(el)}

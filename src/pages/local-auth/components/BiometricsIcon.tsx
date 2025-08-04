@@ -15,19 +15,19 @@ export default function BiometricsIcon({ ...rest }: Props) {
 
   return {
     [AuthenticationType.FINGERPRINT]: (
-      <UiIcon customIcon='fingerprintIcon' size={50} color={palette.baseWhite} {...rest} />
+      <UiIcon customIcon='fingerprintIcon' size={50} color={palette.textPrimary} {...rest} />
     ),
     [AuthenticationType.FACIAL_RECOGNITION]: (
       <UiIcon
         libIcon='MaterialCommunityIcons'
         name='face-recognition'
         size={50}
-        color={palette.baseWhite}
+        color={palette.textPrimary}
         {...rest}
       />
     ),
     [AuthenticationType.IRIS]: (
-      <UiIcon customIcon='fingerprintIcon' size={50} color={palette.baseWhite} {...rest} />
+      <UiIcon customIcon='fingerprintIcon' size={50} color={palette.textPrimary} {...rest} />
     ),
   }[biometricTypes[0]]
 }

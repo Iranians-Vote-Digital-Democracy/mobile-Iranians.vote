@@ -60,6 +60,9 @@
     "key_zero": "zero"
   },
   "set-passcode": {
+    "error-mismatch": "The passcords you entered do not match",
+    "reenter-subtitle": "Please re-enter your passcode",
+    "reenter-title": "Re-enter Your Passcode",
     "submit-btn": "Set",
     "subtitle": "Do not forget your passcode, it can't be restored",
     "title": "Set Passcode"
@@ -93,7 +96,7 @@
   "tabs": {
     "one": "TAB one",
     "scan-nfc": {
-      "tip": "1. Make sure you remove the case from the device\n\n2. Place your Passport/ID to the back of your phone and press start\n\n3. Press Continue"
+      "tip": "1. Make sure you remove the case from the device\n2. Press Start NFC Scan and place your Passport/ID to the back of your phone\n3. Press Generate Proof"
     },
     "two": "TAB two",
     "typography": "Typography"

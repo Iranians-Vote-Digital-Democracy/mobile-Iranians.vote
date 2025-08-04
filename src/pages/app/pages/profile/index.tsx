@@ -148,7 +148,7 @@ function AdvancedCard() {
         >
           <View className={cn('flex size-full flex-1 gap-2')}>
             <Text className='typography-caption2 ml-4 font-semibold text-textPrimary'>
-              Secret key
+              Private key
             </Text>
             <UiCard className='flex-row bg-backgroundPrimary py-6'>
               <Text className='typography-body3 line-clamp-1 w-9/12 truncate whitespace-nowrap text-textPrimary'>
@@ -227,7 +227,7 @@ function LangCard() {
         ref={languageBottomSheet.ref}
         detached={true}
         enableDynamicSizing={false}
-        snapPoints={['20%']}
+        snapPoints={['25%']}
         enableContentPanningGesture={false}
         headerComponent={
           <View className='flex-row items-center justify-center py-0'>
@@ -265,7 +265,7 @@ function LangCard() {
               onValueChanged={({ item: { value } }) => setValue(value)}
               onValueChanging={Haptics.selectionAsync}
               enableScrollByTapOnItem
-              itemHeight={25}
+              itemHeight={30}
             />
           </View>
         </BottomSheetView>
@@ -410,7 +410,6 @@ function LocalAuthMethodCard() {
   const setBiometricsStatus = localAuthStore.useLocalAuthStore(state => state.setBiometricsStatus)
   const insets = useSafeAreaInsets()
   const appPaddings = useAppPaddings()
-
   const isPasscodeEnabled = useMemo(
     () => passcodeStatus === PasscodeStatuses.Enabled,
     [passcodeStatus],

@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native'
 import { useCallback, useEffect, useState } from 'react'
-import { Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
+import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ErrorHandler, translate } from '@/core'
@@ -45,7 +46,7 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
   const biometricStatus = localAuthStore.useLocalAuthStore(state => state.biometricStatus)
   const attemptsLeft = localAuthStore.useLocalAuthStore(state => state.attemptsLeft)
   const lockDeadline = localAuthStore.useLocalAuthStore(state => state.lockDeadline)
-
+  const PASSCODE_MAX_LENGTH = 4
   const checkLockDeadline = localAuthStore.useCheckLockDeadline()
   const { unlockWithBiometrics } = useUnlockWithBiometrics()
   const insets = useSafeAreaInsets()
@@ -146,7 +147,7 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
               {translate('lockscreen.default-title')}
             </Text>
 
-            <HiddenPasscodeView length={passcode.length} />
+            <HiddenPasscodeView length={passcode.length} maxLenght={PASSCODE_MAX_LENGTH} />
 
             {attemptsLeft < MAX_ATTEMPTS && (
               <Text className={cn('typography-subtitle1 text-textPrimary')}>
@@ -164,9 +165,11 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
                 setValue={handleSetPasscode}
                 // TODO: is it necessary? The BiometricsLockScreen will handle it
                 extra={
-                  <Pressable onPress={unlockWithBiometrics}>
-                    <BiometricsIcon size={32} />
-                  </Pressable>
+                  <TouchableOpacity onPress={() => unlockWithBiometrics()}>
+                    <View className='mt-1 flex-1 items-center justify-center'>
+                      <BiometricsIcon size={32} />
+                    </View>
+                  </TouchableOpacity>
                 }
               />
             ) : (
