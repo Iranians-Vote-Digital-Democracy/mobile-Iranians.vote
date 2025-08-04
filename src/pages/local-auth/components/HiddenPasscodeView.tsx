@@ -5,12 +5,13 @@ import { cn } from '@/theme/utils'
 
 type Props = {
   length: number
+  maxLenght: number
 } & ViewProps
 
-export default function HiddenPasscodeView({ length }: Props) {
+export default function HiddenPasscodeView({ length, maxLenght }: Props) {
   return (
     <View className='flex h-[16] flex-row items-center gap-4'>
-      {Array.from({ length: 4 }).map((_, i) => (
+      {Array.from({ length: maxLenght }).map((_, i) => (
         <View
           key={i}
           className={cn(

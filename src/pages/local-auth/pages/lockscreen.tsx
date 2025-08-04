@@ -46,7 +46,7 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
   const biometricStatus = localAuthStore.useLocalAuthStore(state => state.biometricStatus)
   const attemptsLeft = localAuthStore.useLocalAuthStore(state => state.attemptsLeft)
   const lockDeadline = localAuthStore.useLocalAuthStore(state => state.lockDeadline)
-
+  const PASSCODE_MAX_LENGTH = 4
   const checkLockDeadline = localAuthStore.useCheckLockDeadline()
   const { unlockWithBiometrics } = useUnlockWithBiometrics()
   const insets = useSafeAreaInsets()
@@ -147,7 +147,7 @@ export default function Lockscreen({}: LocalAuthStackScreenProps<'Lockscreen'>) 
               {translate('lockscreen.default-title')}
             </Text>
 
-            <HiddenPasscodeView length={passcode.length} />
+            <HiddenPasscodeView length={passcode.length} maxLenght={PASSCODE_MAX_LENGTH} />
 
             {attemptsLeft < MAX_ATTEMPTS && (
               <Text className={cn('typography-subtitle1 text-textPrimary')}>
