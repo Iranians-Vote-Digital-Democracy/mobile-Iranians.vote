@@ -14,8 +14,9 @@ import HiddenPasscodeView from '../components/HiddenPasscodeView'
 // eslint-disable-next-line no-empty-pattern
 export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>) {
   const [passcode, setPasscode] = useState('')
+  const [repeatPasscode, setRepeatPasscode] = useState('')
 
-  const [repeatPasscode, setRepeatPasscode] = useState<string | null>(null)
+  const [isRepeatPasscode, setIsRepeatPasscode] = useState(false)
 
   const [errorMessageVisible, setErrorMessageVisible] = useState(false)
 
@@ -28,37 +29,36 @@ export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>
   const PASSCODE_MAX_LENGTH = 4
 
   const submit = useCallback(async () => {
-    if (passcode.length !== PASSCODE_MAX_LENGTH) {
+    if (!isRepeatPasscode) return
+
+    if (!repeatPasscode) return
+
+    if (passcode !== repeatPasscode) {
+      setErrorMessageVisible(true)
       return
     }
 
-    if (repeatPasscode !== null) {
-      if (passcode !== repeatPasscode) {
-        setErrorMessageVisible(true)
-        setPasscode('')
-        return
-      }
+    try {
+      setPasscodeStore(passcode)
 
-      try {
-        setPasscodeStore(passcode)
-
-        if (biometricStatus === BiometricStatuses.NotSet) {
-          navigation.navigate('LocalAuth', {
-            screen: 'EnableBiometrics',
-          })
-        }
-      } catch (error) {
-        ErrorHandler.processWithoutFeedback(error)
+      if (biometricStatus === BiometricStatuses.NotSet) {
+        navigation.navigate('LocalAuth', {
+          screen: 'EnableBiometrics',
+        })
       }
-      return
+    } catch (error) {
+      ErrorHandler.processWithoutFeedback(error)
     }
-    setRepeatPasscode(passcode)
-    setPasscode('')
-  }, [passcode, repeatPasscode, setPasscodeStore, biometricStatus, navigation])
+  }, [isRepeatPasscode, repeatPasscode, passcode, setPasscodeStore, biometricStatus, navigation])
 
-  const handleSetPasscode = useCallback((value: string) => {
+  const handleInputPasscode = useCallback((value: string) => {
     if (value.length > PASSCODE_MAX_LENGTH) return
     setPasscode(value)
+  }, [])
+
+  const handleInputRepeatPasscode = useCallback((value: string) => {
+    if (value.length > PASSCODE_MAX_LENGTH) return
+    setRepeatPasscode(value)
   }, [])
 
   return (
@@ -93,12 +93,26 @@ export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>
         </View>
 
         <View className={cn('flex w-full gap-6 p-5')}>
-          <UiNumPad value={passcode} setValue={handleSetPasscode} />
+          <UiNumPad
+            value={isRepeatPasscode ? repeatPasscode : passcode}
+            setValue={isRepeatPasscode ? handleInputRepeatPasscode : handleInputPasscode}
+          />
           <UiButton
             title={translate('set-passcode.submit-btn')}
-            onPress={submit}
+            onPress={repeatPasscode ? submit : () => setIsRepeatPasscode(true)}
             disabled={passcode.length !== PASSCODE_MAX_LENGTH}
           />
+
+          {isRepeatPasscode && (
+            <UiButton
+              title='reset'
+              variant='outlined'
+              onPress={() => {
+                setRepeatPasscode('')
+                setIsRepeatPasscode(false)
+              }}
+            />
+          )}
         </View>
       </View>
     </UiScreenScrollable>
