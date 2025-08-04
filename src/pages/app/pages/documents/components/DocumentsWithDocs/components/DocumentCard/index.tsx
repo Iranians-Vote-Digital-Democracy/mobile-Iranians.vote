@@ -105,10 +105,9 @@ export default function DocumentCard({ identity }: Props) {
               />
             ) : (
               <UiIcon
-                className='color-textPrimary'
                 size={56}
                 customIcon='userIcon'
-                color='textPrimary'
+                color={documentCardUi.foregroundValues.style.color}
               />
             )}
 
