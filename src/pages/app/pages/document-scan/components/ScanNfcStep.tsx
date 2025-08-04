@@ -5,7 +5,6 @@ import { Image } from 'expo-image'
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, Text, View } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
-import nfcManager from 'react-native-nfc-manager'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { translate } from '@/core'
@@ -13,7 +12,11 @@ import { useDocumentScanContext } from '@/pages/app/pages/document-scan/ScanProv
 import { UiButton, UiIcon } from '@/ui'
 import { EID } from '@/utils/e-document'
 import { ExtendedCertificate } from '@/utils/e-document/extended-cert'
-import { initNfc, readSigningAndAuthCertificates } from '@/utils/e-document/inid-nfc-reader'
+import {
+  initNfc,
+  readSigningAndAuthCertificates,
+  stopNfc,
+} from '@/utils/e-document/inid-nfc-reader'
 
 export default function ScanNfcStep() {
   const { setTempEDoc } = useDocumentScanContext()
@@ -70,7 +73,7 @@ export default function ScanNfcStep() {
         <Pressable
           className='absolute right-[15px] top-[15px]'
           onPress={() => {
-            nfcManager.close()
+            stopNfc()
             navigation.navigate('App', { screen: 'Tabs' })
           }}
         >

@@ -130,12 +130,10 @@ const useDocumentCardUiPreference = (id: string) => {
 
   const savedSettings: DocumentCardUiPreference = useMemo(() => {
     const defaultSettings = {
-      title: uiVariants[0].title,
-      personalDetailsShown: defaultPersonalDetailsShown,
-      isBlurred: true,
+      key: uiVariants[0].key,
     }
     return documentsCardUi[id] ?? defaultSettings
-  }, [defaultPersonalDetailsShown, documentsCardUi, id, uiVariants])
+  }, [documentsCardUi, id, uiVariants])
 
   const documentCardUi = useMemo(() => {
     const selectedVariant =

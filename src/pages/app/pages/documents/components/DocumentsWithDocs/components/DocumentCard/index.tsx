@@ -229,7 +229,7 @@ export default function DocumentCard({ identity }: Props) {
               <ScrollView horizontal={true}>
                 <View className='flex flex-row gap-6'>
                   {uiVariants.map((el, idx) => {
-                    const isActive = documentCardUi.title === el.title
+                    const isActive = documentCardUi.key === el.key
 
                     return (
                       <Pressable

@@ -89,7 +89,10 @@ export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>
             </Text>
           </View>
 
-          <HiddenPasscodeView length={passcode.length} maxLenght={PASSCODE_MAX_LENGTH} />
+          <HiddenPasscodeView
+            length={isRepeatPasscode ? repeatPasscode.length : passcode.length}
+            maxLenght={PASSCODE_MAX_LENGTH}
+          />
         </View>
 
         <View className={cn('flex w-full gap-6 p-5')}>
@@ -100,14 +103,19 @@ export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>
           <UiButton
             title={translate('set-passcode.submit-btn')}
             onPress={repeatPasscode ? submit : () => setIsRepeatPasscode(true)}
-            disabled={passcode.length !== PASSCODE_MAX_LENGTH}
+            disabled={
+              repeatPasscode
+                ? passcode.length !== PASSCODE_MAX_LENGTH
+                : repeatPasscode.length !== PASSCODE_MAX_LENGTH
+            }
           />
 
           {isRepeatPasscode && (
             <UiButton
-              title='reset'
+              title='Reset'
               variant='outlined'
               onPress={() => {
+                setPasscode('')
                 setRepeatPasscode('')
                 setIsRepeatPasscode(false)
               }}

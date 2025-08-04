@@ -73,6 +73,8 @@ export const UiSwitcher = forwardRef<ElementRef<typeof RNSwitch>, Props>(
             ])}
             disabled={disabled}
             value={value}
+            trackColor={{ false: 'textSecondary', true: 'textSecondary' }}
+            thumbColor='#FFFFFF'
           />
         </View>
 
@@ -106,8 +108,6 @@ export function ControlledUiSwitcher<T extends FieldValues>({
       }}
       value={field.value}
       errorMessage={fieldState.error?.message}
-      trackColor={{ false: 'textSecondary', true: 'textSecondary' }}
-      thumbColor='#FFFFFF'
       {...rest}
     />
   )
