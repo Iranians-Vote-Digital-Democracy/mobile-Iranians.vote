@@ -218,7 +218,7 @@ export default function DocumentCard({ identity }: Props) {
         backgroundStyle={{
           backgroundColor: palette.backgroundContainer,
         }}
-        snapPoints={['50%']}
+        snapPoints={['55%']}
       >
         <UiHorizontalDivider />
         <BottomSheetScrollView style={{ paddingBottom: insets.bottom }}>
