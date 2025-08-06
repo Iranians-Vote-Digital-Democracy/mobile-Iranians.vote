@@ -71,7 +71,7 @@ export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>
         <View className={cn('my-auto flex w-full items-center gap-4 p-5')}>
           <View>
             <Text className={cn('typography-h4 text-center text-textPrimary')}>
-              {repeatPasscode === null
+              {!isRepeatPasscode
                 ? translate('set-passcode.title')
                 : translate('set-passcode.reenter-title')}
             </Text>
@@ -83,7 +83,7 @@ export default function SetPasscode({}: LocalAuthStackScreenProps<'SetPasscode'>
             >
               {errorMessageVisible
                 ? translate('set-passcode.error-mismatch')
-                : repeatPasscode === null
+                : !isRepeatPasscode
                   ? translate('set-passcode.subtitle')
                   : translate('set-passcode.reenter-subtitle')}
             </Text>

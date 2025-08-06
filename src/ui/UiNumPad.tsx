@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import { useCallback, useMemo } from 'react'
-import { Text, View, type ViewProps } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { Text, TouchableOpacity, View, type ViewProps } from 'react-native'
 
 import { cn } from '@/theme'
 
@@ -59,10 +58,7 @@ export default function UiNumPad({ value, setValue, className, extra, ...rest }:
                   key={i + j}
                   className='h-full w-full flex-1 rounded-xl bg-backgroundContainer'
                 >
-                  <TouchableOpacity
-                    className='flex-1 items-center justify-center'
-                    onPress={() => handlePress(num)}
-                  >
+                  <TouchableOpacity onPress={() => handlePress(num)}>
                     <View className='mt-1 flex-1 items-center justify-center'>
                       <UiIcon customIcon='backspaceIcon' size={32} className='color-textPrimary' />
                     </View>
@@ -73,10 +69,7 @@ export default function UiNumPad({ value, setValue, className, extra, ...rest }:
 
             return (
               <View key={i + j} className='flex flex-1 rounded-xl bg-backgroundContainer'>
-                <TouchableOpacity
-                  className='h-full w-full items-center justify-center'
-                  onPress={() => handlePress(num)}
-                >
+                <TouchableOpacity onPress={() => handlePress(num)}>
                   <Text className='typography-h4 text-center text-textPrimary'>{num}</Text>
                 </TouchableOpacity>
               </View>

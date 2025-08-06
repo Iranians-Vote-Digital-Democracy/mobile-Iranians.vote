@@ -218,7 +218,7 @@ export default function DocumentCard({ identity }: Props) {
         backgroundStyle={{
           backgroundColor: palette.backgroundContainer,
         }}
-        snapPoints={['50%']}
+        snapPoints={['55%']}
       >
         <UiHorizontalDivider />
         <BottomSheetScrollView style={{ paddingBottom: insets.bottom }}>
@@ -227,7 +227,7 @@ export default function DocumentCard({ identity }: Props) {
               <Text className='typography-subtitle4 text-textPrimary'>Card visual</Text>
 
               <ScrollView horizontal={true}>
-                <View className='flex flex-row gap-6'>
+                <View className='flex flex-row gap-6 pb-4'>
                   {uiVariants.map((el, idx) => {
                     const isActive = documentCardUi.key === el.key
 

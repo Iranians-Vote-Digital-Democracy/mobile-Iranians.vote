@@ -307,12 +307,7 @@ function ThemeCard() {
               />
             ),
             dark: (
-              <UiIcon
-                libIcon='Fontisto'
-                name='night-clear'
-                className='text-textPrimary'
-                size={4.5 * 4}
-              />
+              <UiIcon customIcon='nightClearIcon' className='text-textPrimary' size={4.5 * 4} />
             ),
           }[colorSchemeName]
         })()}
@@ -360,12 +355,7 @@ function ThemeCard() {
                 title: 'dark',
                 value: 'dark',
                 icon: (
-                  <UiIcon
-                    libIcon='Fontisto'
-                    name='night-clear'
-                    size={6 * 4}
-                    className='text-textPrimary'
-                  />
+                  <UiIcon customIcon='nightClearIcon' size={6 * 4} className='text-textPrimary' />
                 ),
               },
               {

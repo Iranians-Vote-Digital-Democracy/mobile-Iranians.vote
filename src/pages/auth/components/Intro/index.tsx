@@ -158,7 +158,7 @@ export default function Intro() {
         }
         ref={bottomSheet.ref}
         enableDynamicSizing={false}
-        snapPoints={['30%']}
+        snapPoints={['32%']}
         backgroundStyle={{
           backgroundColor: palette.backgroundContainer,
         }}
