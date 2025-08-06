@@ -103,6 +103,7 @@ const CUSTOM_ICONS = {
   eyeIcon: require('@assets/icons/eye-icon.svg').default,
   eyeSlashIcon: require('@assets/icons/eye-slash-icon.svg').default,
   earthLineIcon: require('@assets/icons/earth-line-icon.svg').default,
+  nightClearIcon: require('@assets/icons/night-clear-icon.svg').default,
 }
 
 const ICON_LIBRARIES = {
