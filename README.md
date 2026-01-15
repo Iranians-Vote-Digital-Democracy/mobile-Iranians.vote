@@ -1,6 +1,15 @@
-# React Native Template for Scaffolding App with Web3 | ZK | Document Scan Features
+# Iranians.Vote Mobile App
 
-This repository provides a React Native template for building applications with Web3 integrations, zero-knowledge proofs, and document scanning capabilities. It is designed to help you quickly set up a project with these features and streamline your development process.
+The official mobile app for [Iranians.Vote](https://iranians.vote) - a digital democracy platform enabling secure identity verification and voting using NFC document scanning and zero-knowledge proofs.
+
+**GitHub:** https://github.com/Iranians-Vote-Digital-Democracy/mobile-Iranians.vote
+
+## Features
+
+- NFC-based passport/ID card scanning
+- Zero-knowledge proof identity verification
+- Secure voting on blockchain (Rarimo L2)
+- Privacy-preserving authentication
 
 ## Prerequisites
 

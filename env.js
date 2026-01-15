@@ -36,7 +36,7 @@ require('dotenv').config({
 
 const BUNDLE_ID = 'com.transnationalcommunityfederation.inid.app' // ios bundle id
 const PACKAGE = 'com.transnationalcommunityfederation.inid.app' // android package name
-const NAME = 'Inid App' // app name
+const NAME = 'Iranians.Vote' // app name
 const SLUG = 'inid-app' // app name
 const EXPO_ACCOUNT_OWNER = 'dl-expo' // expo account owner
 const EAS_PROJECT_ID = '96af8807-05d4-41a3-9d2c-aa5940892f89' // eas project id

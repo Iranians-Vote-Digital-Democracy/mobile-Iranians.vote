@@ -1,5 +1,11 @@
 {
-  "name": "template-v1",
+  "name": "iranians-vote",
+  "description": "Iranians.Vote mobile app - digital democracy platform",
+  "homepage": "https://github.com/Iranians-Vote-Digital-Democracy/mobile-Iranians.vote",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Iranians-Vote-Digital-Democracy/mobile-Iranians.vote.git"
+  },
   "main": "src/main.ts",
   "version": "0.2.4",
   "scripts": {
