@@ -43,7 +43,7 @@ export type AppStackParamsList = {
   }
   Poll?: { proposalId?: string }
   Scan?: {
-    documentType?: DocType
+    docType?: DocType
   }
 }
 
