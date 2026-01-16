@@ -224,7 +224,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "jest-expo": "~52.0.2",
     "jest-junit": "^16.0.0",
-    "lefthook": "^1.12.2",
+    "lefthook": "^2.0.15",
     "np": "^10.0.7",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",

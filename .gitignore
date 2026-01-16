@@ -58,3 +58,8 @@ modules/**/*/.cxx
 .env.secrets.*
 
 *.cer
+
+# Android keystore
+*.keystore
+*.jks
+*.pem

@@ -95,19 +95,25 @@ export default function DocumentsWithoutDocs() {
               <UiHorizontalDivider className='my-4' />
 
               <Text className='typography-body2 text-textSecondary'>
-                This is a sample app built using the following technologies: This is a sample app
-                built using the following technologies: This is a sample app built using the
-                following technologies:
+                Iranians.vote app is built using the following technologies: NFC card readers,
+                zero-knowledge proofs, end-to-end encryption, and decentralized identity standards
+                to ensure secure and private digital identity verification.
+              </Text>
+
+              <Text className='typography-body2 text-textSecondary'>
+                you scan your government-issued ID card using NFC technology, the app reads the data
+                directly from the card. Instead of storing this data on a central server, the app
+                uses zero-knowledge proofs to verify your identity without actually transmitting
+                your personal information. This means that your sensitive data remains on your
+                device and is never shared with third parties.
               </Text>
               <Text className='typography-body2 text-textSecondary'>
-                This is a sample app built using the following technologies: This is a sample app
-                built using the following technologies: This is a sample app built using the
-                following technologies:
-              </Text>
-              <Text className='typography-body2 text-textSecondary'>
-                This is a sample app built using the following technologies: This is a sample app
-                built using the following technologies: This is a sample app built using the
-                following technologies:
+                once your identity is verified, the app creates a decentralized identity (DID) for
+                you. This DID is stored on a blockchain or distributed ledger, giving you full
+                control over your digital identity. You can use this DID to prove your identity to
+                various services without revealing unnecessary personal information. You can vote
+                securely and anonymously using your digital identity, ensuring that your vote is
+                private and cannot be traced back to you.
               </Text>
 
               <UiButton
@@ -137,19 +143,25 @@ export default function DocumentsWithoutDocs() {
               <UiHorizontalDivider className='my-4' />
 
               <Text className='typography-body2 text-textSecondary'>
-                This is a sample app built using the following technologies: This is a sample app
-                built using the following technologies: This is a sample app built using the
-                following technologies:
+                Iranians.vote app is built using the following technologies: NFC card readers,
+                zero-knowledge proofs, end-to-end encryption, and decentralized identity standards
+                to ensure secure and private digital identity verification.
+              </Text>
+
+              <Text className='typography-body2 text-textSecondary'>
+                you scan your government-issued ID card using NFC technology, the app reads the data
+                directly from the card. Instead of storing this data on a central server, the app
+                uses zero-knowledge proofs to verify your identity without actually transmitting
+                your personal information. This means that your sensitive data remains on your
+                device and is never shared with third parties.
               </Text>
               <Text className='typography-body2 text-textSecondary'>
-                This is a sample app built using the following technologies: This is a sample app
-                built using the following technologies: This is a sample app built using the
-                following technologies:
-              </Text>
-              <Text className='typography-body2 text-textSecondary'>
-                This is a sample app built using the following technologies: This is a sample app
-                built using the following technologies: This is a sample app built using the
-                following technologies:
+                once your identity is verified, the app creates a decentralized identity (DID) for
+                you. This DID is stored on a blockchain or distributed ledger, giving you full
+                control over your digital identity. You can use this DID to prove your identity to
+                various services without revealing unnecessary personal information. You can vote
+                securely and anonymously using your digital identity, ensuring that your vote is
+                private and cannot be traced back to you.
               </Text>
 
               <UiButton
