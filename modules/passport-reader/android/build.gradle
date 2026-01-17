@@ -1,0 +1,54 @@
+apply plugin: 'com.android.library'
+
+group = 'expo.modules.passportreader'
+version = '1.0.0'
+
+def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
+apply from: expoModulesCorePlugin
+applyKotlinExpoModulesCorePlugin()
+useCoreDependencies()
+useExpoPublishing()
+
+def useManagedAndroidSdkVersions = false
+if (useManagedAndroidSdkVersions) {
+  useDefaultAndroidSdkVersions()
+} else {
+  buildscript {
+    ext.safeExtGet = { prop, fallback ->
+      rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+    }
+  }
+  project.android {
+    compileSdkVersion safeExtGet("compileSdkVersion", 34)
+    defaultConfig {
+      minSdkVersion safeExtGet("minSdkVersion", 27)
+      targetSdkVersion safeExtGet("targetSdkVersion", 34)
+    }
+  }
+}
+
+android {
+  namespace "expo.modules.passportreader"
+  defaultConfig {
+    versionCode 1
+    versionName "1.0.0"
+  }
+  lintOptions {
+    abortOnError false
+  }
+}
+
+dependencies {
+  // JMRTD - Java Machine Readable Travel Documents
+  implementation 'org.jmrtd:jmrtd:0.7.40'
+  
+  // SCUBA Smart Card Utils
+  implementation 'net.sf.scuba:scuba-sc-android:0.0.23'
+  
+  // Bouncy Castle for cryptography
+  implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
+  implementation 'org.bouncycastle:bcpkix-jdk18on:1.78.1'
+  
+  // JSON handling
+  implementation 'com.google.code.gson:gson:2.10.1'
+}

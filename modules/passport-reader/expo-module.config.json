@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["PassportReaderModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.passportreader.PassportReaderModule"]
+  }
+}

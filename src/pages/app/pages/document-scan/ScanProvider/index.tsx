@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { createContext, useContext } from 'react'
 
 import { NoirEIDRegistration } from '@/api/modules/registration/variants/noir-eid'
+import { NoirEPassportRegistration } from '@/api/modules/registration/variants/noir-epassport'
 import { ErrorHandler } from '@/core'
 import { tryCatch } from '@/helpers/try-catch'
 import { identityStore } from '@/store/modules/identity'
@@ -14,12 +15,11 @@ import { walletStore } from '@/store/modules/wallet'
 import { DocType, EDocument, EPassport } from '@/utils/e-document/e-document'
 
 export enum Steps {
-  // SelectDocTypeStep,
+  SelectDocTypeStep,
   ScanMrzStep,
   ScanNfcStep,
   DocumentPreviewStep,
   GenerateProofStep,
-
   RevocationStep,
 }
 
@@ -91,8 +91,16 @@ export function useDocumentScanContext() {
   return useContext(documentScanContext)
 }
 
-// TODO: add circuit strategy selection
-const registrationStrategy = new NoirEIDRegistration()
+// Registration strategies for different document types
+const eidRegistrationStrategy = new NoirEIDRegistration()
+const passportRegistrationStrategy = new NoirEPassportRegistration()
+
+function getRegistrationStrategy(docType?: DocType) {
+  if (docType === DocType.PASSPORT) {
+    return passportRegistrationStrategy
+  }
+  return eidRegistrationStrategy
+}
 
 export function ScanContextProvider({
   docType,
@@ -105,7 +113,17 @@ export function ScanContextProvider({
 
   const addIdentity = identityStore.useIdentityStore(state => state.addIdentity)
 
-  const [currentStep, setCurrentStep] = useState<Steps>(Steps.ScanNfcStep)
+  // Determine initial step based on document type:
+  // - No docType: show SelectDocTypeStep
+  // - PASSPORT: show ScanMrzStep (need MRZ for NFC)
+  // - ID: show ScanNfcStep directly (Iranian ID doesn't need MRZ)
+  const getInitialStep = (type?: DocType): Steps => {
+    if (!type) return Steps.SelectDocTypeStep
+    if (type === DocType.PASSPORT) return Steps.ScanMrzStep
+    return Steps.ScanNfcStep
+  }
+
+  const [currentStep, setCurrentStep] = useState<Steps>(getInitialStep(docType))
   const [creatingIdentityStep, setCreatingIdentityStep] = useState(GenProofSteps.DownloadCircuit)
 
   const [selectedDocType, setSelectedDocType] = useState(docType)
@@ -137,6 +155,9 @@ export function ScanContextProvider({
     }
 
     setCurrentStep(Steps.GenerateProofStep)
+
+    // Get the appropriate registration strategy based on document type
+    const registrationStrategy = getRegistrationStrategy(selectedDocType)
 
     const [identityItem, registrationError] = await tryCatch(
       registrationStrategy.createIdentity(tempEDoc as EPassport, privateKey, publicKeyHash, {
@@ -171,13 +192,18 @@ export function ScanContextProvider({
     setIdentity(identityItem)
 
     setCreatingIdentityStep(GenProofSteps.Final)
-  }, [addIdentity, privateKey, publicKeyHash, tempEDoc])
+  }, [addIdentity, privateKey, publicKeyHash, selectedDocType, tempEDoc])
 
   // ---------------------------------------------------------------------------------------------
 
   const handleSetSelectedDocType = useCallback((value: DocType) => {
     setSelectedDocType(value)
-    setCurrentStep(Steps.ScanMrzStep)
+    // Passport requires MRZ scanning first, ID cards go directly to NFC
+    if (value === DocType.PASSPORT) {
+      setCurrentStep(Steps.ScanMrzStep)
+    } else {
+      setCurrentStep(Steps.ScanNfcStep)
+    }
   }, [])
   const handleSetMrz = useCallback((value: FieldRecords) => {
     setTempMRZ(value)
