@@ -56,6 +56,7 @@ public class PassportReaderModule: Module {
       let passport = try await reader.readPassport(
         mrzKey: mrzKey,
         tags: tagsToRead,
+        aaChallenge: activeAuthChallenge,
         skipSecureElements: true,
         skipCA: true,
         skipPACE: false,
@@ -74,8 +75,7 @@ public class PassportReaderModule: Module {
           @unknown default:
             return nil
           }
-        },
-        activeAuthenticationChallenge: activeAuthChallenge
+        }
       )
       
       // Extract DG1 data (MRZ)
@@ -83,8 +83,8 @@ public class PassportReaderModule: Module {
         throw PassportReaderErrorType.missingDataGroup("DG1")
       }
       
-      // Extract SOD data
-      guard let sod = passport.getDataGroup(.SOD) as? SOD else {
+      // Extract SOD data (Security Object of Document)
+      guard let sod = passport.getDataGroup(.SOD) else {
         throw PassportReaderErrorType.missingDataGroup("SOD")
       }
       
